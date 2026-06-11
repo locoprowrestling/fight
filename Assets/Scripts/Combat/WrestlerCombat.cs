@@ -264,6 +264,14 @@ namespace LoCoFight
         public bool TryPowerGrappleFromLock() =>
             ExecuteGrappleMove(_core.Moveset != null ? _core.Moveset.RandomPowerGrapple() : null);
 
+        // Directional selection lands with the directional-grapple milestone
+        // task; until then these keep direction-aware callers playable.
+        public bool TryQuickGrappleFromLock(MoveDirection direction) =>
+            TryQuickGrappleFromLock();
+
+        public bool TryPowerGrappleFromLock(MoveDirection direction) =>
+            TryPowerGrappleFromLock();
+
         bool ExecuteGrappleMove(MoveData move)
         {
             if (move == null || !InGrappleLockAsAttacker || Opp == null) return false;

@@ -58,5 +58,53 @@ namespace LoCoFight.EditorTests
             var result = (bool)Invoke("CanProcessGameplay", true, MatchState.Active);
             Assert.That(result, Is.False);
         }
+
+        [Test]
+        public void ResolveMoveDirection_UsesFacingRelativeForward()
+        {
+            var result = Invoke(
+                "ResolveMoveDirection",
+                new Vector2(0f, 1f),
+                Vector3.forward,
+                Vector3.right,
+                0.2f);
+            Assert.That(result.ToString(), Is.EqualTo("Forward"));
+        }
+
+        [Test]
+        public void ResolveMoveDirection_UsesNeutralInsideDeadZone()
+        {
+            var result = Invoke(
+                "ResolveMoveDirection",
+                new Vector2(0.05f, 0.05f),
+                Vector3.forward,
+                Vector3.right,
+                0.2f);
+            Assert.That(result.ToString(), Is.EqualTo("Neutral"));
+        }
+
+        [Test]
+        public void ResolveMoveDirection_UsesLateralAxis()
+        {
+            var result = Invoke(
+                "ResolveMoveDirection",
+                new Vector2(-1f, 0f),
+                Vector3.forward,
+                Vector3.right,
+                0.2f);
+            Assert.That(result.ToString(), Is.EqualTo("Left"));
+        }
+
+        [Test]
+        public void ResolveMoveDirection_BackwardInputResolvesBackward()
+        {
+            var result = Invoke(
+                "ResolveMoveDirection",
+                new Vector2(0f, -1f),
+                Vector3.forward,
+                Vector3.right,
+                0.2f);
+            Assert.That(result.ToString(), Is.EqualTo("Backward"));
+        }
     }
 }

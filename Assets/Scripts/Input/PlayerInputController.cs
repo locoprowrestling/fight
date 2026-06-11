@@ -5,6 +5,8 @@ namespace LoCoFight
     /// Converts keyboard/controller commands into the same gameplay API used by the CPU.
     public class PlayerInputController : MonoBehaviour
     {
+        const float GrappleDirectionDeadZone = 0.2f;
+
         WrestlerCore _core;
         readonly InputBuffer _buffer = new InputBuffer();
         readonly LegacyPlayerInputSource _input = new LegacyPlayerInputSource();
@@ -128,13 +130,18 @@ namespace LoCoFight
 
             if (inLock)
             {
+                MoveDirection direction = PlayerInputLogic.ResolveMoveDirection(
+                    frame.Move,
+                    _core.transform.forward,
+                    _core.transform.right,
+                    GrappleDirectionDeadZone);
                 switch (PlayerInputLogic.ResolveLockAction(frame.HeavyPressed, frame.GrapplePressed))
                 {
                     case PlayerAction.Heavy:
-                        _core.Combat.TryPowerGrappleFromLock();
+                        _core.Combat.TryPowerGrappleFromLock(direction);
                         break;
                     case PlayerAction.Grapple:
-                        _core.Combat.TryQuickGrappleFromLock();
+                        _core.Combat.TryQuickGrappleFromLock(direction);
                         break;
                 }
             }
