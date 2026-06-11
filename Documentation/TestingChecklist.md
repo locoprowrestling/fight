@@ -40,6 +40,8 @@
 - [ ] U, I, and O do nothing.
 
 ## Strikes & grapples
+- [ ] HIT REACTIONS: landing any strike on a mid-move opponent CANCELS their move (their attack never comes out); they recoil, slide back, and visibly wobble in Stunned for the move's stun duration before acting again — trading is decided by whoever's active frame lands first, not by both moves completing.
+- [ ] Movement has weight: starts, stops, and direction changes ramp over ~0.1-0.2 s instead of gliding instantly; the walk/run cycle speed follows the ramp.
 
 - [ ] J fires on PRESS, always: neutral J = light strike, J with a movement
       direction held = heavy strike; one press never fires two actions; whiffs

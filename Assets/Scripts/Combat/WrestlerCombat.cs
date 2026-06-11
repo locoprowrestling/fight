@@ -190,6 +190,13 @@ namespace LoCoFight
                 (move.downsBelowHealthPercent > 0f && defender.Stats.HealthPercent * 100f < move.downsBelowHealthPercent);
             FeelSystem.NotifyImpact(move.tier, downs);
 
+            // The react rule: getting hit CANCELS whatever the defender was
+            // doing (their attack coroutine included), unless their state is
+            // armored (canBeInterrupted=false). Without this, a struck
+            // wrestler's in-flight move keeps executing straight through the
+            // hitstun and nothing ever registers.
+            if (defender.States.Profile.canBeInterrupted) defender.Combat.InterruptMove();
+
             if (downs)
             {
                 EnterDowned(defender, move.downedDuration > 0f ? move.downedDuration : 1.5f);
@@ -422,6 +429,7 @@ namespace LoCoFight
             if (move.staminaDamage > 0f) defender.Stats.DrainStamina(move.staminaDamage);
             _core.Stats.AddMomentum(move.momentumGainOnHit);
             FeelSystem.NotifyImpact(move.tier, move.causesDownedState);
+            if (defender.States.Profile.canBeInterrupted) defender.Combat.InterruptMove();
 
             if (move.causesDownedState)
             {
@@ -521,6 +529,7 @@ namespace LoCoFight
             if (move.staminaDamage > 0f) defender.Stats.DrainStamina(move.staminaDamage);
             _core.Stats.AddMomentum(move.momentumGainOnHit);
             FeelSystem.NotifyImpact(move.tier, move.causesDownedState);
+            if (defender.States.Profile.canBeInterrupted) defender.Combat.InterruptMove();
 
             if (move.causesDownedState)
                 EnterDowned(defender, move.downedDuration > 0f ? move.downedDuration : 1.5f);

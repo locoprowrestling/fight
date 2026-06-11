@@ -14,9 +14,13 @@ namespace LoCoFight
         public const float ReboundTurnDuration = 0.2f;
         public const float ReboundControlLock = 0.3f;
 
+        const float Acceleration = 26f;
+        const float Deceleration = 34f;
+
         WrestlerCore _core;
         CharacterController _cc;
         Vector3 _moveInput;
+        Vector3 _smoothedMotion;
         bool _runInput;
         bool _scriptedControl;
         float _verticalVelocity;
@@ -89,12 +93,18 @@ namespace LoCoFight
                 }
             }
 
-            CurrentSpeedNormalized = speed > 0f && _core.Stats.Data != null ? speed / _core.Stats.Data.runSpeed : 0f;
+            // Weight: ramp toward the target velocity instead of snapping,
+            // so starts, stops, and turns read as footwork rather than glide.
+            float rate = motion.sqrMagnitude >= _smoothedMotion.sqrMagnitude ? Acceleration : Deceleration;
+            _smoothedMotion = Vector3.MoveTowards(_smoothedMotion, motion, rate * Time.deltaTime);
+
+            float runSpeedRef = _core.Stats.Data != null ? _core.Stats.Data.runSpeed : 5.5f;
+            CurrentSpeedNormalized = _smoothedMotion.magnitude / Mathf.Max(0.1f, runSpeedRef);
             // Anim is Bind()-wired and dies on a mid-play domain reload
             // (script recompile while playing); skip presentation that frame.
             _core.Anim?.SetMovementSpeed(CurrentSpeedNormalized);
 
-            ApplyGravityAndMove(motion);
+            ApplyGravityAndMove(_smoothedMotion);
         }
 
         void ApplyGravityAndMove(Vector3 horizontal)
@@ -179,6 +189,7 @@ namespace LoCoFight
 
         public void Teleport(Vector3 position)
         {
+            _smoothedMotion = Vector3.zero;
             bool wasEnabled = _cc != null && _cc.enabled;
             if (_cc != null) _cc.enabled = false;
             transform.position = position;
@@ -196,6 +207,7 @@ namespace LoCoFight
 
         public void ApplyKnockback(Vector3 direction, float distance)
         {
+            _smoothedMotion = Vector3.zero;
             if (_knockback != null) StopCoroutine(_knockback);
             _knockback = StartCoroutine(KnockbackRoutine(MathUtil.Flat(direction).normalized, distance));
         }
