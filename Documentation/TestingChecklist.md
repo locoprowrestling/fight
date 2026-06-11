@@ -48,7 +48,8 @@
 
 ## Pins & submissions
 - [ ] Knock the CPU down (Big Boot at low health or a power grapple), tap K beside them: the pin count appears; a healthy CPU kicks out fast, a beaten one stays down for 3.
-- [ ] When YOU are pinned, mashing Space/;(or Alt)/WASD kicks out (easier at high health).
+- [ ] When YOU are pinned, mashing Space/;(or Alt)/WASD kicks out (easier at high health); the kickout SHOVES the attacker away and you rise quickly — the CPU can never chain pin → kickout → pin without re-earning the knockdown.
+- [ ] While downed, mashing rises noticeably faster (HUD shows "Mash to get up!"); while rising (GettingUp) you cannot be struck or grabbed — no infinite re-down loop at low health.
 - [ ] Holding K on a downed CPU starts the arm lock: pressure bar fills, escape percentage rises; either outcome resolves cleanly.
 
 ## Specials (use F2 to test each wrestler; build momentum first)

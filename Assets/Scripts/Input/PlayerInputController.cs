@@ -107,6 +107,10 @@ namespace LoCoFight
                 PinSystem.Instance.AddPlayerKickoutEffort();
             if (SubmissionSystem.Instance != null && SubmissionSystem.Instance.Active && SubmissionSystem.Instance.Defender == _core)
                 SubmissionSystem.Instance.AddPlayerEscapeEffort();
+
+            // Mash to rise: every press while downed shaves recovery time.
+            if (_core.States.Current == WrestlerState.Downed)
+                _core.States.ExtendTimeout(-0.15f);
         }
 
         void HandleMovement(PlayerInputFrame frame)

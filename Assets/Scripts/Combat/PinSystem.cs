@@ -152,10 +152,10 @@ namespace LoCoFight
             MatchHUD.TryShowMessage("Kickout!");
             if (Defender.Traits != null) Defender.Traits.NotifyKickout(Elapsed >= 2.0f);
             Defender.Stats.AddMomentum(5f);
-            EndPin(ropeBreak: false);
+            EndPin(ropeBreak: false, kickout: true);
         }
 
-        void EndPin(bool ropeBreak)
+        void EndPin(bool ropeBreak, bool kickout = false)
         {
             Active = false;
             if (ropeBreak)
@@ -164,8 +164,25 @@ namespace LoCoFight
                 Debug.Log("[Pin] Rope break!");
             }
             MatchHUD.TryShowCount("");
-            if (Attacker != null) Attacker.States.Set(WrestlerState.GrappleMoveRecovery, 0.6f);
-            if (Defender != null) Defender.States.Set(WrestlerState.Downed, 0.9f);
+            if (kickout)
+            {
+                // A kickout SHOVES the attacker off: they reposition while
+                // the defender rises, so the escape can't chain straight into
+                // the next pin.
+                if (Attacker != null)
+                {
+                    Vector3 away = MathUtil.FlatDirection(
+                        Defender.transform.position, Attacker.transform.position);
+                    Attacker.Motor.ApplyKnockback(away, 1.4f);
+                    Attacker.States.Set(WrestlerState.GrappleMoveRecovery, 1.0f);
+                }
+                if (Defender != null) Defender.States.Set(WrestlerState.Downed, 0.45f);
+            }
+            else
+            {
+                if (Attacker != null) Attacker.States.Set(WrestlerState.GrappleMoveRecovery, 0.6f);
+                if (Defender != null) Defender.States.Set(WrestlerState.Downed, 0.9f);
+            }
             if (MatchManager.Instance.State == MatchState.PinInProgress)
                 MatchManager.Instance.SetState(MatchState.Active);
             Attacker = null;

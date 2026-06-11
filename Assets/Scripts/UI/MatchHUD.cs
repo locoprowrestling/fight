@@ -14,7 +14,7 @@ namespace LoCoFight
         GameObject _controlsPanel;
         string _lastPrompt = "";
         bool _promptStateValid;
-        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady, _pInRange, _pStrongLock;
+        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady, _pInRange, _pStrongLock, _pPlayerDowned;
         PlayerInputController _playerInput;
         CombatContext _pContext;
         PlayerInputDevice _pDevice;
@@ -311,11 +311,13 @@ namespace LoCoFight
                                      (_cpu.Specials != null && _cpu.Specials.ReversalWindowOpen));
                 bool specialReady = fighting && _player.Stats.HasFullMomentum;
                 bool strongLock = fighting && _playerInput != null && _playerInput.PowerLockArmed;
+                bool playerDowned = fighting && _player.States.Current == WrestlerState.Downed;
 
                 bool changed = !_promptStateValid || fighting != _pFighting || context != _pContext ||
                                downedNear != _pDownedNear || reversalOpen != _pReversalOpen ||
                                specialReady != _pSpecialReady || inRange != _pInRange ||
-                               strongLock != _pStrongLock || _inputDevice != _pDevice;
+                               strongLock != _pStrongLock || playerDowned != _pPlayerDowned ||
+                               _inputDevice != _pDevice;
                 if (changed)
                 {
                     _promptStateValid = true;
@@ -326,6 +328,7 @@ namespace LoCoFight
                     _pSpecialReady = specialReady;
                     _pInRange = inRange;
                     _pStrongLock = strongLock;
+                    _pPlayerDowned = playerDowned;
                     _pDevice = _inputDevice;
 
                     _lastPrompt = fighting
@@ -338,6 +341,13 @@ namespace LoCoFight
                     {
                         _alert.text = _inputDevice == PlayerInputDevice.Controller ? "[RB] REVERSE!" : "[Space] REVERSE!";
                         _alert.color = Color.cyan;
+                    }
+                    else if (playerDowned)
+                    {
+                        _alert.text = _inputDevice == PlayerInputDevice.Controller
+                            ? "Mash to get up!  (stick + RB: roll away)"
+                            : "Mash to get up!  (A/D + Space: roll away)";
+                        _alert.color = Color.yellow;
                     }
                     else if (specialReady)
                     {

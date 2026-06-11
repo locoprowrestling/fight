@@ -57,9 +57,13 @@ namespace LoCoFight
             if (_core != null && _core.Anim != null) _core.Anim.PlayState(state.ToString());
         }
 
+        /// Negative values shorten the state (mash-to-rise); the floor keeps
+        /// the override positive so it can never fall back to the profile
+        /// default mid-state.
         public void ExtendTimeout(float extraSeconds)
         {
-            if (_timeoutOverride > 0f) _timeoutOverride += extraSeconds;
+            if (_timeoutOverride > 0f)
+                _timeoutOverride = Mathf.Max(0.05f, _timeoutOverride + extraSeconds);
         }
 
         void Update()
@@ -108,7 +112,9 @@ namespace LoCoFight
             d[WrestlerState.Stunned] = P(grabbable: true, reverse: true, timeout: 1.2f);
             d[WrestlerState.Downed] = P(pinnable: true, submittable: true, dodge: false, strikable: true, timeout: 3f, exit: WrestlerState.GettingUp);
             d[WrestlerState.RollingAway] = P(strikable: false, timeout: 0.5f, exit: WrestlerState.GettingUp);
-            d[WrestlerState.GettingUp] = P(timeout: 0.7f);
+            // Wake-up safety: a rising wrestler cannot be struck or grabbed,
+            // so knockdowns can't chain into an inescapable re-down loop.
+            d[WrestlerState.GettingUp] = P(strikable: false, timeout: 0.7f);
             d[WrestlerState.RopeContact] = P(move: true, rotate: true, attack: true, grapple: true, reverse: true, dodge: true, grabbable: true, rope: true);
             d[WrestlerState.RopeStaggered] = P(grabbable: true, reverse: true, timeout: 1.8f);
             d[WrestlerState.RopeReboundRun] = P(rope: true, strikable: true, timeout: 1.5f, exit: WrestlerState.RopeReboundReturn);
