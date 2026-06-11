@@ -39,6 +39,12 @@ MonoBehaviour:
   minimumLiftClass: 0
   failIfTargetTooHeavy: 1
   fallbackMoveIfLiftFails: {fileID: 0}
+  tier: 0
+  minimumStamina: 0
+  requiresTargetDowned: 0
+  requiredGroundZone: 0
+  requiresTargetCornered: 0
+  requiresTargetRopeStaggered: 0
   downsBelowHealthPercent: 0
   submissionPressurePerSecond: 0
   damagePerSecond: 0
@@ -55,5 +61,5 @@ MonoBehaviour:
   impactVfxEventName: 
   crowdReactionEventName: 
   animationStateName: 
-  placeholderPoseName: strike
+  placeholderPoseName: lariat
   animationSpeed: 1

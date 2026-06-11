@@ -1,6 +1,9 @@
 # Templates
 
-Copy-paste recipes for the common additions. All data lives in [DefaultGameData.cs](../../Assets/Scripts/Roster/DefaultGameData.cs); after any data change, regenerate assets via **Tools > LoCo Fight Game > Create Default Prototype Assets**.
+Copy-paste recipes for the common additions. All data lives in
+[DefaultGameData.cs](../../Assets/Scripts/Roster/DefaultGameData.cs); after any
+data change, regenerate assets via **Tools > LoCo Fight Game > Create Default
+Prototype Assets**.
 
 ## New wrestler
 
@@ -15,14 +18,21 @@ Add(set, "tas-new-wrestler", "New Wrestler", new Color(0.5f, 0.5f, 0.5f),   // p
 ```
 
 Checklist beyond the code:
-1. Portrait: drop `tas-new-wrestler.png` in `players-web/`, run the importer (`RosterAssetImporter`) so it lands in `Assets/Art/RosterPortraits/`. `RosterEntry.sourceImageFileName` is derived from the roster id.
-2. Regenerate assets (menu above) — otherwise the saved `RosterDatabase` asset won't contain the new entry.
-3. Document the character in [Roster.md](../Roster.md) and the special in [SpecialAbilities.md](../SpecialAbilities.md).
-4. Add a [TestingChecklist.md](../TestingChecklist.md) line if the wrestler has unique mechanics.
+
+1. Portrait: drop `tas-new-wrestler.png` in `players-web/`, run the importer
+   (`RosterAssetImporter`) so it lands in `Assets/Art/RosterPortraits/`.
+   `RosterEntry.sourceImageFileName` is derived from the roster id.
+2. Regenerate assets (menu above) — otherwise the saved `RosterDatabase` asset
+   won't contain the new entry.
+3. Document the character in [Roster.md](../Roster.md) and the special in
+   [SpecialAbilities.md](../SpecialAbilities.md).
+4. Add a [TestingChecklist.md](../TestingChecklist.md) line if the wrestler has
+   unique mechanics.
 
 ## New move
 
-In `CreateMoveDatabase()` — use `Move` for strikes (explicit phases) or `Grapple` for grapples (one duration split 30/40/30):
+In `CreateMoveDatabase()` — use `Move` for strikes (explicit phases) or
+`Grapple` for grapples (one duration split 30/40/30):
 
 ```csharp
 // Move(set, id, name, category, dmg, stamina, startup, active, recovery, stun, momentum, ...)
@@ -36,13 +46,27 @@ db.powerGrapples.Add(Grapple(set, "powerbomb", "Powerbomb", MoveCategory.PowerGr
 ```
 
 Notes:
-- Range, reversal window, `requiresRunning`, and `placeholderPoseName` are derived from the category inside `Move()` — only override on the returned instance for exceptions (see `big-boot`'s `downsBelowHealthPercent`).
-- `lift: true` moves are gated by `LiftStrengthClass` vs `WeightClass` (`CombatResolver.ValidateLift`); set `fallbackMoveIfLiftFails` or accept the fail-and-stun path.
-- Both player and CPU pick moves via `MoveDatabase.Random*` — adding to the right list is the whole integration.
-- Put the move in the database list matching its legal context. A new context needs an explicit list/resolver path, not inclusion in a loosely related existing list.
-- Declare every compatibility requirement the resolver needs: running, grapple role, lift strength, rope/corner state, target state, or other positional constraint.
-- Verify the failure path as well as the success path: insufficient stamina, invalid context, failed lift, missed hit, and interrupted grapple must leave both wrestlers in valid states.
-- Keep damage, timing, stamina, momentum, reversal windows, and state consequences in move/combat data. Animation names and placeholder poses are presentation hooks only.
+
+- Range, reversal window, `requiresRunning`, and `placeholderPoseName` are
+  derived from the category inside `Move()` — only override on the returned
+  instance for exceptions (see `big-boot`'s `downsBelowHealthPercent`).
+- `lift: true` moves are gated by `LiftStrengthClass` vs `WeightClass`
+  (`CombatResolver.ValidateLift`); set `fallbackMoveIfLiftFails` or accept the
+  fail-and-stun path.
+- Both player and CPU pick moves via `MoveDatabase.Random*` — adding to the
+  right list is the whole integration.
+- Put the move in the database list matching its legal context. A new context
+  needs an explicit list/resolver path, not inclusion in a loosely related
+  existing list.
+- Declare every compatibility requirement the resolver needs: running, grapple
+  role, lift strength, rope/corner state, target state, or other positional
+  constraint.
+- Verify the failure path as well as the success path: insufficient stamina,
+  invalid context, failed lift, missed hit, and interrupted grapple must leave
+  both wrestlers in valid states.
+- Keep damage, timing, stamina, momentum, reversal windows, and state
+  consequences in move/combat data. Animation names and placeholder poses are
+  presentation hooks only.
 
 ## New contextual move
 
@@ -62,7 +86,8 @@ db.groundUpperAttacks.Add(axeHandle);
 db.directionalQuickGrapples.forward.Add(snapmare);
 ```
 
-Required compatibility fields by family (validated in `ContextualMoveValidator`):
+Required compatibility fields by family (validated in
+`ContextualMoveValidator`):
 
 - Ground: `requiresTargetDowned`, `requiredGroundZone` (Upper/Lower)
 - Corner: `requiresTargetCornered`, `requiresCornerZone`
@@ -72,11 +97,18 @@ Required compatibility fields by family (validated in `ContextualMoveValidator`)
 
 Checklist before calling it done:
 
-1. The move sits in exactly one contextual family list (or directional bucket); directional sets keep a non-empty neutral bucket (`MoveDataValidator` errors otherwise).
-2. Validation rejects each missing requirement with the right `MoveRejectionReason` and spends no stamina (watch F1 while testing).
-3. The result state is documented and applied (remain in context, stunned, downed, or exit) and an interrupted attempt leaves both wrestlers in valid, timeout-recoverable states.
-4. The CPU can reach the move through the shared `WrestlerCombat` API (it must not need controller-specific code).
-5. Regenerate assets via **Tools > LoCo Fight Game > Create Default Prototype Assets** and check the console for `[MoveData]` errors/warnings.
+1. The move sits in exactly one contextual family list (or directional bucket);
+   directional sets keep a non-empty neutral bucket (`MoveDataValidator` errors
+   otherwise).
+2. Validation rejects each missing requirement with the right
+   `MoveRejectionReason` and spends no stamina (watch F1 while testing).
+3. The result state is documented and applied (remain in context, stunned,
+   downed, or exit) and an interrupted attempt leaves both wrestlers in valid,
+   timeout-recoverable states.
+4. The CPU can reach the move through the shared `WrestlerCombat` API (it must
+   not need controller-specific code).
+5. Regenerate assets via **Tools > LoCo Fight Game > Create Default Prototype
+   Assets** and check the console for `[MoveData]` errors/warnings.
 
 ## New special
 
@@ -92,7 +124,14 @@ static SpecialAbilityData NewWrestlerSpecial(DefaultGameDataSet set)
 }
 ```
 
-Existing categories each have an executor in `Assets/Scripts/Specials/` (`RushSpecialExecutor`, `AerialSpecialExecutor`, `CounterSpecialExecutor`, `DirtySpecialExecutor`, `RopeTrapSpecialExecutor`, `SequenceSpecialExecutor`). For a **new category**: add the enum value, write a `NewCategoryExecutor : SpecialExecutor`, wire it in `SpecialController`, and document it in [SpecialAbilities.md](../SpecialAbilities.md). Specials must respect reversal windows (`SpecialController.ReversalWindowOpen`) so the defender always has counterplay.
+Existing categories each have an executor in `Assets/Scripts/Specials/`
+(`RushSpecialExecutor`, `AerialSpecialExecutor`, `CounterSpecialExecutor`,
+`DirtySpecialExecutor`, `RopeTrapSpecialExecutor`, `SequenceSpecialExecutor`).
+For a **new category**: add the enum value, write a
+`NewCategoryExecutor : SpecialExecutor`, wire it in `SpecialController`, and
+document it in [SpecialAbilities.md](../SpecialAbilities.md). Specials must
+respect reversal windows (`SpecialController.ReversalWindowOpen`) so the
+defender always has counterplay.
 
 ## New passive trait
 
@@ -103,23 +142,35 @@ Trait(set, "iron-chin", "Iron Chin", "tas-new-wrestler",
     ui: "Iron Chin: taking less damage!");
 ```
 
-If the effect type is new, add it to `PassiveTraitEffectType` and handle it in [PassiveTraitController.cs](../../Assets/Scripts/Traits/PassiveTraitController.cs) — that controller is the only consumer.
+If the effect type is new, add it to `PassiveTraitEffectType` and handle it in
+[PassiveTraitController.cs](../../Assets/Scripts/Traits/PassiveTraitController.cs)
+— that controller is the only consumer.
 
 ## New wrestler state
 
-1. Add the enum value in [WrestlerStateMachine.cs](../../Assets/Scripts/Wrestlers/WrestlerStateMachine.cs).
-2. Add its `StateProfile` in `BuildProfiles()` — decide every flag deliberately, and give any non-terminal state a `timeout` + `exit` so it can't strand a wrestler:
+1. Add the enum value in
+   [WrestlerStateMachine.cs](../../Assets/Scripts/Wrestlers/WrestlerStateMachine.cs).
+2. Add its `StateProfile` in `BuildProfiles()` — decide every flag deliberately,
+   and give any non-terminal state a `timeout` + `exit` so it can't strand a
+   wrestler:
 
 ```csharp
 d[WrestlerState.NewState] = P(rotate: true, strikable: true, timeout: 1.0f, exit: WrestlerState.Idle);
 ```
 
-3. Give it a visual: add a `case "NewState":` pose in `ComputePose()` in [PlaceholderAnimationDriver.cs](../../Assets/Scripts/Animation/PlaceholderAnimationDriver.cs) (unhandled states fall back to locomotion/stand).
-4. If it's a mutual state (two wrestlers locked together), apply the three-things rule from [BestPractices.md](BestPractices.md#states): timeout, owner, external-dissolve cleanup.
+1. Give it a visual: add a `case "NewState":` pose in `ComputePose()` in
+   [PlaceholderAnimationDriver.cs](../../Assets/Scripts/Animation/PlaceholderAnimationDriver.cs)
+   (unhandled states fall back to locomotion/stand).
+2. If it's a mutual state (two wrestlers locked together), apply the
+   three-things rule from [BestPractices.md](BestPractices.md#states): timeout,
+   owner, external-dissolve cleanup.
 
 ## New animation pose
 
-Poses are `BodyPose` cases in `ComputePose()` — local Euler targets per joint plus `root` tilt, `lift` (y), `shift` (z). Joint sign conventions are in [Examples.md](Examples.md#joint-sign-conventions); start from a helper (`StandPose()`, `FightStance()`, `Crouch()`, `LyingPose()`) and override:
+Poses are `BodyPose` cases in `ComputePose()` — local Euler targets per joint
+plus `root` tilt, `lift` (y), `shift` (z). Joint sign conventions are in
+[Examples.md](Examples.md#joint-sign-conventions); start from a helper
+(`StandPose()`, `FightStance()`, `Crouch()`, `LyingPose()`) and override:
 
 ```csharp
 case "NewState":
@@ -131,10 +182,19 @@ case "NewState":
     break;
 ```
 
-One-shot gestures (a punch, a reach) are `ActionKind` overlays in `ApplyAction()`, not states — they ride on top of whatever pose is active and expire on their own.
+One-shot gestures (a punch, a reach) are `ActionKind` overlays in
+`ApplyAction()`, not states — they ride on top of whatever pose is active and
+expire on their own.
 
 ## New AI behavior
 
-1. Add the `AIState` value and the decision in `Decide()` in [CPUWrestlerAI.cs](../../Assets/Scripts/AI/CPUWrestlerAI.cs). Placement is priority: role-specific follow-ups first, then the `canAttack` gate, then stamina caution, then situational offense.
-2. Add the `case` in `Act()` — call the same `WrestlerCombat` methods the player uses, `_memory.Note(...)`/`_memory.CanUse(...)` to avoid spamming, and `Rethink()` after acting.
-3. Tune per difficulty via [AIDifficultyData](../../Assets/Scripts/AI/AIDifficultyData.cs) fields rather than hard-coded constants.
+1. Add the `AIState` value and the decision in `Decide()` in
+   [CPUWrestlerAI.cs](../../Assets/Scripts/AI/CPUWrestlerAI.cs). Placement is
+   priority: role-specific follow-ups first, then the `canAttack` gate, then
+   stamina caution, then situational offense.
+2. Add the `case` in `Act()` — call the same `WrestlerCombat` methods the player
+   uses, `_memory.Note(...)`/`_memory.CanUse(...)` to avoid spamming, and
+   `Rethink()` after acting.
+3. Tune per difficulty via
+   [AIDifficultyData](../../Assets/Scripts/AI/AIDifficultyData.cs) fields rather
+   than hard-coded constants.

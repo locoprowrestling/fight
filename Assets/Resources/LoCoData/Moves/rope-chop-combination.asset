@@ -10,29 +10,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a452cab74d764c788a102c84af2387e, type: 3}
-  m_Name: big-boot
+  m_Name: rope-chop-combination
   m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.MoveData
-  moveId: big-boot
-  displayName: Big Boot
-  category: 1
-  tags: 01000000
-  startupTime: 0.45
+  moveId: rope-chop-combination
+  displayName: Rope Chop Combination
+  category: 14
+  tags: 0100000008000000
+  startupTime: 0.3
   activeTime: 0.15
-  recoveryTime: 0.6
+  recoveryTime: 0.5
   reversalWindowStart: 0.05
-  reversalWindowEnd: 0.45
-  staminaCost: 13
-  damage: 11
+  reversalWindowEnd: 0.3
+  staminaCost: 9
+  damage: 8
   staminaDamage: 0
-  momentumGainOnHit: 10
-  momentumGainOnReversal: 8
-  stunDuration: 0.65
-  downedDuration: 1.5
+  momentumGainOnHit: 8
+  momentumGainOnReversal: 6.4
+  stunDuration: 0.6
+  downedDuration: 0
   causesDownedState: 0
   canPinAfter: 0
   canSubmitAfter: 0
   knockbackDistance: 0.4
-  range: 1.35
+  range: 1.3
   requiredFacingDot: 0.4
   snapToGrapplePosition: 0
   requiresLift: 0
@@ -44,11 +44,11 @@ MonoBehaviour:
   requiresTargetDowned: 0
   requiredGroundZone: 0
   requiresTargetCornered: 0
-  requiresTargetRopeStaggered: 0
-  downsBelowHealthPercent: 35
+  requiresTargetRopeStaggered: 1
+  downsBelowHealthPercent: 0
   submissionPressurePerSecond: 0
   damagePerSecond: 0
-  requiresOpponentNearRopes: 0
+  requiresOpponentNearRopes: 1
   requiresOpponentInRopeStagger: 0
   requiresCornerZone: 0
   requiresRopeRebound: 0
@@ -61,5 +61,5 @@ MonoBehaviour:
   impactVfxEventName: 
   crowdReactionEventName: 
   animationStateName: 
-  placeholderPoseName: strike
+  placeholderPoseName: chop
   animationSpeed: 1

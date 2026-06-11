@@ -33,3 +33,36 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a9cd1bfe04dce49b7be172f7a0f10c11, type: 2}
   groundSubmissions:
   - {fileID: 11400000, guid: f59337e9d43ec4584990a2327237d92c, type: 2}
+  groundUpperAttacks:
+  - {fileID: 11400000, guid: fcfbc7496ad1e4c148ddccf8bede71c2, type: 2}
+  - {fileID: 11400000, guid: 5a2343aa25bcd442db39c2faf3af23d0, type: 2}
+  groundLowerAttacks:
+  - {fileID: 11400000, guid: 00d4a2ccda7014c9a8691f548cdf611a, type: 2}
+  - {fileID: 11400000, guid: 1c5b063abc119473d8be04bfd3d8d92d, type: 2}
+  directionalQuickGrapples:
+    neutral:
+    - {fileID: 11400000, guid: 88e5548ee87534a0b9d268444ee7f1d8, type: 2}
+    forward:
+    - {fileID: 11400000, guid: 2041849cf2dff496fa8e9a919de1637b, type: 2}
+    backward:
+    - {fileID: 11400000, guid: 852cfb64aac2b4966b5bde14965bb194, type: 2}
+    lateral:
+    - {fileID: 11400000, guid: 18d5722675a49416dacff480db162960, type: 2}
+  directionalPowerGrapples:
+    neutral:
+    - {fileID: 11400000, guid: 8b5dc8b18497b465fb6925595ed531e0, type: 2}
+    forward:
+    - {fileID: 11400000, guid: e59e2103ec2d840378414f412431f6d8, type: 2}
+    backward:
+    - {fileID: 11400000, guid: e415f20eb6a664a47a3836443b017a59, type: 2}
+    lateral:
+    - {fileID: 11400000, guid: 09e74053d91ad4642a7d8530159284ab, type: 2}
+  cornerStrikes:
+  - {fileID: 11400000, guid: 29778357277ac445483618369cebfb98, type: 2}
+  cornerGrapples:
+  - {fileID: 11400000, guid: f055d41c087fd4d98b0d8b6d5dcc310d, type: 2}
+  ropeStaggerAttacks:
+  - {fileID: 11400000, guid: 5fa14b37bad8a484d8b75d203078676f, type: 2}
+  - {fileID: 11400000, guid: a39ecdd7fefcd4a6b8f990ad8520c11c, type: 2}
+  ropeReboundAttacks:
+  - {fileID: 11400000, guid: 12d8a60235d314bc79e155396d4c13a2, type: 2}

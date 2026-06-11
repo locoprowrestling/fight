@@ -1,12 +1,22 @@
 # Contextual Combat Slice Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use
+> superpowers:subagent-driven-development (recommended) or
+> superpowers:executing-plans to implement this plan task-by-task. Steps use
+> checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add grounded positional offense, directional grapples, corner offense, rope/rebound offense, and move-tier pacing to the existing one-player-versus-CPU prototype.
+**Goal:** Add grounded positional offense, directional grapples, corner offense,
+rope/rebound offense, and move-tier pacing to the existing one-player-versus-CPU
+prototype.
 
-**Architecture:** Keep `WrestlerStateMachine` and `RingInteractionSystem` authoritative for state and geometry. Add focused pure-logic context, direction, validation, and pacing helpers; route both player and CPU requests through `WrestlerCombat`; keep `MoveData` authoritative for timing/effects and `IAnimationDriver` presentation-only.
+**Architecture:** Keep `WrestlerStateMachine` and `RingInteractionSystem`
+authoritative for state and geometry. Add focused pure-logic context, direction,
+validation, and pacing helpers; route both player and CPU requests through
+`WrestlerCombat`; keep `MoveData` authoritative for timing/effects and
+`IAnimationDriver` presentation-only.
 
-**Tech Stack:** Unity 6.4, C# 9, ScriptableObjects, legacy Input Manager, NUnit edit-mode tests, procedural placeholder animation.
+**Tech Stack:** Unity 6.4, C# 9, ScriptableObjects, legacy Input Manager, NUnit
+edit-mode tests, procedural placeholder animation.
 
 ---
 
@@ -20,8 +30,8 @@
 - When executing in the current worktree, stage and commit exact paths only.
 - Unity must import every new `.cs` file before its task commit. Include the
   generated sidecar `.meta` file for each new runtime or editor-test file.
-- Regenerate `Assets/Resources/LoCoData/` after every `DefaultGameData` schema or
-  content change.
+- Regenerate `Assets/Resources/LoCoData/` after every `DefaultGameData` schema
+  or content change.
 - After regeneration, inspect `git status --short Assets/Resources/LoCoData` and
   stage only `StarterMoveDatabase.asset`, changed move assets, and their `.meta`
   files. Do not stage the entire `Assets/Resources` tree.
@@ -31,22 +41,22 @@
 
 ### New Runtime Files
 
-- `Assets/Scripts/Combat/CombatContext.cs`
-  Defines `CombatContext`, `GroundTargetZone`, and context snapshots.
-- `Assets/Scripts/Combat/CombatContextResolver.cs`
-  Pure context and ground-zone resolution.
-- `Assets/Scripts/Combat/MoveValidationResult.cs`
-  Defines structured rejection reasons and validation results.
-- `Assets/Scripts/Combat/ContextualMoveValidator.cs`
-  Validates state, position, stamina, lift, and move-family compatibility.
-- `Assets/Scripts/Moves/MoveDirection.cs`
-  Defines neutral/forward/backward/left/right selection.
-- `Assets/Scripts/Moves/MoveTier.cs`
-  Defines light/medium/heavy/special pacing classes.
-- `Assets/Scripts/Moves/DirectionalMoveSet.cs`
-  Stores directional grapple buckets and neutral fallback selection.
-- `Assets/Scripts/Moves/MovePacingRules.cs`
-  Pure tier/stamina validation and editor-warning helpers.
+- `Assets/Scripts/Combat/CombatContext.cs` Defines `CombatContext`,
+  `GroundTargetZone`, and context snapshots.
+- `Assets/Scripts/Combat/CombatContextResolver.cs` Pure context and ground-zone
+  resolution.
+- `Assets/Scripts/Combat/MoveValidationResult.cs` Defines structured rejection
+  reasons and validation results.
+- `Assets/Scripts/Combat/ContextualMoveValidator.cs` Validates state, position,
+  stamina, lift, and move-family compatibility.
+- `Assets/Scripts/Moves/MoveDirection.cs` Defines
+  neutral/forward/backward/left/right selection.
+- `Assets/Scripts/Moves/MoveTier.cs` Defines light/medium/heavy/special pacing
+  classes.
+- `Assets/Scripts/Moves/DirectionalMoveSet.cs` Stores directional grapple
+  buckets and neutral fallback selection.
+- `Assets/Scripts/Moves/MovePacingRules.cs` Pure tier/stamina validation and
+  editor-warning helpers.
 
 ### New Editor Test Files
 
@@ -116,6 +126,7 @@ Test Runner > EditMode > Run All** instead.
 ### Task 1: Add Context, Direction, and Tier Primitives
 
 **Files:**
+
 - Create: `Assets/Scripts/Combat/CombatContext.cs`
 - Create: `Assets/Scripts/Combat/CombatContextResolver.cs`
 - Create: `Assets/Scripts/Moves/MoveDirection.cs`
@@ -178,8 +189,8 @@ namespace LoCoFight.EditorTests
 
 Run the edit-mode command above.
 
-Expected: compile failure because `CombatContextResolver`,
-`CombatContext`, and `GroundTargetZone` do not exist.
+Expected: compile failure because `CombatContextResolver`, `CombatContext`, and
+`GroundTargetZone` do not exist.
 
 - [ ] **Step 3: Add the primitive enums and pure resolver**
 
@@ -303,6 +314,7 @@ git commit -m "Add contextual combat primitives"
 ### Task 2: Add Directional Move Sets and Contextual Move Data
 
 **Files:**
+
 - Create: `Assets/Scripts/Moves/DirectionalMoveSet.cs`
 - Create: `Assets/Scripts/Editor/DirectionalMoveSetTests.cs`
 - Modify: `Assets/Scripts/Moves/MoveCategory.cs`
@@ -448,9 +460,9 @@ public bool requiresTargetRopeStaggered = false;
 public MoveData fallbackMove;
 ```
 
-Keep existing `requiresRunning`, `requiresLift`,
-`fallbackMoveIfLiftFails`, rope, and corner fields. Do not add duplicates for
-conditions they already represent.
+Keep existing `requiresRunning`, `requiresLift`, `fallbackMoveIfLiftFails`,
+rope, and corner fields. Do not add duplicates for conditions they already
+represent.
 
 - [ ] **Step 6: Extend `MoveDatabase` without removing existing lists**
 
@@ -505,6 +517,7 @@ git commit -m "Add contextual move data model"
 ### Task 3: Add Structured Move Validation
 
 **Files:**
+
 - Create: `Assets/Scripts/Combat/MoveValidationResult.cs`
 - Create: `Assets/Scripts/Combat/ContextualMoveValidator.cs`
 - Create: `Assets/Scripts/Editor/ContextualMoveValidatorTests.cs`
@@ -661,6 +674,7 @@ git commit -m "Add structured contextual move validation"
 ### Task 4: Resolve Grapple Direction from Player Input
 
 **Files:**
+
 - Modify: `Assets/Scripts/Input/PlayerInputLogic.cs`
 - Modify: `Assets/Scripts/Input/PlayerInputController.cs`
 - Modify: `Assets/Scripts/Editor/PlayerInputLogicTests.cs`
@@ -736,8 +750,8 @@ public static MoveDirection ResolveMoveDirection(
 
 - [ ] **Step 4: Pass direction into grapple follow-up calls**
 
-In `HandleCombat`, resolve direction from `frame.Move`, `_core.transform.forward`,
-and `_core.transform.right`, then call:
+In `HandleCombat`, resolve direction from `frame.Move`,
+`_core.transform.forward`, and `_core.transform.right`, then call:
 
 ```csharp
 _core.Combat.TryPowerGrappleFromLock(direction);
@@ -778,6 +792,7 @@ git commit -m "Capture directional grapple input"
 ### Task 5: Migrate Default Move Data and Add Asset Validation
 
 **Files:**
+
 - Modify: `Assets/Scripts/Roster/DefaultGameData.cs`
 - Modify: `Assets/Scripts/Editor/PrototypeAssetBuilder.cs`
 - Create: `Assets/Scripts/Editor/MoveDataValidator.cs`
@@ -972,6 +987,7 @@ git commit -m "Migrate moves to contextual data"
 ### Task 6: Add Shared Combat Diagnostics and Context Snapshot
 
 **Files:**
+
 - Modify: `Assets/Scripts/Combat/CombatContext.cs`
 - Modify: `Assets/Scripts/Combat/CombatContextResolver.cs`
 - Modify: `Assets/Scripts/Combat/WrestlerCombat.cs`
@@ -1129,6 +1145,7 @@ git commit -m "Expose contextual combat diagnostics"
 ### Task 7: Implement Grounded Positional Offense
 
 **Files:**
+
 - Modify: `Assets/Scripts/Roster/DefaultGameData.cs`
 - Modify: `Assets/Scripts/Combat/ContextualMoveValidator.cs`
 - Modify: `Assets/Scripts/Combat/WrestlerCombat.cs`
@@ -1288,8 +1305,8 @@ end without resetting defender recovery timer beyond move.downedDuration
 ```
 
 Do not call the standing `CheckHit`, because it intentionally rejects downed
-targets. Do not call the normal `ApplyHit`, because its non-knockdown branch
-can replace the defender's downed state.
+targets. Do not call the normal `ApplyHit`, because its non-knockdown branch can
+replace the defender's downed state.
 
 Add:
 
@@ -1358,7 +1375,8 @@ case AIState.AttemptGroundAttack:
 Map `"ground"` to a distinct downward strike overlay in
 `PlaceholderAnimationDriver`; do not change gameplay timing.
 
-- [ ] **Step 8: Run tests, compile, regenerate assets, and execute ground matrix**
+- [ ] **Step 8: Run tests, compile, regenerate assets, and execute ground
+      matrix**
 
 Manual matrix:
 
@@ -1393,6 +1411,7 @@ git commit -m "Add grounded positional offense"
 ### Task 8: Implement Directional Grapple Selection
 
 **Files:**
+
 - Modify: `Assets/Scripts/Roster/DefaultGameData.cs`
 - Modify: `Assets/Scripts/Combat/WrestlerCombat.cs`
 - Modify: `Assets/Scripts/AI/CPUWrestlerAI.cs`
@@ -1474,7 +1493,8 @@ static MoveDirection ChooseGrappleDirection(bool power, float staminaPercent)
 }
 ```
 
-Use it in `ChooseGrappleMove`, retaining quick/power fallback and forced release.
+Use it in `ChooseGrappleMove`, retaining quick/power fallback and forced
+release.
 
 - [ ] **Step 4: Run compile and directional manual matrix**
 
@@ -1507,6 +1527,7 @@ git commit -m "Add directional grapple selection"
 ### Task 9: Implement Corner Offense
 
 **Files:**
+
 - Modify: `Assets/Scripts/Roster/DefaultGameData.cs`
 - Modify: `Assets/Scripts/Combat/ContextualMoveValidator.cs`
 - Modify: `Assets/Scripts/Combat/WrestlerCombat.cs`
@@ -1640,6 +1661,7 @@ git commit -m "Add contextual corner offense"
 ### Task 10: Implement Rope-Stagger and Rebound Offense
 
 **Files:**
+
 - Modify: `Assets/Scripts/Roster/DefaultGameData.cs`
 - Modify: `Assets/Scripts/Combat/ContextualMoveValidator.cs`
 - Modify: `Assets/Scripts/Combat/WrestlerCombat.cs`
@@ -1792,6 +1814,7 @@ git commit -m "Add rope and rebound offense"
 ### Task 11: Add Move-Tier Pacing Rules
 
 **Files:**
+
 - Create: `Assets/Scripts/Moves/MovePacingRules.cs`
 - Create: `Assets/Scripts/Editor/MovePacingRulesTests.cs`
 - Modify: `Assets/Scripts/Combat/ContextualMoveValidator.cs`
@@ -1973,6 +1996,7 @@ git commit -m "Add move tier pacing rules"
 ### Task 12: Complete Regression Coverage and Documentation
 
 **Files:**
+
 - Modify: `Documentation/DesignDoc.md`
 - Modify: `Documentation/TestingChecklist.md`
 - Modify: `Documentation/KnowledgeBase/BestPractices.md`
@@ -2083,6 +2107,6 @@ git commit -m "Document contextual combat milestone"
 - [ ] Player and CPU use the same combat APIs and validation.
 - [ ] Every contextual failure leaves valid states and ownership.
 - [ ] F1 explains context, selection, fallback, tier, and rejection.
-- [ ] Existing match flow, rulesets, specials, pins, submissions, reversals,
-      and reset behavior pass regression.
+- [ ] Existing match flow, rulesets, specials, pins, submissions, reversals, and
+      reset behavior pass regression.
 - [ ] No deferred creation-suite or broader match scope was introduced.

@@ -11,8 +11,8 @@
 ## Objective
 
 Increase match variety by making wrestler state and ring position produce
-distinct offensive choices, then regulate stronger choices through the
-existing stamina, momentum, recovery, and reversal systems.
+distinct offensive choices, then regulate stronger choices through the existing
+stamina, momentum, recovery, and reversal systems.
 
 The milestone remains inside the current prototype scope:
 
@@ -34,8 +34,8 @@ Implement a **Contextual Combat Slice** as six vertical phases:
 Each phase must include player control, CPU use, move data, validation,
 execution, cleanup, presentation, debug visibility, and manual QA.
 
-Do not replace the current category-based move architecture with a full
-editable move-slot system during this milestone.
+Do not replace the current category-based move architecture with a full editable
+move-slot system during this milestone.
 
 ## Architecture
 
@@ -171,8 +171,8 @@ requested bucket
 
 ### Compatibility and Validation
 
-Represent only requirements needed by this milestone. Reuse existing
-`MoveData` fields before adding overlapping ones.
+Represent only requirements needed by this milestone. Reuse existing `MoveData`
+fields before adding overlapping ones.
 
 Potential requirements:
 
@@ -316,8 +316,8 @@ Acceptance criteria:
 - Every move has a documented result and cleanup path.
 - Invalid or interrupted actions leave both wrestlers valid.
 - Defender has a defined escape or reversal opportunity.
-- CPU exploits corner position without repeatedly herding an already
-  cornered opponent.
+- CPU exploits corner position without repeatedly herding an already cornered
+  opponent.
 
 ## Phase 5: Rope and Rebound Offense
 
@@ -348,12 +348,12 @@ Pacing is applied after all contextual families are playable.
 
 Guidelines:
 
-| Tier | Cost | Recovery | Intended use |
-|---|---|---|---|
-| Light | Low | Short | Frequent setup |
-| Medium | Moderate | Moderate | Sustained control |
-| Heavy | High | Long | Escalation and payoff |
-| Special | Existing special rules | Category-specific | Peak offense |
+| Tier    | Cost                   | Recovery          | Intended use          |
+| ------- | ---------------------- | ----------------- | --------------------- |
+| Light   | Low                    | Short             | Frequent setup        |
+| Medium  | Moderate               | Moderate          | Sustained control     |
+| Heavy   | High                   | Long              | Escalation and payoff |
+| Special | Existing special rules | Category-specific | Peak offense          |
 
 Runtime rules:
 

@@ -16,60 +16,60 @@ The current scheme has grown by accretion and fights the player four ways:
    leave the strike cluster for specials, pins, and submissions mid-fight.
 2. **Ambiguous overloading.** K is a heavy strike standing but a power grapple
    in a lock. After the contextual combat slice, J resolves through a hidden
-   six-way priority (ground / corner / rope-stagger / rebound / running /
-   light) that the player cannot see outside the F1 debug overlay.
+   six-way priority (ground / corner / rope-stagger / rebound / running / light)
+   that the player cannot see outside the F1 debug overlay.
 3. **Two direction frames.** Movement is camera-relative, but directional
    grapples are wrestler-facing-relative (stick-up is always "forward"
    regardless of camera), so the same stick push means different things in
    different systems.
 4. **Dedicated keys for contextual actions.** Pin (I) and submission (O) are
-   only ever legal beside a downed opponent — textbook candidates for a
-   context button.
+   only ever legal beside a downed opponent — textbook candidates for a context
+   button.
 
 ## Objective
 
 Reduce the core fight controls to four buttons plus movement, make every
 context-sensitive resolution visible on the HUD, and use one direction frame
 everywhere — without changing any combat behavior, validation, damage, or CPU
-logic. This is an input- and presentation-layer milestone: `WrestlerCombat`
-and everything below it is out of scope except where a method must become
-callable from a new button path that already exists.
+logic. This is an input- and presentation-layer milestone: `WrestlerCombat` and
+everything below it is out of scope except where a method must become callable
+from a new button path that already exists.
 
 The milestone remains inside the current prototype scope:
 
 - one player and one CPU opponent
-- existing contextual combat families, validation, pins, submissions,
-  reversals, specials, and rules
+- existing contextual combat families, validation, pins, submissions, reversals,
+  specials, and rules
 - no input rebinding UI, no Input System migration, no tutorial system
 
 ## Target Scheme
 
 ### Keyboard
 
-| Action | Key | Semantics |
-|---|---|---|
-| Move | W / A / S / D | unchanged, camera-relative |
-| Run | Left Shift | unchanged |
-| **Strike** | J | tap = light family; hold past threshold = heavy family; contextual attacks (ground / corner / rope-stagger / rebound / running) keep their existing precedence on tap |
-| **Grapple / Control** | K | outside lock: tap = grapple attempt (corner grapple when valid); in lock: tap = quick grapple, hold = power grapple, held movement direction picks the bucket; beside a downed opponent: tap = pin, hold = submission |
-| **Special** | L | replaces U |
-| **Dodge** | ; (Left Alt remains an alias) | unchanged behavior |
-| Reversal / kickout mash | Space | unchanged |
-| Taunt / handshake accept | T | unchanged; handshake cheap shot stays on Strike (J), refuse moves to Grapple (K) |
-| Reset / pause / debug | R / Escape / F1 / F2 | unchanged |
+| Action                   | Key                           | Semantics                                                                                                                                                                                                             |
+| ------------------------ | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Move                     | W / A / S / D                 | unchanged, camera-relative                                                                                                                                                                                            |
+| Run                      | Left Shift                    | unchanged                                                                                                                                                                                                             |
+| **Strike**               | J                             | tap = light family; hold past threshold = heavy family; contextual attacks (ground / corner / rope-stagger / rebound / running) keep their existing precedence on tap                                                 |
+| **Grapple / Control**    | K                             | outside lock: tap = grapple attempt (corner grapple when valid); in lock: tap = quick grapple, hold = power grapple, held movement direction picks the bucket; beside a downed opponent: tap = pin, hold = submission |
+| **Special**              | L                             | replaces U                                                                                                                                                                                                            |
+| **Dodge**                | ; (Left Alt remains an alias) | unchanged behavior                                                                                                                                                                                                    |
+| Reversal / kickout mash  | Space                         | unchanged                                                                                                                                                                                                             |
+| Taunt / handshake accept | T                             | unchanged; handshake cheap shot stays on Strike (J), refuse moves to Grapple (K)                                                                                                                                      |
+| Reset / pause / debug    | R / Escape / F1 / F2          | unchanged                                                                                                                                                                                                             |
 
 Removed as gameplay keys: U, I, O. K's standing heavy strike moves onto held J.
 
 ### Controller
 
-| Action | Binding |
-|---|---|
-| Strike (tap/hold) | X (JoystickButton2) |
-| Grapple / Control (tap/hold) | A (JoystickButton0) |
-| Special | Y (JoystickButton3) |
-| Dodge | B (JoystickButton1) |
-| Reversal / mash | RB (JoystickButton5) |
-| Run | LB (JoystickButton4) |
+| Action                       | Binding              |
+| ---------------------------- | -------------------- |
+| Strike (tap/hold)            | X (JoystickButton2)  |
+| Grapple / Control (tap/hold) | A (JoystickButton0)  |
+| Special                      | Y (JoystickButton3)  |
+| Dodge                        | B (JoystickButton1)  |
+| Reversal / mash              | RB (JoystickButton5) |
+| Run                          | LB (JoystickButton4) |
 
 Freed buttons (6, 8, 9) are reserved; pause/reset stays on 7.
 
@@ -81,18 +81,18 @@ Freed buttons (6, 8, 9) are reserved; pause/reset stays on 7.
 - **Hold** fires the moment the threshold is crossed while still held — the
   player does not wait for release, and release after a hold fires nothing.
 - A single press fires exactly one of tap or hold, never both.
-- Accepted tradeoff: tap actions gain up to one tap-duration of latency
-  (~80–120 ms typical) versus the old press-down trigger. The threshold is a
-  constant so feel can be tuned in one place.
+- Accepted tradeoff: tap actions gain up to one tap-duration of latency (~80–120
+  ms typical) versus the old press-down trigger. The threshold is a constant so
+  feel can be tuned in one place.
 
 ### One direction frame
 
 All directional input is interpreted camera-relative first (the existing
-movement mapping), producing a world vector; systems that need a
-facing-relative classification (directional grapples) classify that world
-vector against the attacker's facing. Net effect: pushing toward the opponent
-on screen is always `Forward`. `ResolveMoveDirection` changes signature to
-accept the camera basis; the dead zone is unchanged.
+movement mapping), producing a world vector; systems that need a facing-relative
+classification (directional grapples) classify that world vector against the
+attacker's facing. Net effect: pushing toward the opponent on screen is always
+`Forward`. `ResolveMoveDirection` changes signature to accept the camera basis;
+the dead zone is unchanged.
 
 ### Contextual HUD prompts
 
@@ -107,8 +107,8 @@ right now, using the resolver that already drives combat:
   through a pure, edit-mode-testable mapping (`ControlPromptLogic`).
 - Key glyphs follow the active device via the existing
   `MatchHUD.TrySetInputDevice` path (J/K vs X/A).
-- Presentation-only: the prompt may never gate, trigger, or alter gameplay,
-  and a wrong prompt is a bug in the mapping, not in combat.
+- Presentation-only: the prompt may never gate, trigger, or alter gameplay, and
+  a wrong prompt is a bug in the mapping, not in combat.
 
 ## Architecture
 
@@ -132,8 +132,9 @@ Deliver:
 
 - Per-button press tracking (`Pressed`, `HeldFor(seconds)`, `Released`) for
   Strike and Grapple in `LegacyPlayerInputSource` / `PlayerInputFrame`.
-- Pure `PlayerInputLogic.ResolvePressKind(pressDuration, isHeld, released,
-  threshold)` returning None / Tap / HoldCommitted, with edit-mode tests.
+- Pure
+  `PlayerInputLogic.ResolvePressKind(pressDuration, isHeld, released, threshold)`
+  returning None / Tap / HoldCommitted, with edit-mode tests.
 - No behavior change yet: existing bindings keep working through this phase.
 
 Acceptance criteria:
@@ -148,8 +149,8 @@ Acceptance criteria:
 
 Deliver:
 
-- `ResolveMoveDirection(move, cameraForward, cameraRight, attackerForward,
-  deadZone)`: camera-map the stick to world, then classify against facing.
+- `ResolveMoveDirection(move, cameraForward, cameraRight, attackerForward, deadZone)`:
+  camera-map the stick to world, then classify against facing.
 - Updated `PlayerInputLogicTests` covering four camera yaw positions and four
   attacker facings.
 
@@ -184,8 +185,8 @@ Acceptance criteria:
 Deliver:
 
 - K/A outside a lock: tap → corner grapple when valid, else grapple attempt.
-- K/A in a lock: tap → quick grapple, hold → power grapple, held direction
-  picks the bucket (existing `TryQuickGrappleFromLock(direction)` /
+- K/A in a lock: tap → quick grapple, hold → power grapple, held direction picks
+  the bucket (existing `TryQuickGrappleFromLock(direction)` /
   `TryPowerGrappleFromLock(direction)`).
 - K/A beside a downed opponent: tap → `TryPin`, hold → `TrySubmission`.
 - Special moves to L/Y; U, I, O removed; dodge to ; with Alt alias; handshake
@@ -196,10 +197,10 @@ Acceptance criteria:
 - Pin and submission fire only in their legal context and never both from one
   press; kickout/submission mash inputs are unchanged.
 - In-lock tap/hold matches the old L/K outcomes exactly (same combat calls).
-- The lock follow-up window (1.8 s GrappleLock timeout) comfortably exceeds
-  the hold threshold; holding for power never times out the lock by itself.
-- No orphaned binding remains: pressing U, I, or O does nothing and the
-  controls documentation matches reality.
+- The lock follow-up window (1.8 s GrappleLock timeout) comfortably exceeds the
+  hold threshold; holding for power never times out the lock by itself.
+- No orphaned binding remains: pressing U, I, or O does nothing and the controls
+  documentation matches reality.
 
 ## Phase 5: Contextual HUD Prompts
 
@@ -211,8 +212,8 @@ Deliver:
 
 Acceptance criteria:
 
-- Prompts match the action that actually fires across the manual matrix
-  (every context, lock state, and downed proximity).
+- Prompts match the action that actually fires across the manual matrix (every
+  context, lock state, and downed proximity).
 - Prompts never read or mutate combat state beyond the existing public
   diagnostics; disabling the element changes nothing about gameplay.
 - No per-frame string allocation when the prompt has not changed.
@@ -250,12 +251,12 @@ direction frame inputs (camera basis, world vector, classified direction)
 ## Failure Invariants
 
 - One physical press resolves at most one gameplay action.
-- Pause, match end, and reset clear press state and the buffer; nothing fires
-  on resume.
+- Pause, match end, and reset clear press state and the buffer; nothing fires on
+  resume.
 - Every action reachable in the old scheme is reachable in the new one.
 - HUD prompts are presentation-only and cannot gate or trigger gameplay.
-- The combat layer's validation remains the only legality authority; the
-  input layer never pre-judges legality beyond choosing which Try* to call.
+- The combat layer's validation remains the only legality authority; the input
+  layer never pre-judges legality beyond choosing which Try\* to call.
 - Controller and keyboard reach identical actions.
 
 ## Verification
@@ -305,6 +306,7 @@ Manual matrices must cover:
 - `Assets/Scripts/Input/LegacyPlayerInputSource.cs`: current bindings and frame
 - `Assets/Scripts/Input/PlayerInputController.cs`: current routing and buffering
 - `Assets/Scripts/Input/InputBuffer.cs`: retry semantics to preserve
-- `Assets/Scripts/Combat/WrestlerCombat.cs`: the API surface that must not change
+- `Assets/Scripts/Combat/WrestlerCombat.cs`: the API surface that must not
+  change
 - `docs/superpowers/specs/2026-06-10-contextual-combat-slice-design.md`:
   contextual families, resolution priority, and diagnostics this scheme exposes
