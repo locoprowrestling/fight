@@ -25,6 +25,11 @@ namespace LoCoFight.EditorTools
                 foreach (string error in errors) Debug.LogError($"[MoveData] {error}");
                 return;
             }
+            foreach (MoveData move in set.moves)
+            {
+                foreach (string warning in MoveDataValidator.ValidateWarnings(move, set.moveDatabase))
+                    Debug.LogWarning($"[MoveData] {warning}");
+            }
 
             EnsureFolder(Root);
             EnsureFolder($"{Root}/Moves");

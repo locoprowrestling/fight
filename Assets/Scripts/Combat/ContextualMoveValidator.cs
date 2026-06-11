@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace LoCoFight
 {
     /// Shared validation for contextual move requests. Player and CPU both go
@@ -58,7 +56,7 @@ namespace LoCoFight
             if (!inRange)
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.OutOfRange, "Ground target is out of range");
-            if (currentStamina < Mathf.Max(move.staminaCost, move.minimumStamina))
+            if (currentStamina < MovePacingRules.RequiredStamina(move))
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
             return MoveValidationResult.Valid();
@@ -85,7 +83,7 @@ namespace LoCoFight
             if (!inRange)
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.OutOfRange, "Corner target is out of range");
-            if (currentStamina < Mathf.Max(move.staminaCost, move.minimumStamina))
+            if (currentStamina < MovePacingRules.RequiredStamina(move))
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
             return MoveValidationResult.Valid();
@@ -117,7 +115,7 @@ namespace LoCoFight
             if (!inRange)
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.OutOfRange, "Rope target is out of range");
-            if (currentStamina < Mathf.Max(move.staminaCost, move.minimumStamina))
+            if (currentStamina < MovePacingRules.RequiredStamina(move))
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
             return MoveValidationResult.Valid();

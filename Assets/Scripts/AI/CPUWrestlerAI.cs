@@ -263,7 +263,12 @@ namespace LoCoFight
                 case AIState.ChooseGrappleMove:
                     if (_core.Combat.InGrappleLockAsAttacker)
                     {
-                        bool power = Random.value < _difficulty.grapplePreference && _core.Stats.StaminaPercent > 0.3f;
+                        // Heavy follow-ups obey tier pacing: skip power when no
+                        // candidate is affordable instead of burning the lock.
+                        bool power = Random.value < _difficulty.grapplePreference &&
+                                     MovePacingRules.CanAttempt(
+                                         _core.Moveset != null ? _core.Moveset.RandomPowerGrapple() : null,
+                                         _core.Stats.Stamina);
                         MoveDirection direction = ChooseGrappleDirection(power, _core.Stats.StaminaPercent);
                         bool executed = power
                             ? _core.Combat.TryPowerGrappleFromLock(direction) || _core.Combat.TryQuickGrappleFromLock(direction)
@@ -314,7 +319,9 @@ namespace LoCoFight
                     if (InRange(1.3f))
                     {
                         bool cornerGrapple = Random.value < _difficulty.cornerStrategyPreference &&
-                                             _core.Stats.StaminaPercent > 0.35f;
+                                             MovePacingRules.CanAttempt(
+                                                 _core.Moveset != null ? _core.Moveset.RandomCornerGrapple() : null,
+                                                 _core.Stats.Stamina);
                         bool done = cornerGrapple
                             ? _core.Combat.TryCornerGrapple() || _core.Combat.TryCornerStrike()
                             : _core.Combat.TryCornerStrike() || _core.Combat.TryCornerGrapple();

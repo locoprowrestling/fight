@@ -78,5 +78,42 @@ namespace LoCoFight.EditorTests
 
             Assert.That(MoveDataValidator.ValidateDirectionalSet("quick", set), Is.Empty);
         }
+
+        [Test]
+        public void ValidateWarnings_HeavyMoveWithoutMinimumStaminaWarns()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "heavy";
+            move.tier = MoveTier.Heavy;
+            move.minimumStamina = 0f;
+
+            var warnings = MoveDataValidator.ValidateWarnings(move, null);
+            Assert.That(warnings, Has.Some.Contains("minimum stamina"));
+        }
+
+        [Test]
+        public void ValidateWarnings_ShortHeavyRecoveryWarns()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "rushed-heavy";
+            move.tier = MoveTier.Heavy;
+            move.minimumStamina = 20f;
+            move.recoveryTime = 0.2f;
+
+            var warnings = MoveDataValidator.ValidateWarnings(move, null);
+            Assert.That(warnings, Has.Some.Contains("recovery"));
+        }
+
+        [Test]
+        public void ValidateWarnings_QuietForWellPacedMove()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "paced";
+            move.tier = MoveTier.Heavy;
+            move.minimumStamina = 20f;
+            move.recoveryTime = 0.6f;
+
+            Assert.That(MoveDataValidator.ValidateWarnings(move, null), Is.Empty);
+        }
     }
 }
