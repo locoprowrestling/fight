@@ -29,6 +29,7 @@ namespace LoCoFight
             if (pic != null)
                 GUILayout.Label($"Press: control {pic.DebugControlPhase} | powerLock={pic.PowerLockArmed}");
             GUILayout.Label($"Prompts: {MatchHUD.CurrentPromptText}");
+            GUILayout.Label($"Feel: enabled={FeelSystem.Enabled} last impact: {FeelSystem.LastImpactDebug}");
 
             var pins = PinSystem.Instance;
             if (pins != null && pins.Active) GUILayout.Label($"Pin: count {pins.CurrentCount}  elapsed {pins.Elapsed:0.0}");

@@ -67,6 +67,11 @@
 - [ ] Vigilante — ; (or Alt) escapes a power grapple lift via Vanishing Dodge (8 s cooldown, not infinite).
 - [ ] Zeak's handshake fires at match start; as the opponent you can accept (T), refuse (K), cheap shot (J), or ignore.
 
+## Game feel (impact layer — presentation only)
+- [ ] Every landed hit freezes the frame briefly (light barely, heavy noticeably); downing moves and heavies also punch the camera; rapid jabs never stack into slow motion, and pausing during hit-stop resumes at normal speed.
+- [ ] Moves perform their names: power grapples haul up and SLAM down, quick grapples whip/twist, chops slash, lariats extend the arm, stomps chamber and drive; the tie-up visibly struggles (push-pull sway) instead of freezing.
+- [ ] A slammed wrestler bounces off the mat once and settles (gameplay position unchanged); F1 shows the last impact (tier/downs) and the feel-system toggle state.
+
 ## Pacing (move tiers)
 - [ ] At low-but-affordable stamina, light offense (Quick Jab, Head Stomp) still fires while heavy moves (Corner Bulldog, Rebound Lariat, power grapples) reject with InsufficientStamina in F1; above their minimum they execute and spend only their listed cost.
 - [ ] Heavy misses keep their long recovery (punishable); specials still require full momentum; the CPU stops attempting power/corner-grapple offense it cannot afford instead of spamming failed attempts.

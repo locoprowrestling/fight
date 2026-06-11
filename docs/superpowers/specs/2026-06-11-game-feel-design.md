@@ -1,6 +1,6 @@
 # Game Feel Milestone Design
 
-**Status:** Draft for review
+**Status:** Approved design — phases 1–4 implemented 2026-06-11 (phase 5 audio deferred)
 
 **Audience:** Internal team
 

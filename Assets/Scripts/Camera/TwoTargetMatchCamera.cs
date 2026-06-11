@@ -21,6 +21,10 @@ namespace LoCoFight
 
         Vector3 _velocity;
         float _currentDistance;
+        float _punch; // impact impulse, decays fast
+
+        /// Presentation-only impact impulse from the FeelSystem.
+        public void Punch(float strength) => _punch = Mathf.Max(_punch, strength);
 
         public void SetTargets(Transform a, Transform b)
         {
@@ -42,6 +46,14 @@ namespace LoCoFight
             if (targetA == null || targetB == null) return;
             Vector3 desired = ComputeDesiredPosition(out Vector3 look);
             transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, smoothTime);
+
+            if (_punch > 0.005f)
+            {
+                // Unscaled decay so the punch reads through hit-stop.
+                transform.position += Random.insideUnitSphere * (_punch * 0.18f);
+                _punch = Mathf.MoveTowards(_punch, 0f, Time.unscaledDeltaTime * 1.6f);
+            }
+
             transform.LookAt(look);
         }
 

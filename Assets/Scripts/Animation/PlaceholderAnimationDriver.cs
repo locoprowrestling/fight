@@ -32,7 +32,12 @@ namespace LoCoFight
         float _speed;     // normalized movement speed, fed by WrestlerMotor
         float _walkPhase; // radians; advances only while moving
 
-        enum ActionKind { None, Punch, Kick, GrappleReach, SpecialFlourish, HitRecoil, GroundSlam, CornerAssault }
+        enum ActionKind
+        {
+            None, Punch, Kick, GrappleReach, SpecialFlourish, HitRecoil,
+            GroundSlam, CornerAssault,
+            OverheadSlam, SnapThrow, Chop, Lariat, Stomp, MatBounce
+        }
         ActionKind _action = ActionKind.None;
         float _actionStart;
         float _actionDuration = 1f;
@@ -72,6 +77,21 @@ namespace LoCoFight
                 case "corner":
                     StartAction(ActionKind.CornerAssault, 0.55f / Mathf.Max(0.5f, speed));
                     break;
+                case "slam":
+                    StartAction(ActionKind.OverheadSlam, 1.0f / Mathf.Max(0.5f, speed));
+                    break;
+                case "snap":
+                    StartAction(ActionKind.SnapThrow, 0.7f / Mathf.Max(0.5f, speed));
+                    break;
+                case "chop":
+                    StartAction(ActionKind.Chop, 0.5f / Mathf.Max(0.5f, speed));
+                    break;
+                case "lariat":
+                    StartAction(ActionKind.Lariat, 0.7f / Mathf.Max(0.5f, speed));
+                    break;
+                case "stomp":
+                    StartAction(ActionKind.Stomp, 0.45f / Mathf.Max(0.5f, speed));
+                    break;
                 case "special":
                     Flash(new Color(1f, 0.6f, 0f));
                     StartAction(ActionKind.SpecialFlourish, 0.9f);
@@ -88,7 +108,9 @@ namespace LoCoFight
         public void TriggerDodge() => Flash(Color.white);
         // State poses (Downed, GettingUp, RopeStaggered, Cornered, aerial
         // states) cover these — PlayState already received the new state.
-        public void TriggerDowned() { }
+        // Mat bounce sells the slam: the lying body hops off the canvas once
+        // and settles. Purely visual; the gameplay root never moves.
+        public void TriggerDowned() => StartAction(ActionKind.MatBounce, 0.55f);
         public void TriggerGetUp() { }
         public void TriggerRopeStagger() { }
         public void TriggerCornered() { }
@@ -198,13 +220,17 @@ namespace LoCoFight
                     break;
 
                 case "GrappleLock":
-                    // Collar-and-elbow tie-up: leaning in, arms locked forward.
+                    // Collar-and-elbow tie-up: leaning in, arms locked forward,
+                    // with a push-pull struggle sway so the lock reads as a
+                    // contest rather than a freeze.
                     p = default;
-                    p.pelvis = new Vector3(8f, 0f, 0f);
-                    p.spine = new Vector3(14f, 0f, 0f);
+                    float sway = Mathf.Sin(t * 5.2f);
+                    float shove = Mathf.Sin(t * 3.1f + 1.7f);
+                    p.pelvis = new Vector3(8f + shove * 3f, sway * 2.5f, 0f);
+                    p.spine = new Vector3(14f + shove * 5f, sway * 4f, sway * 2f);
                     p.neck = new Vector3(-6f, 0f, 0f);
-                    p.lShoulder = new Vector3(-68f, 0f, -6f);
-                    p.rShoulder = new Vector3(-68f, 0f, 6f);
+                    p.lShoulder = new Vector3(-68f - sway * 6f, 0f, -6f);
+                    p.rShoulder = new Vector3(-68f + sway * 6f, 0f, 6f);
                     p.lElbow = p.rElbow = new Vector3(-38f, 0f, 0f);
                     p.lHip = new Vector3(-20f, 0f, 0f);
                     p.rHip = new Vector3(12f, 0f, 0f);
@@ -583,6 +609,86 @@ namespace LoCoFight
                     p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-55f + 35f * drive, 0f, 0f), w);
                     p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-55f + 35f * drive, 0f, 0f), w);
                     p.spine.x += 12f * w * drive;
+                    break;
+                }
+
+                case ActionKind.OverheadSlam:
+                {
+                    // The big throw: haul low, sweep both arms overhead, then
+                    // drive the whole torso down through the slam.
+                    float lift2 = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.4f));
+                    float slam = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 0.5f) / 0.25f));
+                    float reach2 = Mathf.Lerp(-30f, -165f, lift2) + 195f * slam;
+                    p.lShoulder = Vector3.Lerp(p.lShoulder, new Vector3(reach2, 0f, -12f), w);
+                    p.rShoulder = Vector3.Lerp(p.rShoulder, new Vector3(reach2, 0f, 12f), w);
+                    p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-25f, 0f, 0f), w);
+                    p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-25f, 0f, 0f), w);
+                    p.spine.x += (-12f * lift2 + 46f * slam) * w;
+                    p.pelvis.x += (-6f * lift2 + 18f * slam) * w;
+                    p.lKnee += new Vector3(22f * slam, 0f, 0f);
+                    p.rKnee += new Vector3(22f * slam, 0f, 0f);
+                    break;
+                }
+
+                case ActionKind.SnapThrow:
+                {
+                    // Whipping takedown: both arms sweep hard across the body
+                    // as the spine twists through the throw.
+                    float twist = Mathf.SmoothStep(-1f, 1f, Mathf.Clamp01((t - 0.15f) / 0.45f));
+                    float side = _actionRight ? 1f : -1f;
+                    p.lShoulder = Vector3.Lerp(p.lShoulder, new Vector3(-70f, 35f * twist * side, -10f), w);
+                    p.rShoulder = Vector3.Lerp(p.rShoulder, new Vector3(-70f, 35f * twist * side, 10f), w);
+                    p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-30f, 0f, 0f), w);
+                    p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-30f, 0f, 0f), w);
+                    p.spine.y += 38f * twist * side * w;
+                    p.pelvis.y += 16f * twist * side * w;
+                    p.spine.x += 18f * Mathf.Abs(twist) * w;
+                    break;
+                }
+
+                case ActionKind.Chop:
+                {
+                    // Knife-edge chop: one arm cocks high and wide, then slashes
+                    // down across the chest line.
+                    float slash = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 0.25f) / 0.25f));
+                    float side = _actionRight ? 1f : -1f;
+                    var cock = new Vector3(Mathf.Lerp(-130f, -55f, slash), 40f * (1f - slash) * side, -55f * side * (1f - slash));
+                    if (_actionRight) { p.rShoulder = Vector3.Lerp(p.rShoulder, cock, w); p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-15f, 0f, 0f), w); }
+                    else { p.lShoulder = Vector3.Lerp(p.lShoulder, cock, w); p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-15f, 0f, 0f), w); }
+                    p.spine.y += 22f * (slash - 0.5f) * 2f * side * w;
+                    break;
+                }
+
+                case ActionKind.Lariat:
+                {
+                    // Running lariat: the arm locks straight out at shoulder
+                    // height and the torso barrels behind it.
+                    float extend2 = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.2f));
+                    var arm = new Vector3(-88f * extend2, 0f, _actionRight ? 18f : -18f);
+                    if (_actionRight) { p.rShoulder = Vector3.Lerp(p.rShoulder, arm, w); p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-8f, 0f, 0f), w); }
+                    else { p.lShoulder = Vector3.Lerp(p.lShoulder, arm, w); p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-8f, 0f, 0f), w); }
+                    p.spine.x += 10f * extend2 * w;
+                    p.spine.y += (_actionRight ? -14f : 14f) * extend2 * w;
+                    break;
+                }
+
+                case ActionKind.Stomp:
+                {
+                    // Chamber the knee high, then drive the boot straight down.
+                    float drive2 = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 0.3f) / 0.2f));
+                    var hip2 = new Vector3(Mathf.Lerp(-95f, -25f, drive2), 0f, 0f);
+                    var knee2 = new Vector3(Mathf.Lerp(95f, 15f, drive2), 0f, 0f);
+                    if (_actionRight) { p.rHip = Vector3.Lerp(p.rHip, hip2, w); p.rKnee = Vector3.Lerp(p.rKnee, knee2, w); }
+                    else { p.lHip = Vector3.Lerp(p.lHip, hip2, w); p.lKnee = Vector3.Lerp(p.lKnee, knee2, w); }
+                    p.spine.x += -8f * (1f - drive2) * w + 12f * drive2 * w;
+                    break;
+                }
+
+                case ActionKind.MatBounce:
+                {
+                    // One sharp hop off the canvas with a small settle hop.
+                    float bounce = Mathf.Abs(Mathf.Sin(t * Mathf.PI * 2f)) * (1f - t);
+                    p.lift += 0.16f * bounce;
                     break;
                 }
 

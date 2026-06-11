@@ -133,6 +133,10 @@ namespace LoCoFight
             db.directionalQuickGrapples.forward.Add(snapmare);
             db.directionalQuickGrapples.backward.Add(headlock);
             db.directionalQuickGrapples.lateral.Add(armDrag);
+            armDrag.placeholderPoseName = "snap";
+            headlock.placeholderPoseName = "snap";
+            snapmare.placeholderPoseName = "snap";
+            kneeLift.placeholderPoseName = "stomp"; // knee drive reads as the chambered leg
 
             var bodySlam = Grapple(set, "body-slam", "Body Slam", MoveCategory.PowerGrapple, 15, 18, 1.35f, 0f, 13, downed: 2.0f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
             var verticalDrop = Grapple(set, "vertical-drop", "Vertical Drop", MoveCategory.PowerGrapple, 18, 22, 1.60f, 0f, 15, downed: 2.25f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
@@ -146,8 +150,14 @@ namespace LoCoFight
             db.directionalPowerGrapples.forward.Add(verticalDrop);
             db.directionalPowerGrapples.backward.Add(backbreaker);
             db.directionalPowerGrapples.lateral.Add(shoulderThrow);
+            bodySlam.placeholderPoseName = "slam";
+            verticalDrop.placeholderPoseName = "slam";
+            backbreaker.placeholderPoseName = "slam";
+            shoulderThrow.placeholderPoseName = "snap";
 
-            db.runningAttacks.Add(Move(set, "running-clothesline", "Running Clothesline", MoveCategory.RunningStrike, 13, 15, 0.25f, 0.20f, 0.70f, 0f, 12, downed: 1.5f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
+            var clothesline = Move(set, "running-clothesline", "Running Clothesline", MoveCategory.RunningStrike, 13, 15, 0.25f, 0.20f, 0.70f, 0f, 12, downed: 1.5f, tags: new[] { MoveTag.Clean, MoveTag.Running });
+            clothesline.placeholderPoseName = "lariat";
+            db.runningAttacks.Add(clothesline);
             db.runningAttacks.Add(Grapple(set, "running-tackle", "Running Tackle", MoveCategory.RunningGrapple, 12, 16, 1.0f, 0f, 11, downed: 1.6f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
 
             var elbowDrop = Move(set, "ground-elbow-drop", "Elbow Drop", MoveCategory.GroundUpperAttack, 8, 9, 0.35f, 0.15f, 0.55f, 0f, 8, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundUpper });
@@ -160,6 +170,8 @@ namespace LoCoFight
             ConfigureGroundAttack(headStomp, GroundTargetZone.Upper);
             ConfigureGroundAttack(kneeDrop, GroundTargetZone.Lower);
             ConfigureGroundAttack(legStomp, GroundTargetZone.Lower);
+            headStomp.placeholderPoseName = "stomp";
+            legStomp.placeholderPoseName = "stomp";
             db.groundUpperAttacks.Add(elbowDrop);
             db.groundUpperAttacks.Add(headStomp);
             db.groundLowerAttacks.Add(kneeDrop);
@@ -178,9 +190,11 @@ namespace LoCoFight
             var ropeChops = Move(set, "rope-chop-combination", "Rope Chop Combination", MoveCategory.RopeStaggerAttack, 8, 9, 0.30f, 0.15f, 0.50f, 0.6f, 8, tags: new[] { MoveTag.Clean, MoveTag.Rope });
             ropeChops.tier = MoveTier.Medium;
             ConfigureRopeStaggerMove(ropeChops);
+            ropeChops.placeholderPoseName = "chop";
             var ropeSnapmare = Move(set, "rope-snapmare", "Rope Snapmare", MoveCategory.RopeStaggerAttack, 9, 10, 0.30f, 0.30f, 0.30f, 0f, 9, downed: 1.25f, tags: new[] { MoveTag.Clean, MoveTag.Rope });
             ropeSnapmare.tier = MoveTier.Medium;
             ConfigureRopeStaggerMove(ropeSnapmare);
+            ropeSnapmare.placeholderPoseName = "snap";
             db.ropeStaggerAttacks.Add(ropeChops);
             db.ropeStaggerAttacks.Add(ropeSnapmare);
 
@@ -189,6 +203,7 @@ namespace LoCoFight
             reboundLariat.minimumStamina = 15f;
             reboundLariat.requiresRopeRebound = true;
             reboundLariat.range = 1.5f;
+            reboundLariat.placeholderPoseName = "lariat";
             db.ropeReboundAttacks.Add(reboundLariat);
 
             var armLock = Move(set, "ground-arm-lock", "Ground Arm Lock", MoveCategory.Submission, 0, 15, 0.3f, 0.2f, 0.3f, 0f, 4, tags: new[] { MoveTag.Clean });

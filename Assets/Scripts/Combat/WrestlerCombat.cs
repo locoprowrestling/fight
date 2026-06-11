@@ -186,6 +186,7 @@ namespace LoCoFight
 
             bool downs = move.causesDownedState ||
                 (move.downsBelowHealthPercent > 0f && defender.Stats.HealthPercent * 100f < move.downsBelowHealthPercent);
+            FeelSystem.NotifyImpact(move.tier, downs);
 
             if (downs)
             {
@@ -329,6 +330,7 @@ namespace LoCoFight
             Opp.Stats.ApplyDamage(damage, _core);
             if (move.staminaDamage > 0f) Opp.Stats.DrainStamina(move.staminaDamage);
             _core.Stats.AddMomentum(move.momentumGainOnHit);
+            FeelSystem.NotifyImpact(move.tier, downsDefender: false);
             Debug.Log($"[Move] {move.displayName} hit grounded {Opp.DisplayName} for {damage:0.#}");
             OnLandedHit?.Invoke(move);
         }
@@ -417,6 +419,7 @@ namespace LoCoFight
             defender.Stats.ApplyDamage(damage, _core);
             if (move.staminaDamage > 0f) defender.Stats.DrainStamina(move.staminaDamage);
             _core.Stats.AddMomentum(move.momentumGainOnHit);
+            FeelSystem.NotifyImpact(move.tier, move.causesDownedState);
 
             if (move.causesDownedState)
             {
@@ -515,6 +518,7 @@ namespace LoCoFight
             defender.Stats.ApplyDamage(damage, _core);
             if (move.staminaDamage > 0f) defender.Stats.DrainStamina(move.staminaDamage);
             _core.Stats.AddMomentum(move.momentumGainOnHit);
+            FeelSystem.NotifyImpact(move.tier, move.causesDownedState);
 
             if (move.causesDownedState)
                 EnterDowned(defender, move.downedDuration > 0f ? move.downedDuration : 1.5f);
