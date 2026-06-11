@@ -235,6 +235,90 @@ namespace LoCoFight
             defender.Anim.TriggerDowned();
         }
 
+        // ---------------- Ground offense ----------------
+
+        /// Positional attack on a downed defender. Zone (upper/lower) comes
+        /// from the attacker's position along the defender's facing axis and
+        /// selects the matching move family. Validation happens before any
+        /// stamina is spent; side-on positions reject with WrongGroundZone.
+        public bool TryGroundAttack()
+        {
+            if (!MatchActive || Opp == null || !Opp.States.IsDowned) return false;
+            if (!_core.States.Profile.canAttack) return false;
+
+            GroundTargetZone zone = CombatContextResolver.ResolveGroundZone(
+                Opp.transform.position,
+                Opp.transform.forward,
+                transform.position,
+                0.2f);
+            bool lower = zone == GroundTargetZone.Lower;
+            MoveData move = _core.Moveset != null
+                ? (lower ? _core.Moveset.RandomGroundLowerAttack() : _core.Moveset.RandomGroundUpperAttack())
+                : null;
+
+            MoveValidationResult validation = ContextualMoveValidator.ValidateGround(
+                move,
+                Opp.States.IsDowned,
+                zone,
+                move != null && HitboxProbe.InRange(transform, Opp.transform, move.range),
+                _core.Stats.Stamina);
+            RecordContext(
+                lower ? CombatContext.GroundLower : CombatContext.GroundUpper,
+                zone, MoveDirection.Neutral, "GroundAttack",
+                _core.Moveset != null
+                    ? (lower ? _core.Moveset.groundLowerAttacks.Count : _core.Moveset.groundUpperAttacks.Count)
+                    : 0,
+                move, validation, false);
+            if (!validation.IsValid) return false;
+            if (!_core.Stats.SpendStamina(move.staminaCost)) return false;
+
+            _moveRoutine = StartCoroutine(GroundAttackRoutine(move));
+            return true;
+        }
+
+        IEnumerator GroundAttackRoutine(MoveData move)
+        {
+            BeginMove(move);
+            _core.Motor.FaceOpponent();
+            _core.States.Set(WrestlerState.StrikeStartup, move.TotalDuration + 0.5f);
+            _core.Anim.PlayMove(move.animationStateName, move.placeholderPoseName, move.animationSpeed);
+            Debug.Log($"[Move] {_core.DisplayName} starts {move.displayName}");
+
+            yield return Phase(move.startupTime);
+
+            _core.States.Set(WrestlerState.StrikeActive, move.activeTime + 0.1f);
+            if (Opp != null && Opp.States.IsDowned &&
+                HitboxProbe.InRange(transform, Opp.transform, move.range))
+                ApplyGroundHit(move);
+            else
+                Debug.Log($"[Move] {move.displayName} missed");
+
+            yield return Phase(move.activeTime);
+
+            _core.States.Set(WrestlerState.StrikeRecovery, move.recoveryTime);
+            yield return Phase(move.recoveryTime);
+
+            EndMove();
+            _core.States.Set(WrestlerState.Idle);
+        }
+
+        /// Ground hits bypass CheckHit (which rejects downed targets by design)
+        /// and ApplyHit (whose non-knockdown branch would replace the
+        /// defender's Downed state). The defender's existing downed timeout
+        /// keeps running, so repeated ground attacks cannot pin someone to the
+        /// mat forever.
+        void ApplyGroundHit(MoveData move)
+        {
+            if (Opp == null || !Opp.States.IsDowned) return;
+
+            float damage = CombatResolver.ScaleDamage(_core, move);
+            Opp.Stats.ApplyDamage(damage, _core);
+            if (move.staminaDamage > 0f) Opp.Stats.DrainStamina(move.staminaDamage);
+            _core.Stats.AddMomentum(move.momentumGainOnHit);
+            Debug.Log($"[Move] {move.displayName} hit grounded {Opp.DisplayName} for {damage:0.#}");
+            OnLandedHit?.Invoke(move);
+        }
+
         // ---------------- Grapples ----------------
 
         public bool TryGrappleAttempt()

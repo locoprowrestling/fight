@@ -75,6 +75,14 @@ namespace LoCoFight
             return m;
         }
 
+        static void ConfigureGroundAttack(MoveData m, GroundTargetZone zone)
+        {
+            m.requiresTargetDowned = true;
+            m.requiredGroundZone = zone;
+            m.placeholderPoseName = "ground";
+            m.range = 1.25f;
+        }
+
         /// Grapple timing helper: split a single duration into phases.
         static MoveData Grapple(DefaultGameDataSet set, string id, string name, MoveCategory cat,
             float dmg, float stam, float duration, float stun, float momentum,
@@ -126,6 +134,21 @@ namespace LoCoFight
 
             db.runningAttacks.Add(Move(set, "running-clothesline", "Running Clothesline", MoveCategory.RunningStrike, 13, 15, 0.25f, 0.20f, 0.70f, 0f, 12, downed: 1.5f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
             db.runningAttacks.Add(Grapple(set, "running-tackle", "Running Tackle", MoveCategory.RunningGrapple, 12, 16, 1.0f, 0f, 11, downed: 1.6f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
+
+            var elbowDrop = Move(set, "ground-elbow-drop", "Elbow Drop", MoveCategory.GroundUpperAttack, 8, 9, 0.35f, 0.15f, 0.55f, 0f, 8, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundUpper });
+            elbowDrop.tier = MoveTier.Medium;
+            var headStomp = Move(set, "ground-head-stomp", "Head Stomp", MoveCategory.GroundUpperAttack, 5, 5, 0.25f, 0.10f, 0.40f, 0f, 5, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundUpper });
+            var kneeDrop = Move(set, "ground-knee-drop", "Knee Drop", MoveCategory.GroundLowerAttack, 8, 9, 0.35f, 0.15f, 0.55f, 0f, 8, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundLower });
+            kneeDrop.tier = MoveTier.Medium;
+            var legStomp = Move(set, "ground-leg-stomp", "Leg Stomp", MoveCategory.GroundLowerAttack, 5, 5, 0.25f, 0.10f, 0.40f, 0f, 5, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundLower });
+            ConfigureGroundAttack(elbowDrop, GroundTargetZone.Upper);
+            ConfigureGroundAttack(headStomp, GroundTargetZone.Upper);
+            ConfigureGroundAttack(kneeDrop, GroundTargetZone.Lower);
+            ConfigureGroundAttack(legStomp, GroundTargetZone.Lower);
+            db.groundUpperAttacks.Add(elbowDrop);
+            db.groundUpperAttacks.Add(headStomp);
+            db.groundLowerAttacks.Add(kneeDrop);
+            db.groundLowerAttacks.Add(legStomp);
 
             var armLock = Move(set, "ground-arm-lock", "Ground Arm Lock", MoveCategory.Submission, 0, 15, 0.3f, 0.2f, 0.3f, 0f, 4, tags: new[] { MoveTag.Clean });
             armLock.submissionPressurePerSecond = 12f;

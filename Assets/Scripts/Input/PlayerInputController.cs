@@ -125,7 +125,9 @@ namespace LoCoFight
             {
                 if (_core.DistanceToOpponent() <= WrestlerCombat.StrikeRange + 0.5f || _core.Motor.IsRunning)
                     _buffer.Buffer(PlayerAction.Light,
-                        () => _core.Combat.TryRunningAttack() || _core.Combat.TryLightStrike());
+                        () => _core.Combat.TryGroundAttack() ||
+                              _core.Combat.TryRunningAttack() ||
+                              _core.Combat.TryLightStrike());
             }
 
             if (inLock)

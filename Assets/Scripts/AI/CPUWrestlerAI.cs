@@ -171,6 +171,13 @@ namespace LoCoFight
                     CurrentState = AIState.AttemptSubmission;
                     return;
                 }
+                // Ground offense never outranks a credible pin or submission —
+                // both checks above already returned.
+                if (_memory.CanUse("ground", 1.4f))
+                {
+                    CurrentState = AIState.AttemptGroundAttack;
+                    return;
+                }
                 CurrentState = AIState.Circle;
                 return;
             }
@@ -270,6 +277,16 @@ namespace LoCoFight
                     if (AISpecialPlanner.PlanOrExecute(_core, Opp, out var setupTarget)) { Rethink(); }
                     else if (setupTarget.HasValue) MoveToward(setupTarget.Value, false);
                     else Circle();
+                    break;
+
+                case AIState.AttemptGroundAttack:
+                    if (InRange(1.25f))
+                    {
+                        _memory.Note("ground");
+                        _core.Combat.TryGroundAttack();
+                        Rethink();
+                    }
+                    else MoveToward(Opp.transform.position, false);
                     break;
 
                 case AIState.AttemptPin:

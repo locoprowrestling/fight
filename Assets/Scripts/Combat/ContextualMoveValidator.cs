@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace LoCoFight
 {
     /// Shared validation for contextual move requests. Player and CPU both go
@@ -31,6 +33,32 @@ namespace LoCoFight
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.WrongGroundZone, "Move context is invalid");
             if (currentStamina < requiredStamina)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
+            return MoveValidationResult.Valid();
+        }
+
+        public static MoveValidationResult ValidateGround(
+            MoveData move,
+            bool targetDowned,
+            GroundTargetZone actualZone,
+            bool inRange,
+            float currentStamina)
+        {
+            if (move == null)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.MissingMove, "No ground move assigned");
+            if (!targetDowned)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.WrongTargetState, "Target is not downed");
+            if (move.requiredGroundZone != GroundTargetZone.None &&
+                move.requiredGroundZone != actualZone)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.WrongGroundZone, "Wrong ground target zone");
+            if (!inRange)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.OutOfRange, "Ground target is out of range");
+            if (currentStamina < Mathf.Max(move.staminaCost, move.minimumStamina))
                 return MoveValidationResult.Reject(
                     MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
             return MoveValidationResult.Valid();

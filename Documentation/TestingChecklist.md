@@ -20,6 +20,12 @@
 - [ ] When the CPU initiates a lockup, it follows up with a grapple move within ~2 s — the match never falls into an endless lockup → release → lockup loop.
 - [ ] Select Erza vs Johnny Crash: every lift-based power grapple fails with "Too heavy to lift!", stuns Erza, and gives Johnny momentum.
 
+## Ground offense (F1 overlay shows context/zone/rejection)
+- [ ] With the CPU downed, J near the head/torso fires an upper-body attack (Elbow Drop / Head Stomp); near the legs, a lower-body attack (Knee Drop / Leg Stomp); side-on attempts reject with WrongGroundZone and spend no stamina.
+- [ ] Out-of-range J on a downed CPU spends no stamina (OutOfRange in F1); standing J strikes still whiff against a downed defender.
+- [ ] I (pin) and O (submission) on a downed CPU behave exactly as before; repeated ground attacks never prevent the defender's get-up timer from finishing.
+- [ ] CPU uses ground attacks on you when you're down but still attempts pins/submissions when your health is low; rolling away ends its ground offense.
+
 ## Ropes & corners (F1 overlay helps)
 - [ ] Walking into ropes is blocked; running into ropes rebounds you back at higher speed; J during the return fires a running attack.
 - [ ] Strikes near the ropes put the CPU into RopeStaggered (leaning pose); near a corner, into Cornered.

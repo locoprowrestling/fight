@@ -48,5 +48,58 @@ namespace LoCoFight.EditorTests
             Assert.That(result.IsValid, Is.True);
             Assert.That(result.Reason, Is.EqualTo(MoveRejectionReason.None));
         }
+
+        [Test]
+        public void ValidateGround_RejectsWrongZone()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetDowned = true;
+            move.requiredGroundZone = GroundTargetZone.Upper;
+
+            var result = ContextualMoveValidator.ValidateGround(
+                move, targetDowned: true, actualZone: GroundTargetZone.Lower,
+                inRange: true, currentStamina: 100f);
+
+            Assert.That(result.Reason, Is.EqualTo(MoveRejectionReason.WrongGroundZone));
+        }
+
+        [Test]
+        public void ValidateGround_RejectsStandingTarget()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetDowned = true;
+            move.requiredGroundZone = GroundTargetZone.Upper;
+
+            var result = ContextualMoveValidator.ValidateGround(
+                move, false, GroundTargetZone.Upper, true, 100f);
+
+            Assert.That(result.Reason, Is.EqualTo(MoveRejectionReason.WrongTargetState));
+        }
+
+        [Test]
+        public void ValidateGround_RejectsOutOfRangeBeforeStamina()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetDowned = true;
+            move.requiredGroundZone = GroundTargetZone.Lower;
+
+            var result = ContextualMoveValidator.ValidateGround(
+                move, true, GroundTargetZone.Lower, false, 0f);
+
+            Assert.That(result.Reason, Is.EqualTo(MoveRejectionReason.OutOfRange));
+        }
+
+        [Test]
+        public void ValidateGround_AcceptsMatchingZone()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetDowned = true;
+            move.requiredGroundZone = GroundTargetZone.Lower;
+
+            var result = ContextualMoveValidator.ValidateGround(
+                move, true, GroundTargetZone.Lower, true, 100f);
+
+            Assert.That(result.IsValid, Is.True);
+        }
     }
 }
