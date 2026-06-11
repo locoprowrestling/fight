@@ -198,7 +198,14 @@ namespace LoCoFight
             else
             {
                 // Close range: strike, grapple, or herd toward ropes/corner.
-                if (Opp.States.Current == WrestlerState.RopeStaggered || Opp.States.Current == WrestlerState.Cornered)
+                // A cornered opponent gets corner offense, never more herding.
+                if (Opp.States.Current == WrestlerState.Cornered &&
+                    RingInteractionSystem.Instance != null &&
+                    RingInteractionSystem.Instance.IsInCornerZone(Opp))
+                {
+                    CurrentState = AIState.AttemptCornerOffense;
+                }
+                else if (Opp.States.Current == WrestlerState.RopeStaggered || Opp.States.Current == WrestlerState.Cornered)
                 {
                     CurrentState = roll < 0.5f ? AIState.AttemptHeavyStrike : AIState.AttemptGrapple;
                 }
@@ -278,6 +285,20 @@ namespace LoCoFight
                     if (AISpecialPlanner.PlanOrExecute(_core, Opp, out var setupTarget)) { Rethink(); }
                     else if (setupTarget.HasValue) MoveToward(setupTarget.Value, false);
                     else Circle();
+                    break;
+
+                case AIState.AttemptCornerOffense:
+                    if (InRange(1.3f))
+                    {
+                        bool cornerGrapple = Random.value < _difficulty.cornerStrategyPreference &&
+                                             _core.Stats.StaminaPercent > 0.35f;
+                        bool done = cornerGrapple
+                            ? _core.Combat.TryCornerGrapple() || _core.Combat.TryCornerStrike()
+                            : _core.Combat.TryCornerStrike() || _core.Combat.TryCornerGrapple();
+                        if (!done) CurrentState = AIState.Circle;
+                        Rethink();
+                    }
+                    else MoveToward(Opp.transform.position, false);
                     break;
 
                 case AIState.AttemptGroundAttack:

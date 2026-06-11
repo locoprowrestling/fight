@@ -32,7 +32,7 @@ namespace LoCoFight
         float _speed;     // normalized movement speed, fed by WrestlerMotor
         float _walkPhase; // radians; advances only while moving
 
-        enum ActionKind { None, Punch, Kick, GrappleReach, SpecialFlourish, HitRecoil, GroundSlam }
+        enum ActionKind { None, Punch, Kick, GrappleReach, SpecialFlourish, HitRecoil, GroundSlam, CornerAssault }
         ActionKind _action = ActionKind.None;
         float _actionStart;
         float _actionDuration = 1f;
@@ -68,6 +68,9 @@ namespace LoCoFight
                     break;
                 case "ground":
                     StartAction(ActionKind.GroundSlam, 0.6f / Mathf.Max(0.5f, speed));
+                    break;
+                case "corner":
+                    StartAction(ActionKind.CornerAssault, 0.55f / Mathf.Max(0.5f, speed));
                     break;
                 case "special":
                     Flash(new Color(1f, 0.6f, 0f));
@@ -566,6 +569,20 @@ namespace LoCoFight
                     p.spine.x += -16f * w;
                     p.neck.x += -20f * w;
                     p.pelvis.x += -5f * w;
+                    break;
+                }
+
+                case ActionKind.CornerAssault:
+                {
+                    // Close-range turnbuckle barrage: both forearms drive
+                    // forward at chest height with the torso pressed in.
+                    float drive = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 0.2f) / 0.3f));
+                    float reach = Mathf.Lerp(-40f, -95f, drive);
+                    p.lShoulder = Vector3.Lerp(p.lShoulder, new Vector3(reach, 0f, -6f), w);
+                    p.rShoulder = Vector3.Lerp(p.rShoulder, new Vector3(reach, 0f, 6f), w);
+                    p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-55f + 35f * drive, 0f, 0f), w);
+                    p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-55f + 35f * drive, 0f, 0f), w);
+                    p.spine.x += 12f * w * drive;
                     break;
                 }
 

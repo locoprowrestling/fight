@@ -16,6 +16,7 @@ namespace LoCoFight
         AttemptCornerSetup,
         AttemptSpecial,
         AttemptGroundAttack,
+        AttemptCornerOffense,
         AttemptPin,
         AttemptSubmission,
         DefensiveReversal,

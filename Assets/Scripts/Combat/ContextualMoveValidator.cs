@@ -63,5 +63,32 @@ namespace LoCoFight
                     MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
             return MoveValidationResult.Valid();
         }
+
+        /// Corner actions require both the defender state and live corner
+        /// geometry — either alone is not enough.
+        public static MoveValidationResult ValidateCorner(
+            MoveData move,
+            bool targetCornered,
+            bool inCornerZone,
+            bool inRange,
+            float currentStamina)
+        {
+            if (move == null)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.MissingMove, "No corner move assigned");
+            if (!targetCornered)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.WrongTargetState, "Target is not cornered");
+            if (!inCornerZone)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.NotInCorner, "Target left the corner zone");
+            if (!inRange)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.OutOfRange, "Corner target is out of range");
+            if (currentStamina < Mathf.Max(move.staminaCost, move.minimumStamina))
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
+            return MoveValidationResult.Valid();
+        }
     }
 }

@@ -319,6 +319,117 @@ namespace LoCoFight
             OnLandedHit?.Invoke(move);
         }
 
+        // ---------------- Corner offense ----------------
+
+        public bool TryCornerStrike() =>
+            TryCornerMove(_core.Moveset != null ? _core.Moveset.RandomCornerStrike() : null,
+                "CornerStrike",
+                _core.Moveset != null ? _core.Moveset.cornerStrikes.Count : 0);
+
+        public bool TryCornerGrapple() =>
+            TryCornerMove(_core.Moveset != null ? _core.Moveset.RandomCornerGrapple() : null,
+                "CornerGrapple",
+                _core.Moveset != null ? _core.Moveset.cornerGrapples.Count : 0);
+
+        /// Corner offense needs the defender state AND live corner geometry.
+        /// Documented results: a stun result re-sets Cornered (remain
+        /// cornered, dazed); a downed result leaves the corner via the shared
+        /// knockdown path. Validation precedes all stamina spending.
+        bool TryCornerMove(MoveData move, string family, int candidates)
+        {
+            if (!MatchActive || Opp == null) return false;
+            if (!_core.States.Profile.canAttack) return false;
+
+            bool cornered = Opp.States.Current == WrestlerState.Cornered;
+            bool inZone = RingInteractionSystem.Instance != null &&
+                          RingInteractionSystem.Instance.IsInCornerZone(Opp);
+            MoveValidationResult validation = ContextualMoveValidator.ValidateCorner(
+                move,
+                cornered,
+                inZone,
+                move != null && HitboxProbe.InRange(transform, Opp.transform, move.range),
+                _core.Stats.Stamina);
+            RecordContext(CombatContext.Corner, GroundTargetZone.None,
+                MoveDirection.Neutral, family, candidates, move, validation, false);
+            if (!validation.IsValid) return false;
+            if (!_core.Stats.SpendStamina(move.staminaCost)) return false;
+
+            _moveRoutine = StartCoroutine(CornerMoveRoutine(move));
+            return true;
+        }
+
+        IEnumerator CornerMoveRoutine(MoveData move)
+        {
+            BeginMove(move);
+            var defender = Opp;
+            _core.Motor.FaceOpponent();
+            bool grapple = move.category == MoveCategory.CornerGrapple;
+
+            // Both temporary states are owned here and carry timeouts, so an
+            // interruption can never leave either wrestler stuck.
+            _core.States.Set(
+                grapple ? WrestlerState.GrappleMoveStartup : WrestlerState.StrikeStartup,
+                move.TotalDuration + 0.5f);
+            if (grapple) defender.States.Set(WrestlerState.Stunned, move.TotalDuration + 0.2f);
+            _core.Anim.PlayMove(move.animationStateName, move.placeholderPoseName, move.animationSpeed);
+            Debug.Log($"[Move] {_core.DisplayName} starts {move.displayName}");
+
+            yield return Phase(move.startupTime);
+
+            _core.States.Set(
+                grapple ? WrestlerState.GrappleMoveActive : WrestlerState.StrikeActive,
+                move.activeTime + 0.1f);
+            bool stillValid = defender != null &&
+                (defender.States.Current == WrestlerState.Cornered ||
+                 (grapple && defender.States.Current == WrestlerState.Stunned)) &&
+                HitboxProbe.InRange(transform, defender.transform, move.range);
+            if (stillValid) ApplyCornerHit(move, defender);
+            else Debug.Log($"[Move] {move.displayName} missed");
+
+            yield return Phase(move.activeTime);
+
+            _core.States.Set(
+                grapple ? WrestlerState.GrappleMoveRecovery : WrestlerState.StrikeRecovery,
+                move.recoveryTime > 0f ? move.recoveryTime : 0.4f);
+            yield return Phase(move.recoveryTime);
+
+            EndMove();
+            if (!grapple) _core.States.Set(WrestlerState.Idle);
+        }
+
+        void ApplyCornerHit(MoveData move, WrestlerCore defender)
+        {
+            float damage = CombatResolver.ScaleDamage(_core, move);
+            defender.Stats.ApplyDamage(damage, _core);
+            if (move.staminaDamage > 0f) defender.Stats.DrainStamina(move.staminaDamage);
+            _core.Stats.AddMomentum(move.momentumGainOnHit);
+
+            if (move.causesDownedState)
+            {
+                // Documented result: become downed. Pull the defender out of
+                // the turnbuckle toward ring center so the body lands clear.
+                var ring = RingInteractionSystem.Instance;
+                Vector3 inward = MathUtil.FlatDirection(
+                    defender.transform.position,
+                    ring != null ? ring.Bounds.transform.position : Vector3.zero);
+                Vector3 target = defender.transform.position + inward * 0.8f;
+                if (ring != null) target = ring.Bounds.ClampInside(target);
+                defender.Motor.Teleport(target);
+                EnterDowned(defender, move.downedDuration > 0f ? move.downedDuration : 1.5f);
+            }
+            else
+            {
+                // Documented result: remain cornered, dazed. Re-setting
+                // Cornered keeps the timeout-driven escape window alive.
+                defender.States.Set(WrestlerState.Cornered,
+                    move.stunDuration > 0f ? move.stunDuration : 0.8f);
+                defender.Anim.TriggerCornered();
+            }
+
+            Debug.Log($"[Move] {move.displayName} hit cornered {defender.DisplayName} for {damage:0.#}");
+            OnLandedHit?.Invoke(move);
+        }
+
         // ---------------- Grapples ----------------
 
         public bool TryGrappleAttempt()

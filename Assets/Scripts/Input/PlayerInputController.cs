@@ -126,6 +126,7 @@ namespace LoCoFight
                 if (_core.DistanceToOpponent() <= WrestlerCombat.StrikeRange + 0.5f || _core.Motor.IsRunning)
                     _buffer.Buffer(PlayerAction.Light,
                         () => _core.Combat.TryGroundAttack() ||
+                              _core.Combat.TryCornerStrike() ||
                               _core.Combat.TryRunningAttack() ||
                               _core.Combat.TryLightStrike());
             }
@@ -153,7 +154,9 @@ namespace LoCoFight
             }
             else if (frame.GrapplePressed)
             {
-                _buffer.Buffer(PlayerAction.Grapple, () => _core.Combat.TryGrappleAttempt());
+                _buffer.Buffer(PlayerAction.Grapple,
+                    () => _core.Combat.TryCornerGrapple() ||
+                          _core.Combat.TryGrappleAttempt());
             }
 
             if (frame.ReversalPressed)

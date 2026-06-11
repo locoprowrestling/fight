@@ -31,6 +31,8 @@
 ## Ropes & corners (F1 overlay helps)
 - [ ] Walking into ropes is blocked; running into ropes rebounds you back at higher speed; J during the return fires a running attack.
 - [ ] Strikes near the ropes put the CPU into RopeStaggered (leaning pose); near a corner, into Cornered.
+- [ ] With the CPU Cornered inside a corner zone, J fires the Corner Forearm Smash (target stays cornered/dazed) and L fires the Corner Bulldog (target ends downed toward ring center); both reject with NotInCorner/WrongTargetState in F1 when state or geometry is missing, spending no stamina.
+- [ ] A cornered defender can reverse during corner-move startup or escape when the Cornered timer lapses; the CPU uses corner offense on you instead of endlessly herding an already-cornered opponent.
 - [ ] Pin or submission applied next to the ropes triggers "Rope break!" and releases (Standard rules). Swap `NoRopeBreaksRules` onto the bootstrap: no break occurs.
 
 ## Pins & submissions

@@ -83,6 +83,14 @@ namespace LoCoFight
             m.range = 1.25f;
         }
 
+        static void ConfigureCornerMove(MoveData m)
+        {
+            m.requiresTargetCornered = true;
+            m.requiresCornerZone = true;
+            m.placeholderPoseName = "corner";
+            m.range = 1.3f;
+        }
+
         /// Grapple timing helper: split a single duration into phases.
         static MoveData Grapple(DefaultGameDataSet set, string id, string name, MoveCategory cat,
             float dmg, float stam, float duration, float stun, float momentum,
@@ -149,6 +157,16 @@ namespace LoCoFight
             db.groundUpperAttacks.Add(headStomp);
             db.groundLowerAttacks.Add(kneeDrop);
             db.groundLowerAttacks.Add(legStomp);
+
+            var cornerForearm = Move(set, "corner-forearm", "Corner Forearm Smash", MoveCategory.CornerStrike, 9, 10, 0.30f, 0.12f, 0.45f, 0.8f, 8, tags: new[] { MoveTag.Clean, MoveTag.Corner });
+            cornerForearm.tier = MoveTier.Medium;
+            ConfigureCornerMove(cornerForearm);
+            var cornerBulldog = Move(set, "corner-bulldog", "Corner Bulldog", MoveCategory.CornerGrapple, 14, 16, 0.40f, 0.25f, 0.60f, 0f, 12, downed: 1.8f, tags: new[] { MoveTag.Clean, MoveTag.Corner });
+            cornerBulldog.tier = MoveTier.Heavy;
+            cornerBulldog.minimumStamina = 16f;
+            ConfigureCornerMove(cornerBulldog);
+            db.cornerStrikes.Add(cornerForearm);
+            db.cornerGrapples.Add(cornerBulldog);
 
             var armLock = Move(set, "ground-arm-lock", "Ground Arm Lock", MoveCategory.Submission, 0, 15, 0.3f, 0.2f, 0.3f, 0f, 4, tags: new[] { MoveTag.Clean });
             armLock.submissionPressurePerSecond = 12f;

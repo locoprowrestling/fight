@@ -101,5 +101,35 @@ namespace LoCoFight.EditorTests
 
             Assert.That(result.IsValid, Is.True);
         }
+
+        [Test]
+        public void ValidateCorner_RequiresStateAndGeometry()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetCornered = true;
+
+            Assert.That(
+                ContextualMoveValidator.ValidateCorner(
+                    move, targetCornered: true, inCornerZone: false,
+                    inRange: true, currentStamina: 100f).Reason,
+                Is.EqualTo(MoveRejectionReason.NotInCorner));
+
+            Assert.That(
+                ContextualMoveValidator.ValidateCorner(
+                    move, false, true, true, 100f).Reason,
+                Is.EqualTo(MoveRejectionReason.WrongTargetState));
+        }
+
+        [Test]
+        public void ValidateCorner_AcceptsCorneredTargetInZone()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetCornered = true;
+
+            Assert.That(
+                ContextualMoveValidator.ValidateCorner(
+                    move, true, true, true, 100f).IsValid,
+                Is.True);
+        }
     }
 }
