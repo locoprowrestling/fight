@@ -16,11 +16,11 @@ MonoBehaviour:
   displayName: Shoulder Throw
   category: 3
   tags: 01000000
-  startupTime: 0.36
-  activeTime: 0.48000002
-  recoveryTime: 0.36
+  startupTime: 0.465
+  activeTime: 0.62
+  recoveryTime: 0.465
   reversalWindowStart: 0.05
-  reversalWindowEnd: 0.36
+  reversalWindowEnd: 0.465
   staminaCost: 17
   damage: 14
   staminaDamage: 0
@@ -32,7 +32,7 @@ MonoBehaviour:
   canPinAfter: 0
   canSubmitAfter: 0
   knockbackDistance: 0.4
-  range: 1.25
+  range: 1.5
   requiredFacingDot: 0.4
   snapToGrapplePosition: 0
   requiresLift: 0

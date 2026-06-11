@@ -16,11 +16,11 @@ MonoBehaviour:
   displayName: Backbreaker
   category: 3
   tags: 0100000004000000
-  startupTime: 0.43500003
-  activeTime: 0.58000004
-  recoveryTime: 0.43500003
+  startupTime: 0.51000005
+  activeTime: 0.68
+  recoveryTime: 0.51000005
   reversalWindowStart: 0.05
-  reversalWindowEnd: 0.43500003
+  reversalWindowEnd: 0.51000005
   staminaCost: 20
   damage: 16
   staminaDamage: 0
@@ -32,7 +32,7 @@ MonoBehaviour:
   canPinAfter: 0
   canSubmitAfter: 0
   knockbackDistance: 0.4
-  range: 1.25
+  range: 1.5
   requiredFacingDot: 0.4
   snapToGrapplePosition: 0
   requiresLift: 1
