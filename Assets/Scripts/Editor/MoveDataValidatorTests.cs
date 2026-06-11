@@ -80,6 +80,71 @@ namespace LoCoFight.EditorTests
         }
 
         [Test]
+        public void Validate_StrongCounterWithoutDirectionIsError()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "directionless-counter";
+            move.reversalWindowEnd = 0.1f;
+            move.allowsStrongDirectionalCounter = true;
+            move.preferredCounterDirection = ReversalReadDirection.Neutral;
+
+            var messages = MoveDataValidator.Validate(move, null);
+            Assert.That(messages, Has.Some.Contains("requires a direction"));
+        }
+
+        [Test]
+        public void Validate_NegativeReversalMomentumIsError()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "negative-momentum";
+            move.reversalWindowEnd = 0.1f;
+            move.basicReversalMomentum = -1f;
+
+            var messages = MoveDataValidator.Validate(move, null);
+            Assert.That(messages, Has.Some.Contains("reversal momentum"));
+        }
+
+        [Test]
+        public void Validate_NegativeReversalStaggerIsError()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "negative-stagger";
+            move.reversalWindowEnd = 0.1f;
+            move.strongReversalStagger = -0.5f;
+
+            var messages = MoveDataValidator.Validate(move, null);
+            Assert.That(messages, Has.Some.Contains("reversal stagger"));
+        }
+
+        [Test]
+        public void Validate_NegativeReversalSeparationIsError()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "negative-separation";
+            move.reversalWindowEnd = 0.1f;
+            move.basicReversalSeparation = -0.25f;
+
+            var messages = MoveDataValidator.Validate(move, null);
+            Assert.That(messages, Has.Some.Contains("reversal separation"));
+        }
+
+        [Test]
+        public void Validate_AcceptsWellFormedStrongCounter()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "readable-counter";
+            move.startupTime = 0.2f;
+            move.activeTime = 0.1f;
+            move.recoveryTime = 0.3f;
+            move.reversalWindowStart = 0.05f;
+            move.reversalWindowEnd = 0.2f;
+            move.allowsStrongDirectionalCounter = true;
+            move.preferredCounterDirection = ReversalReadDirection.Away;
+
+            Assert.That(MoveDataValidator.Validate(move, null), Is.Empty);
+        }
+
+        [Test]
         public void ValidateWarnings_HeavyMoveWithoutMinimumStaminaWarns()
         {
             var move = ScriptableObject.CreateInstance<MoveData>();

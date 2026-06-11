@@ -40,6 +40,15 @@ namespace LoCoFight
             if (move.requiresTargetRopeStaggered &&
                 move.category != MoveCategory.RopeStaggerAttack)
                 errors.Add($"{id}: rope-stagger requirement is assigned to another family.");
+            if (move.allowsStrongDirectionalCounter &&
+                move.preferredCounterDirection == ReversalReadDirection.Neutral)
+                errors.Add($"{id}: strong directional counter requires a direction.");
+            if (move.basicReversalMomentum < 0f || move.strongReversalMomentum < 0f)
+                errors.Add($"{id}: reversal momentum cannot be negative.");
+            if (move.basicReversalStagger < 0f || move.strongReversalStagger < 0f)
+                errors.Add($"{id}: reversal stagger cannot be negative.");
+            if (move.basicReversalSeparation < 0f || move.strongReversalSeparation < 0f)
+                errors.Add($"{id}: reversal separation cannot be negative.");
             return errors;
         }
 

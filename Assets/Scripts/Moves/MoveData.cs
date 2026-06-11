@@ -26,6 +26,8 @@ namespace LoCoFight
         public float damage = 5f;
         public float staminaDamage = 0f;
         public float momentumGainOnHit = 5f;
+        // Legacy basic-reversal momentum; read only as a fallback when
+        // basicReversalMomentum <= 0 (kept for serialized compatibility).
         public float momentumGainOnReversal = 8f;
         public float stunDuration = 0.3f;
         public float downedDuration = 0f;
@@ -71,6 +73,20 @@ namespace LoCoFight
         public bool causesRopeStagger = false;
         public bool canTriggerRopeBreak = true;
         public bool ignoresRopeBreak = false;
+
+        [Header("Reversal read")]
+        [Tooltip("Camera-relative direction that upgrades a reversal of this move to a strong counter.")]
+        public ReversalReadDirection preferredCounterDirection =
+            ReversalReadDirection.Neutral;
+        public bool allowsStrongDirectionalCounter;
+        public float basicReversalMomentum = 8f;
+        public float strongReversalMomentum = 14f;
+        public float basicReversalStagger = 0.8f;
+        public float strongReversalStagger = 1.2f;
+        public float basicReversalSeparation = 0.7f;
+        public float strongReversalSeparation = 1.25f;
+        public string basicReversalPresentationId = "reversal-basic";
+        public string strongReversalPresentationId = "reversal-strong";
 
         [Header("Audio / VFX hooks (event names, unused by placeholder)")]
         public string moveStartEventName;
