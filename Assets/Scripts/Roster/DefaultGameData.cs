@@ -68,7 +68,7 @@ namespace LoCoFight
                     ? MoveTier.Medium
                     : MoveTier.Light;
             m.minimumStamina = cat == MoveCategory.PowerGrapple ? stam : 0f;
-            m.range = cat == MoveCategory.LightStrike || cat == MoveCategory.HeavyStrike ? 1.35f : 1.25f;
+            m.range = cat == MoveCategory.LightStrike || cat == MoveCategory.HeavyStrike ? 1.65f : 1.5f;
             m.tags.AddRange(tags);
             m.placeholderPoseName = cat == MoveCategory.QuickGrapple || cat == MoveCategory.PowerGrapple ? "grapple" : "strike";
             set.moves.Add(m);
@@ -80,7 +80,7 @@ namespace LoCoFight
             m.requiresTargetDowned = true;
             m.requiredGroundZone = zone;
             m.placeholderPoseName = "ground";
-            m.range = 1.25f;
+            m.range = 1.5f;
         }
 
         static void ConfigureCornerMove(MoveData m)
@@ -88,14 +88,14 @@ namespace LoCoFight
             m.requiresTargetCornered = true;
             m.requiresCornerZone = true;
             m.placeholderPoseName = "corner";
-            m.range = 1.3f;
+            m.range = 1.55f;
         }
 
         static void ConfigureRopeStaggerMove(MoveData m)
         {
             m.requiresTargetRopeStaggered = true;
             m.requiresOpponentNearRopes = true;
-            m.range = 1.3f;
+            m.range = 1.55f;
         }
 
         /// Grapple timing helper: split a single duration into phases.
@@ -202,7 +202,7 @@ namespace LoCoFight
             reboundLariat.tier = MoveTier.Heavy;
             reboundLariat.minimumStamina = 15f;
             reboundLariat.requiresRopeRebound = true;
-            reboundLariat.range = 1.5f;
+            reboundLariat.range = 1.8f;
             reboundLariat.placeholderPoseName = "lariat";
             db.ropeReboundAttacks.Add(reboundLariat);
 

@@ -18,7 +18,7 @@ namespace LoCoFight
         float _lockInitiatedAt;
         const float LockStrengthHoldTime = 0.28f;
 
-        public const float DownedControlRange = 1.2f; // matches TryPin/TrySubmission reach
+        public const float DownedControlRange = 1.4f; // matches TryPin/TrySubmission reach
 
         /// True when the current lock is armed with the power (strong) set.
         public bool PowerLockArmed =>

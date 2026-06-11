@@ -96,7 +96,8 @@ namespace LoCoFight
 
             d[WrestlerState.Idle] = P(move: true, rotate: true, attack: true, grapple: true, reverse: true, dodge: true, grabbable: true, rope: true, climb: true);
             d[WrestlerState.Moving] = P(move: true, rotate: true, attack: true, grapple: true, reverse: true, dodge: true, grabbable: true, rope: true, climb: true);
-            d[WrestlerState.Running] = P(move: true, rotate: true, attack: true, grapple: false, reverse: false, dodge: true, grabbable: true, rope: true);
+            // grapple:true — lunging into a tie-up out of a run is core wrestling flow.
+            d[WrestlerState.Running] = P(move: true, rotate: true, attack: true, grapple: true, reverse: false, dodge: true, grabbable: true, rope: true);
             d[WrestlerState.StrikeStartup] = P(rotate: true, grabbable: true);
             d[WrestlerState.StrikeActive] = P(grabbable: false);
             d[WrestlerState.StrikeRecovery] = P(grabbable: true, timeout: 1.5f);

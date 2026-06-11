@@ -8,7 +8,7 @@ namespace LoCoFight
     {
         /// Advisory "close enough" distance for prompts. Family ranges vary
         /// 1.25–1.35 in move data; validation remains the authority.
-        public const float PromptRange = 1.35f;
+        public const float PromptRange = 1.6f;
 
         const string MoveCloser = " — move closer";
 

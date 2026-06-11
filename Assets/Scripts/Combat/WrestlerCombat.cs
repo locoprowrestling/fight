@@ -9,8 +9,10 @@ namespace LoCoFight
     /// hard-codes move stats. Works identically for human and CPU controllers.
     public class WrestlerCombat : MonoBehaviour
     {
-        public const float GrappleRange = 1.25f;
-        public const float StrikeRange = 1.35f;
+        // Ranges scale with the 1.25x wrestler bodies (capsules now meet at
+        // ~0.88 apart; pre-scale margins made grapples nearly untouchable).
+        public const float GrappleRange = 1.55f;
+        public const float StrikeRange = 1.65f;
         public const float GrappleTieWindow = 0.2f;
 
         WrestlerCore _core;
@@ -561,17 +563,27 @@ namespace LoCoFight
             if (!MatchActive || Opp == null) return false;
             if (Role != GrappleRole.None) return false;
             if (!_core.States.Profile.canGrapple) return false;
-            if (!HitboxProbe.InRange(transform, Opp.transform, GrappleRange)) return false;
+            if (!HitboxProbe.InRange(transform, Opp.transform, GrappleRange))
+            {
+                if (_core.IsPlayer) MatchHUD.TryShowActionFeedback("Too far away", warning: true);
+                return false;
+            }
 
             // Recorded before the grabbable check so counter stances (Anuka) can
             // read whiffed grapple attempts against them.
             LastGrappleAttemptTime = Time.time;
-            if (!Opp.States.Profile.canBeGrappled) return false;
+            if (!Opp.States.Profile.canBeGrappled)
+            {
+                if (_core.IsPlayer) MatchHUD.TryShowActionFeedback("Can't grab them right now", warning: true);
+                return false;
+            }
 
             // Simultaneous tie-up: 40% timing / 40% stamina / 20% random (see CombatResolver).
             if (Time.time - Opp.Combat.LastGrappleAttemptTime <= GrappleTieWindow && Opp.Combat.Role == GrappleRole.None)
             {
                 bool selfWins = CombatResolver.ResolveGrappleTie(_core, Opp, Opp.Combat.LastGrappleAttemptTime, LastGrappleAttemptTime);
+                if (!selfWins && _core.IsPlayer)
+                    MatchHUD.TryShowActionFeedback("Out-wrestled in the tie-up!", warning: true);
                 EnterGrappleLock(selfWins ? _core : Opp, selfWins ? Opp : _core);
                 return true;
             }
@@ -589,7 +601,7 @@ namespace LoCoFight
 
             // Snap into the tie-up.
             Vector3 dir = MathUtil.FlatDirection(attacker.transform.position, defender.transform.position);
-            defender.Motor.Teleport(attacker.transform.position + dir * 0.95f);
+            defender.Motor.Teleport(attacker.transform.position + dir * 1.1f);
             attacker.Motor.FaceOpponent();
             defender.Motor.FaceOpponent();
 
@@ -883,7 +895,7 @@ namespace LoCoFight
             var move = _core.Moveset != null ? _core.Moveset.RandomGroundSubmission() : null;
             if (move == null) return false;
             if (!Opp.States.Profile.canBeSubmitted) return false;
-            if (!HitboxProbe.InRange(transform, Opp.transform, 1.2f)) return false;
+            if (!HitboxProbe.InRange(transform, Opp.transform, 1.4f)) return false;
             if (!_core.States.Profile.canAttack) return false;
             if (!_core.Stats.SpendStamina(move.staminaCost)) return false;
             return SubmissionSystem.Instance != null && SubmissionSystem.Instance.TryStart(

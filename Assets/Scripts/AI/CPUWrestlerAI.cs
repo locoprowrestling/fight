@@ -373,7 +373,7 @@ namespace LoCoFight
                     break;
 
                 case AIState.AttemptRopeOffense:
-                    if (InRange(1.35f))
+                    if (InRange(1.6f))
                     {
                         // Rope-context attack with a normal-offense fallback.
                         if (!_core.Combat.TryRopeStaggerAttack() && !_core.Combat.TryHeavyStrike())
@@ -401,7 +401,7 @@ namespace LoCoFight
                     break;
 
                 case AIState.AttemptCornerOffense:
-                    if (InRange(1.3f))
+                    if (InRange(1.55f))
                     {
                         bool cornerGrapple = Random.value < _difficulty.cornerStrategyPreference &&
                                              MovePacingRules.CanAttempt(
@@ -417,7 +417,7 @@ namespace LoCoFight
                     break;
 
                 case AIState.AttemptGroundAttack:
-                    if (InRange(1.25f))
+                    if (InRange(1.5f))
                     {
                         _memory.Note("ground");
                         if (!_core.Combat.TryGroundAttack()) CurrentState = AIState.IdleThink;
@@ -427,7 +427,7 @@ namespace LoCoFight
                     break;
 
                 case AIState.AttemptPin:
-                    if (InRange(1.1f))
+                    if (InRange(1.3f))
                     {
                         _memory.Note("pin");
                         if (!_core.Combat.TryPin()) CurrentState = AIState.IdleThink;
@@ -437,7 +437,7 @@ namespace LoCoFight
                     break;
 
                 case AIState.AttemptSubmission:
-                    if (InRange(1.1f))
+                    if (InRange(1.3f))
                     {
                         _memory.Note("submission");
                         if (!_core.Combat.TrySubmission()) CurrentState = AIState.IdleThink;

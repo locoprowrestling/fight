@@ -18,7 +18,7 @@ namespace LoCoFight
         float _requiredEffort;
         float _penalty;
         float _cpuTick;
-        const float PinRange = 1.2f;
+        const float PinRange = 1.4f; // scaled with the 1.25x bodies
 
         void Awake() => Instance = this;
         void OnDestroy() { if (Instance == this) Instance = null; }

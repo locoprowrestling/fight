@@ -54,7 +54,7 @@
 - [ ] Presses during your own recovery come out as the next action (≈0.35 s
       buffer) instead of vanishing; Cornered (~2 s) and RopeStaggered (~1.8 s)
       windows are long enough to read the prompt and act.
-- [ ] K at close range ties up on press. Release K before the wrestlers lock =
+- [ ] K ties up on press, including OUT OF A RUN (lunging tie-up); a failed attempt always says why ("Too far away", "Can't grab them right now", "Out-wrestled in the tie-up!"). K at close range ties up on press. Release K before the wrestlers lock =
       QUICK set; keep K held through the lock-up = STRONG set (the lock prompt
       names the armed set). In the lock, pressing K (+ held direction) fires the
       armed set's move instantly; power grapples knock down.
