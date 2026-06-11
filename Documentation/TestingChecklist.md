@@ -25,7 +25,7 @@
 - [ ] In a lock, holding a movement direction changes the selected grapple (F1 shows dir/family/fallback): quick (tap K) — neutral Knee Lift, forward Snapmare, backward Headlock Takedown, lateral Snap Arm Drag; power (hold K) — neutral Body Slam, forward Vertical Drop, backward Backbreaker, lateral Shoulder Throw. Pushing toward the opponent on screen is always forward, for any camera angle.
 - [ ] A direction with no assigned move falls back to neutral (F1 fallback=True); lift failures and lock timeouts behave exactly as before; the CPU also uses directional grapples.
 - [ ] A single K press in a lock resolves exactly one follow-up (tap = quick, hold = power) and spends stamina once; releasing after the hold commits fires nothing extra.
-- [ ] When the CPU initiates a lockup, it follows up with a grapple move within ~2 s — the match never falls into an endless lockup → release → lockup loop.
+- [ ] When the CPU initiates a lockup, it follows up with a grapple move within ~2 s **while you stand completely passive** (don't press anything — the historical loop only reproduced then); the match never falls into an endless lockup → release → lockup loop, and any CPU lock release logs a reason to the console.
 - [ ] Select Erza vs Johnny Crash: every lift-based power grapple fails with "Too heavy to lift!", stuns Erza, and gives Johnny momentum.
 
 ## Ground offense (F1 overlay shows context/zone/rejection)

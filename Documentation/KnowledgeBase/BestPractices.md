@@ -115,6 +115,22 @@ and a wrong prompt is a bug in the mapping, never in combat.
 *Why:* the prompt exists to make context-sensitive controls legible; letting
 it gate behavior would create a second, contradictory authority.
 
+**A failed AI attempt must yield control back to Decide.** `CPUWrestlerAI.Act`
+runs every frame; any case that calls a `Try*` and then `Rethink()`
+unconditionally will, when the `Try*` fails silently, re-arm the decision
+timer forever and suppress `Decide()` entirely (the FSM freezes in that state
+until an external event flips it). On failure, transition out
+(`CurrentState = AIState.IdleThink` or a deliberate fallback state) so Decide
+runs on schedule; `Rethink()` belongs to *successful or state-changing*
+actions only. Two lockup soft-locks have now come from this family: the
+capability-gate ordering in Decide (2026-06-10) and AttemptGrapple
+re-attempting into its own lock while spamming Rethink (2026-06-11) — in both,
+the repeating `[Grapple] ... locks up` cadence matching the lock timeout was
+the diagnostic signature.
+*Why:* a suppressed Decide turns every silent `Try*` failure into a permanent
+behavior freeze that manual QA only catches when the player happens to stay
+passive.
+
 **Record every contextual request for F1.** Use the `RecordContext` funnel in
 `WrestlerCombat` so the overlay shows context, zone, direction, family,
 candidate count, selection, tier, validation result, and fallback use; log
