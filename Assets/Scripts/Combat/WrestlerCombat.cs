@@ -642,6 +642,34 @@ namespace LoCoFight
                 return false;
             }
 
+            // Affordability before execution: downgrade an unaffordable pick
+            // to the cheapest affordable candidate rather than letting the
+            // stamina spend fail mid-move (which would burn the lock). When
+            // nothing is affordable, reject visibly and KEEP the lock so the
+            // caller can try the other family or let the timeout resolve it.
+            if (!MovePacingRules.CanAttempt(move, _core.Stats.Stamina))
+            {
+                MoveData affordable = MovePacingRules.CheapestAffordable(
+                    set != null ? set.AllMoves() : null, _core.Stats.Stamina);
+                if (affordable == null &&
+                    MovePacingRules.CanAttempt(legacyFallback, _core.Stats.Stamina))
+                    affordable = legacyFallback;
+
+                if (affordable == null)
+                {
+                    RecordContext(CombatContext.GrappleLock, GroundTargetZone.None,
+                        direction, family, candidates, move,
+                        MoveValidationResult.Reject(
+                            MoveRejectionReason.InsufficientStamina,
+                            $"Cannot afford any {family}"),
+                        fallback);
+                    return false;
+                }
+
+                move = affordable;
+                fallback = true;
+            }
+
             RecordContext(CombatContext.GrappleLock, GroundTargetZone.None,
                 direction, family, candidates, move,
                 MoveValidationResult.Valid(), fallback);
@@ -661,6 +689,9 @@ namespace LoCoFight
 
             if (!_core.Stats.SpendStamina(move.staminaCost))
             {
+                // Failure invariant: never dissolve a lock silently.
+                Debug.Log($"[Grapple] {_core.DisplayName} releases — " +
+                          $"not enough stamina for {move.displayName}");
                 ReleaseGrapple();
                 return false;
             }

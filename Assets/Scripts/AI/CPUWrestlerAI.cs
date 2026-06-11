@@ -246,25 +246,50 @@ namespace LoCoFight
                     break;
 
                 case AIState.AttemptLightStrike:
-                    if (InRange(WrestlerCombat.StrikeRange)) { _memory.Note("light"); _core.Combat.TryLightStrike(); Rethink(); }
+                    if (InRange(WrestlerCombat.StrikeRange))
+                    {
+                        _memory.Note("light");
+                        if (!_core.Combat.TryLightStrike()) CurrentState = AIState.IdleThink;
+                        Rethink();
+                    }
                     else MoveToward(Opp.transform.position, false);
                     break;
 
                 case AIState.AttemptHeavyStrike:
-                    if (InRange(WrestlerCombat.StrikeRange)) { _memory.Note("heavy"); _core.Combat.TryHeavyStrike(); Rethink(); }
+                    if (InRange(WrestlerCombat.StrikeRange))
+                    {
+                        _memory.Note("heavy");
+                        if (!_core.Combat.TryHeavyStrike()) CurrentState = AIState.IdleThink;
+                        Rethink();
+                    }
                     else MoveToward(Opp.transform.position, false);
                     break;
 
                 case AIState.AttemptGrapple:
-                    if (InRange(WrestlerCombat.GrappleRange)) { _memory.Note("grapple"); _core.Combat.TryGrappleAttempt(); Rethink(); }
+                    if (_core.Combat.InGrappleLockAsAttacker)
+                    {
+                        // The lock formed: hand off to the follow-up state.
+                        // Re-attempting here would fail silently and re-arm
+                        // Rethink every frame, suppressing Decide until the
+                        // lock timed out (endless lockup → re-lock loop).
+                        CurrentState = AIState.ChooseGrappleMove;
+                    }
+                    else if (InRange(WrestlerCombat.GrappleRange))
+                    {
+                        _memory.Note("grapple");
+                        if (!_core.Combat.TryGrappleAttempt()) CurrentState = AIState.IdleThink;
+                        Rethink();
+                    }
                     else MoveToward(Opp.transform.position, false);
                     break;
 
                 case AIState.ChooseGrappleMove:
                     if (_core.Combat.InGrappleLockAsAttacker)
                     {
-                        // Heavy follow-ups obey tier pacing: skip power when no
-                        // candidate is affordable instead of burning the lock.
+                        // Power preference is a bias only; ExecuteDirectionalGrapple
+                        // downgrades unaffordable picks and keeps the lock when a
+                        // family has nothing affordable, so the quick fallback below
+                        // still gets its chance.
                         bool power = Random.value < _difficulty.grapplePreference &&
                                      MovePacingRules.CanAttempt(
                                          _core.Moveset != null ? _core.Moveset.RandomPowerGrapple() : null,
@@ -273,11 +298,23 @@ namespace LoCoFight
                         bool executed = power
                             ? _core.Combat.TryPowerGrappleFromLock(direction) || _core.Combat.TryQuickGrappleFromLock(direction)
                             : _core.Combat.TryQuickGrappleFromLock(direction) || _core.Combat.TryPowerGrappleFromLock(direction);
-                        // Never leave a lock dangling (e.g. empty moveset):
-                        // release so both wrestlers return to neutral.
-                        if (!executed) _core.Combat.ReleaseGrapple();
+                        if (!executed)
+                        {
+                            // Never leave a lock dangling, and never dangle
+                            // silently: release, say why, and breathe.
+                            _core.Combat.ReleaseGrapple();
+                            Debug.Log($"[AI] {_core.DisplayName} releases the lock — no affordable follow-up");
+                            CurrentState = AIState.BackOff;
+                        }
+                        Rethink();
                     }
-                    Rethink();
+                    else
+                    {
+                        // Lock already resolved (move executing, timeout, or
+                        // reversal). Yield to Decide instead of re-arming the
+                        // decision timer every frame.
+                        CurrentState = AIState.IdleThink;
+                    }
                     break;
 
                 case AIState.AttemptRunningAttack:
@@ -287,7 +324,8 @@ namespace LoCoFight
                     {
                         // Rebound-specific attack while rebounding; ordinary
                         // running attack outside the rebound states.
-                        if (!_core.Combat.TryRopeReboundAttack()) _core.Combat.TryRunningAttack();
+                        if (!_core.Combat.TryRopeReboundAttack() && !_core.Combat.TryRunningAttack())
+                            CurrentState = AIState.IdleThink;
                         Rethink();
                     }
                     break;
@@ -296,7 +334,8 @@ namespace LoCoFight
                     if (InRange(1.35f))
                     {
                         // Rope-context attack with a normal-offense fallback.
-                        if (!_core.Combat.TryRopeStaggerAttack()) _core.Combat.TryHeavyStrike();
+                        if (!_core.Combat.TryRopeStaggerAttack() && !_core.Combat.TryHeavyStrike())
+                            CurrentState = AIState.IdleThink;
                         Rethink();
                     }
                     else MoveToward(Opp.transform.position, false);
@@ -305,7 +344,11 @@ namespace LoCoFight
                 case AIState.ForceOpponentToRopes:
                 case AIState.AttemptCornerSetup:
                     // Keep striking at close range — knockback pushes them toward ropes/corners.
-                    if (InRange(WrestlerCombat.StrikeRange)) { _core.Combat.TryLightStrike(); Rethink(); }
+                    if (InRange(WrestlerCombat.StrikeRange))
+                    {
+                        if (!_core.Combat.TryLightStrike()) CurrentState = AIState.IdleThink;
+                        Rethink();
+                    }
                     else MoveToward(Opp.transform.position, false);
                     break;
 
@@ -335,19 +378,29 @@ namespace LoCoFight
                     if (InRange(1.25f))
                     {
                         _memory.Note("ground");
-                        _core.Combat.TryGroundAttack();
+                        if (!_core.Combat.TryGroundAttack()) CurrentState = AIState.IdleThink;
                         Rethink();
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
 
                 case AIState.AttemptPin:
-                    if (InRange(1.1f)) { _memory.Note("pin"); _core.Combat.TryPin(); Rethink(); }
+                    if (InRange(1.1f))
+                    {
+                        _memory.Note("pin");
+                        if (!_core.Combat.TryPin()) CurrentState = AIState.IdleThink;
+                        Rethink();
+                    }
                     else MoveToward(Opp.transform.position, run: true);
                     break;
 
                 case AIState.AttemptSubmission:
-                    if (InRange(1.1f)) { _memory.Note("submission"); _core.Combat.TrySubmission(); Rethink(); }
+                    if (InRange(1.1f))
+                    {
+                        _memory.Note("submission");
+                        if (!_core.Combat.TrySubmission()) CurrentState = AIState.IdleThink;
+                        Rethink();
+                    }
                     else MoveToward(Opp.transform.position, false);
                     break;
 

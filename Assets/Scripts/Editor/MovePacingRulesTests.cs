@@ -41,5 +41,42 @@ namespace LoCoFight.EditorTests
 
             Assert.That(MovePacingRules.CanAttempt(move, 20f), Is.False);
         }
+
+        MoveData Costing(float cost)
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.staminaCost = cost;
+            return move;
+        }
+
+        [Test]
+        public void CheapestAffordable_PicksTheLowestAffordableRequirement()
+        {
+            var cheap = Costing(6f);
+            var mid = Costing(12f);
+            var dear = Costing(25f);
+
+            var result = MovePacingRules.CheapestAffordable(
+                new[] { dear, mid, cheap }, 15f);
+
+            Assert.That(result, Is.SameAs(cheap));
+        }
+
+        [Test]
+        public void CheapestAffordable_ReturnsNullWhenNothingIsAffordable()
+        {
+            Assert.That(
+                MovePacingRules.CheapestAffordable(new[] { Costing(20f) }, 10f),
+                Is.Null);
+        }
+
+        [Test]
+        public void CheapestAffordable_ToleratesNullCandidatesAndEntries()
+        {
+            Assert.That(MovePacingRules.CheapestAffordable(null, 50f), Is.Null);
+            Assert.That(
+                MovePacingRules.CheapestAffordable(new MoveData[] { null, Costing(5f) }, 50f),
+                Is.Not.Null);
+        }
     }
 }

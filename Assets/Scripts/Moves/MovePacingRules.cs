@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace LoCoFight
@@ -17,6 +18,24 @@ namespace LoCoFight
         public static bool CanAttempt(MoveData move, float currentStamina)
         {
             return move != null && currentStamina >= RequiredStamina(move);
+        }
+
+        /// Lowest-requirement candidate the attacker can afford right now, or
+        /// null. Used to downgrade an unaffordable pick instead of silently
+        /// failing it.
+        public static MoveData CheapestAffordable(
+            IEnumerable<MoveData> candidates,
+            float currentStamina)
+        {
+            MoveData best = null;
+            if (candidates == null) return null;
+            foreach (MoveData move in candidates)
+            {
+                if (!CanAttempt(move, currentStamina)) continue;
+                if (best == null || RequiredStamina(move) < RequiredStamina(best))
+                    best = move;
+            }
+            return best;
         }
     }
 }
