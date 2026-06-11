@@ -1,10 +1,10 @@
 # Classic Grappling Game Modding Research Notes: Moves, Modularity, and Custom Wrestlers
 
 > **Repository note:** This document is informational research, not an
-> implementation guide, specification, roadmap, backlog, or source of truth.
-> It includes speculative systems that are outside the current prototype.
-> Appropriate findings may be adopted only after validation against this
-> game's code, scope, and goals, then promotion into authoritative project
+> implementation guide, specification, roadmap, backlog, or source of truth. It
+> includes speculative systems that are outside the current prototype.
+> Appropriate findings may be adopted only after validation against this game's
+> code, scope, and goals, then promotion into authoritative project
 > documentation.
 
 ## Purpose
@@ -23,13 +23,18 @@ research focuses on:
 - data-driven implementation patterns
 - complexity management
 
-This document intentionally avoids naming the specific legacy games, branded titles, or development label discussed during source research. The usable design lessons are abstracted into engine-agnostic principles.
+This document intentionally avoids naming the specific legacy games, branded
+titles, or development label discussed during source research. The usable design
+lessons are abstracted into engine-agnostic principles.
 
 ---
 
-# 1. Executive Summary
+## 1. Executive Summary
 
-The most useful lesson from classic grappling-game modding is that the best wrestling battle systems are not primarily built around combos. They are built around **state, position, timing, move slots, animation branches, and wrestler identity data**.
+The most useful lesson from classic grappling-game modding is that the best
+wrestling battle systems are not primarily built around combos. They are built
+around **state, position, timing, move slots, animation branches, and wrestler
+identity data**.
 
 A strong modern implementation should use:
 
@@ -46,7 +51,8 @@ RulesetData
 MatchStateData
 ```
 
-The system should avoid hardcoded wrestler logic. A wrestler should be a composition of:
+The system should avoid hardcoded wrestler logic. A wrestler should be a
+composition of:
 
 ```text
 body type
@@ -61,7 +67,8 @@ victory metadata
 voice / sound metadata
 ```
 
-The battle system should avoid hardcoded move behavior. A move should be a composition of:
+The battle system should avoid hardcoded move behavior. A move should be a
+composition of:
 
 ```text
 required position
@@ -82,15 +89,18 @@ pin/submission follow-up options
 
 The main design rule:
 
-> Treat every wrestler, move, attire, rule, animation, and AI behavior as editable data attached to a reusable runtime system.
+> Treat every wrestler, move, attire, rule, animation, and AI behavior as
+> editable data attached to a reusable runtime system.
 
 ---
 
-# 2. Major Research Findings
+## 2. Major Research Findings
 
-## 2.1 Move lists are slot-based systems, not merely animation lists
+### 2.1 Move lists are slot-based systems, not merely animation lists
 
-Classic grappling games organized moves around context-sensitive slots. A wrestler does not simply have one giant universal move list. Instead, moves are bound to slots such as:
+Classic grappling games organized moves around context-sensitive slots. A
+wrestler does not simply have one giant universal move list. Instead, moves are
+bound to slots such as:
 
 ```text
 front weak grapple
@@ -111,7 +121,8 @@ rope rebound
 special state
 ```
 
-This matters because it creates a clean interface between input, position, and move selection.
+This matters because it creates a clean interface between input, position, and
+move selection.
 
 Modern implementation:
 
@@ -135,7 +146,7 @@ Best practice:
 
 ---
 
-## 2.2 The control scheme should be simple, but the resolver should be deep
+### 2.2 The control scheme should be simple, but the resolver should be deep
 
 The classic model works because player inputs are readable:
 
@@ -184,9 +195,11 @@ This keeps the game playable while still allowing a deep battle system.
 
 ---
 
-## 2.3 Move creation is animation composition plus state resolution
+### 2.3 Move creation is animation composition plus state resolution
 
-Classic modding communities often created new moves by combining or modifying existing animation sequences. The important lesson is not the exact toolchain. The lesson is that a move can be represented as a structured animation recipe:
+Classic modding communities often created new moves by combining or modifying
+existing animation sequences. The important lesson is not the exact toolchain.
+The lesson is that a move can be represented as a structured animation recipe:
 
 ```text
 attacker setup animation
@@ -243,9 +256,9 @@ Best practice:
 
 ---
 
-# 3. Battle System Modularity Blueprint
+## 3. Battle System Modularity Blueprint
 
-## 3.1 Top-level modules
+### 3.1 Top-level modules
 
 ```text
 BattleEngine
@@ -276,11 +289,13 @@ BattleEngine
 └── DebugInspector
 ```
 
-Each module should own one responsibility. The move resolver should not know how to draw masks. The appearance editor should not know how to calculate pin pressure. The AI profile should not hardcode animation names.
+Each module should own one responsibility. The move resolver should not know how
+to draw masks. The appearance editor should not know how to calculate pin
+pressure. The AI profile should not hardcode animation names.
 
 ---
 
-## 3.2 Runtime flow
+### 3.2 Runtime flow
 
 ```text
 Player input
@@ -310,9 +325,9 @@ This protects the engine from becoming a pile of one-off special cases.
 
 ---
 
-# 4. State Machine Design
+## 4. State Machine Design
 
-## 4.1 Required wrestler states
+### 4.1 Required wrestler states
 
 ```text
 Idle
@@ -353,7 +368,7 @@ Victory
 Defeat
 ```
 
-## 4.2 Use hierarchical states
+### 4.2 Use hierarchical states
 
 Flat state machines become unmanageable. Use hierarchy:
 
@@ -381,7 +396,7 @@ Grounded
 └── InSubmission
 ```
 
-## 4.3 State transition data
+### 4.3 State transition data
 
 ```json
 {
@@ -405,9 +420,9 @@ Best practice:
 
 ---
 
-# 5. Move Creation System
+## 5. Move Creation System
 
-## 5.1 Move object schema
+### 5.1 Move object schema
 
 ```json
 {
@@ -463,7 +478,7 @@ Best practice:
 
 ---
 
-## 5.2 Animation recipe schema
+### 5.2 Animation recipe schema
 
 ```json
 {
@@ -490,7 +505,11 @@ Best practice:
   "events": [
     { "frame": 3, "event": "syncParticipants" },
     { "frame": 15, "event": "lockGrapple" },
-    { "frame": 44, "event": "impact", "payload": { "impactType": "back_bump" } },
+    {
+      "frame": 44,
+      "event": "impact",
+      "payload": { "impactType": "back_bump" }
+    },
     { "frame": 58, "event": "releaseParticipants" },
     { "frame": 69, "event": "moveComplete" }
   ]
@@ -499,7 +518,7 @@ Best practice:
 
 ---
 
-## 5.3 Move creation editor requirements
+### 5.3 Move creation editor requirements
 
 A proper move creator should expose:
 
@@ -557,9 +576,9 @@ Advanced editor:
 
 ---
 
-# 6. Move Creation Best Practices
+## 6. Move Creation Best Practices
 
-## 6.1 Build moves from templates
+### 6.1 Build moves from templates
 
 Do not start every move from zero. Use move templates:
 
@@ -596,7 +615,7 @@ Template example:
 }
 ```
 
-## 6.2 Every move needs a compatibility contract
+### 6.2 Every move needs a compatibility contract
 
 A move must declare what bodies and states it supports.
 
@@ -613,9 +632,10 @@ A move must declare what bodies and states it supports.
 }
 ```
 
-This prevents animation and logic breaks when a small wrestler tries to lift a monster.
+This prevents animation and logic breaks when a small wrestler tries to lift a
+monster.
 
-## 6.3 Moves should fail gracefully
+### 6.3 Moves should fail gracefully
 
 Bad:
 
@@ -631,9 +651,10 @@ Move attempt fails into a shove, clubbing blow, stagger, or reversal opportunity
 
 Fallbacks should be part of move data.
 
-## 6.4 Do not let animation drive all gameplay
+### 6.4 Do not let animation drive all gameplay
 
-Animation events should trigger gameplay, but they should not own gameplay rules.
+Animation events should trigger gameplay, but they should not own gameplay
+rules.
 
 Correct split:
 
@@ -645,9 +666,9 @@ Resolvers decide what those events mean.
 
 ---
 
-# 7. CAW / Custom Wrestler System
+## 7. CAW / Custom Wrestler System
 
-## 7.1 CAW should be a layered data object
+### 7.1 CAW should be a layered data object
 
 ```json
 {
@@ -680,11 +701,7 @@ Resolvers decide what those events mean.
     "lowerBody": "tights_07",
     "boots": "boots_03"
   },
-  "attires": [
-    "attire_default",
-    "attire_alt_01",
-    "attire_street_fight"
-  ],
+  "attires": ["attire_default", "attire_alt_01", "attire_street_fight"],
   "movesetId": "moveset_custom_001",
   "aiProfileId": "ai_custom_technical_showman",
   "entranceId": "entrance_custom_001",
@@ -694,7 +711,7 @@ Resolvers decide what those events mean.
 
 ---
 
-## 7.2 CAW feature categories
+### 7.2 CAW feature categories
 
 A serious CAW system should include:
 
@@ -775,9 +792,9 @@ Presentation
 
 ---
 
-## 7.3 CAW best practices
+### 7.3 CAW best practices
 
-### Separate appearance from moveset
+#### Separate appearance from moveset
 
 A created wrestler should not lose move identity when changing clothes.
 
@@ -792,7 +809,7 @@ CAW identity
 └── stat profile
 ```
 
-### Support attire variants without cloning the whole wrestler
+#### Support attire variants without cloning the whole wrestler
 
 Bad:
 
@@ -818,9 +835,10 @@ One wrestler record has multiple attire records.
 }
 ```
 
-### Give AI profiles their own editor
+#### Give AI profiles their own editor
 
-Classic CAW systems often created strong appearance and moveset customization but weaker behavior editing. A modern design should fix that.
+Classic CAW systems often created strong appearance and moveset customization
+but weaker behavior editing. A modern design should fix that.
 
 AI profile fields:
 
@@ -863,9 +881,9 @@ AI profile fields:
 
 ---
 
-# 8. Moveset Editor Design
+## 8. Moveset Editor Design
 
-## 8.1 Slot categories
+### 8.1 Slot categories
 
 A complete moveset editor should support these categories:
 
@@ -904,7 +922,7 @@ Finisher grounded
 Finisher diving
 ```
 
-## 8.2 Slot schema
+### 8.2 Slot schema
 
 ```json
 {
@@ -922,7 +940,7 @@ Finisher diving
 }
 ```
 
-## 8.3 Editor validation
+### 8.3 Editor validation
 
 The editor should prevent impossible assignments.
 
@@ -948,20 +966,18 @@ Validation object:
     "Wrestler lift strength is below requirement.",
     "No fallback move assigned."
   ],
-  "suggestedFallbacks": [
-    "move_failed_lift_club_01",
-    "move_body_shot_break_01"
-  ]
+  "suggestedFallbacks": ["move_failed_lift_club_01", "move_body_shot_break_01"]
 }
 ```
 
 ---
 
-# 9. Appearance, Attire, Texture, and Mask Systems
+## 9. Appearance, Attire, Texture, and Mask Systems
 
-## 9.1 Appearance should be modular and layered
+### 9.1 Appearance should be modular and layered
 
-Classic modding practices around attire, textures, masks, and visual variants show that appearance must be component-based.
+Classic modding practices around attire, textures, masks, and visual variants
+show that appearance must be component-based.
 
 Recommended layer stack:
 
@@ -984,7 +1000,7 @@ boots
 entrance props
 ```
 
-## 9.2 Color palette model
+### 9.2 Color palette model
 
 ```json
 {
@@ -998,7 +1014,7 @@ entrance props
 }
 ```
 
-## 9.3 Texture import rules
+### 9.3 Texture import rules
 
 ```text
 Use fixed texture dimensions.
@@ -1009,7 +1025,7 @@ Support automatic mipmap generation.
 Keep original source texture separate from optimized runtime texture.
 ```
 
-## 9.4 Best practice: never bake identity into attire
+### 9.4 Best practice: never bake identity into attire
 
 Bad:
 
@@ -1028,11 +1044,13 @@ Moves belong to moveset profile.
 
 ---
 
-# 10. AI Personality and Simulation Logic
+## 10. AI Personality and Simulation Logic
 
-## 10.1 AI should use editable behavior weights
+### 10.1 AI should use editable behavior weights
 
-Classic simulation-heavy grappling games are remembered partly because characters can feel different without complex controls. A modern implementation should make that explicit.
+Classic simulation-heavy grappling games are remembered partly because
+characters can feel different without complex controls. A modern implementation
+should make that explicit.
 
 AI profile categories:
 
@@ -1053,9 +1071,10 @@ risk tolerance
 reversal discipline
 ```
 
-## 10.2 Behavior tree + weighted action model
+### 10.2 Behavior tree + weighted action model
 
-Use a behavior tree for high-level decision-making and weighted tables for style.
+Use a behavior tree for high-level decision-making and weighted tables for
+style.
 
 ```text
 Root
@@ -1102,9 +1121,10 @@ Weighted table example:
 }
 ```
 
-## 10.3 Best practice: AI should understand match phase
+### 10.3 Best practice: AI should understand match phase
 
-Do not let AI choose randomly from all moves. The AI should know whether the match is in:
+Do not let AI choose randomly from all moves. The AI should know whether the
+match is in:
 
 ```text
 opening
@@ -1116,13 +1136,14 @@ finish
 post-match
 ```
 
-A powerbomb in the opening minute should be rare unless the wrestler style or match type supports it.
+A powerbomb in the opening minute should be rare unless the wrestler style or
+match type supports it.
 
 ---
 
-# 11. Reversal and Counter Design
+## 11. Reversal and Counter Design
 
-## 11.1 Reversals should be branch points
+### 11.1 Reversals should be branch points
 
 A reversal should not simply cancel a move. It should branch into a new state.
 
@@ -1138,7 +1159,7 @@ submission reversed into roll-up
 finisher reversed into stunned attacker state
 ```
 
-## 11.2 Reversal schema
+### 11.2 Reversal schema
 
 ```json
 {
@@ -1168,7 +1189,7 @@ finisher reversed into stunned attacker state
 }
 ```
 
-## 11.3 Reversal best practices
+### 11.3 Reversal best practices
 
 ```text
 Give each move at least one logical reversal window.
@@ -1181,9 +1202,9 @@ Successful reversals should create advantage, not reset to neutral every time.
 
 ---
 
-# 12. Rope and Ring Position Systems
+## 12. Rope and Ring Position Systems
 
-## 12.1 Ropes are a battle mechanic
+### 12.1 Ropes are a battle mechanic
 
 The ring is not just a rectangle. It is a combat grid with tactical zones:
 
@@ -1200,7 +1221,7 @@ entrance side
 hard camera side
 ```
 
-## 12.2 Rope state model
+### 12.2 Rope state model
 
 ```json
 {
@@ -1214,7 +1235,7 @@ hard camera side
 }
 ```
 
-## 12.3 Rope interaction rules
+### 12.3 Rope interaction rules
 
 ```text
 Pins check rope proximity.
@@ -1228,13 +1249,14 @@ No-break rules should disable the break, not the detection.
 
 Best practice:
 
-> Keep rope detection active even when the ruleset ignores rope breaks. This allows commentary, crowd, AI, and story logic to react.
+> Keep rope detection active even when the ruleset ignores rope breaks. This
+> allows commentary, crowd, AI, and story logic to react.
 
 ---
 
-# 13. Pin and Submission Systems
+## 13. Pin and Submission Systems
 
-## 13.1 Pins should be stateful
+### 13.1 Pins should be stateful
 
 Pin flow:
 
@@ -1269,7 +1291,7 @@ pinPressure =
   - earlyMatchResistance
 ```
 
-## 13.2 Submissions should combine pressure, escape, and position
+### 13.2 Submissions should combine pressure, escape, and position
 
 Submission flow:
 
@@ -1302,9 +1324,9 @@ Submission data:
 
 ---
 
-# 14. Complexity Management Rules
+## 14. Complexity Management Rules
 
-## 14.1 Complexity should live in data, not branching code
+### 14.1 Complexity should live in data, not branching code
 
 Bad:
 
@@ -1318,7 +1340,7 @@ Good:
 traits + tags + ruleset modifiers + resolver output
 ```
 
-## 14.2 Use tags everywhere
+### 14.2 Use tags everywhere
 
 Move tags:
 
@@ -1377,7 +1399,7 @@ battle_royal
 elimination
 ```
 
-## 14.3 Resolvers should read tags
+### 14.3 Resolvers should read tags
 
 Example:
 
@@ -1389,18 +1411,15 @@ Example:
     "defender.staminaState:fresh",
     "move.hasTag:lift"
   ],
-  "effects": [
-    "increaseReversalChance:0.15",
-    "increaseAttackerStaminaCost:5"
-  ]
+  "effects": ["increaseReversalChance:0.15", "increaseAttackerStaminaCost:5"]
 }
 ```
 
 ---
 
-# 15. Custom Match Rules
+## 15. Custom Match Rules
 
-## 15.1 Match types should be rule overlays
+### 15.1 Match types should be rule overlays
 
 Do not duplicate the whole match engine for every stipulation.
 
@@ -1440,11 +1459,11 @@ Best practice:
 
 ---
 
-# 16. Debugging and Tooling
+## 16. Debugging and Tooling
 
 A modular wrestling engine needs aggressive debugging tools.
 
-## 16.1 Required debug panels
+### 16.1 Required debug panels
 
 ```text
 Current wrestler state
@@ -1465,7 +1484,7 @@ AI decision reason
 Invalid move assignment warnings
 ```
 
-## 16.2 Move sandbox
+### 16.2 Move sandbox
 
 The move sandbox should allow:
 
@@ -1486,7 +1505,7 @@ Without this, move creation will become guesswork.
 
 ---
 
-# 17. Recommended File Structure
+## 17. Recommended File Structure
 
 ```text
 /src
@@ -1545,9 +1564,9 @@ Without this, move creation will become guesswork.
 
 ---
 
-# 18. Minimum Viable Implementation Plan
+## 18. Minimum Viable Implementation Plan
 
-## Phase 1: Core battle loop
+### Phase 1: Core battle loop
 
 ```text
 1. Wrestler state machine
@@ -1562,7 +1581,7 @@ Without this, move creation will become guesswork.
 10. Pin attempt
 ```
 
-## Phase 2: Move editor foundation
+### Phase 2: Move editor foundation
 
 ```text
 1. Move JSON schema
@@ -1573,7 +1592,7 @@ Without this, move creation will become guesswork.
 6. Export/import custom moves
 ```
 
-## Phase 3: CAW foundation
+### Phase 3: CAW foundation
 
 ```text
 1. CAW identity data
@@ -1585,7 +1604,7 @@ Without this, move creation will become guesswork.
 7. Save/load custom wrestler
 ```
 
-## Phase 4: Advanced systems
+### Phase 4: Advanced systems
 
 ```text
 1. Submissions
@@ -1600,9 +1619,9 @@ Without this, move creation will become guesswork.
 
 ---
 
-# 19. Design Principles Extracted from Modding Practice
+## 19. Design Principles Extracted from Modding Practice
 
-## 19.1 Modders need stable data boundaries
+### 19.1 Modders need stable data boundaries
 
 The easier something is to isolate, the easier it is to mod.
 
@@ -1616,7 +1635,7 @@ Attire data separate from AI data.
 Ruleset data separate from move data.
 ```
 
-## 19.2 Modding reveals where the original engine is too rigid
+### 19.2 Modding reveals where the original engine is too rigid
 
 Common pain points in legacy modding:
 
@@ -1643,7 +1662,7 @@ Texture tools with validation.
 Animation recipes with compatibility checks.
 ```
 
-## 19.3 The editor is part of the game design
+### 19.3 The editor is part of the game design
 
 For a wrestling game, editors are not bonus features. They are core systems.
 
@@ -1660,14 +1679,15 @@ arena zone editor
 entrance editor
 ```
 
-If those editors are weak, the game will feel smaller no matter how good the base roster is.
+If those editors are weak, the game will feel smaller no matter how good the
+base roster is.
 
 ---
 
-# 20. Archived Generic Codex / Claude Code Prompt
+## 20. Archived Generic Codex / Claude Code Prompt
 
-> This prompt is retained as part of the research record. It is not approved
-> as a task specification for this repository.
+> This prompt is retained as part of the research record. It is not approved as
+> a task specification for this repository.
 
 ```text
 Build a modular pro wrestling battle system inspired by classic console grappling-game design principles, but do not reference any real licensed game, engine, company, or branded title in comments, filenames, UI text, or documentation.
@@ -1737,37 +1757,50 @@ First deliver:
 
 ---
 
-# 21. Source Notes
+## 21. Source Notes
 
 The research behind this document used public materials from these categories:
 
 1. Public move-list guides for classic console grappling games.
-   - Useful for studying context-sensitive move slot structure, weak/strong grapple tiers, directional move binding, rear grapple slots, ground slots, running moves, and special move assignment.
+   - Useful for studying context-sensitive move slot structure, weak/strong
+     grapple tiers, directional move binding, rear grapple slots, ground slots,
+     running moves, and special move assignment.
 
 2. Public CAW guides for classic console grappling games.
-   - Useful for studying identity fields, body scaling, attire components, move assignment categories, entrance presentation, and appearance-part organization.
+   - Useful for studying identity fields, body scaling, attire components, move
+     assignment categories, entrance presentation, and appearance-part
+     organization.
 
 3. Public modding tutorials about moveset editing.
-   - Useful for understanding how move assignments were edited externally, why visual tools matter, and how slot-based move edits can be separated from wrestler identity.
+   - Useful for understanding how move assignments were edited externally, why
+     visual tools matter, and how slot-based move edits can be separated from
+     wrestler identity.
 
 4. Public modding tutorials about animation splicing and move hacking.
-   - Useful for abstracting modern move creation into animation segments, sync frames, impact events, defender sell tracks, and branch points.
+   - Useful for abstracting modern move creation into animation segments, sync
+     frames, impact events, defender sell tracks, and branch points.
 
-5. Public community discussions about attire expansion, roster expansion, texture editing, and custom behavior values.
-   - Useful for identifying common pain points: hardcoded limits, hidden AI values, tedious profile editing, mirrored texture constraints, and fragile manual editing workflows.
+5. Public community discussions about attire expansion, roster expansion,
+   texture editing, and custom behavior values.
+   - Useful for identifying common pain points: hardcoded limits, hidden AI
+     values, tedious profile editing, mirrored texture constraints, and fragile
+     manual editing workflows.
 
 6. General game architecture sources on state machines.
-   - Used to support hierarchical state-machine recommendations and clean state transition design.
+   - Used to support hierarchical state-machine recommendations and clean state
+     transition design.
 
 7. General modular game architecture sources on data-driven assets.
-   - Used to support separating reusable gameplay data from runtime controller logic.
+   - Used to support separating reusable gameplay data from runtime controller
+     logic.
 
 8. General AI architecture sources on behavior trees.
-   - Used to support behavior trees plus weighted decision tables for wrestler AI.
+   - Used to support behavior trees plus weighted decision tables for wrestler
+     AI.
 
 ---
 
-# 22. Implementation Doctrine
+## 22. Implementation Doctrine
 
 Use this as the final design filter:
 
@@ -1781,4 +1814,5 @@ Can this feature be combined with other features without special-case code?
 
 If the answer is no, the system is not modular enough.
 
-The battle system should be simple at the input layer, deep at the resolver layer, expressive at the data layer, and inspectable at the tooling layer.
+The battle system should be simple at the input layer, deep at the resolver
+layer, expressive at the data layer, and inspectable at the tooling layer.

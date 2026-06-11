@@ -1,13 +1,14 @@
 # Pro Wrestling Battle System Research Notes: Modularity and Complexity
 
 > **Repository note:** This document is informational background only. It is not
-> an implementation guide, specification, roadmap, source of truth, or instruction
-> to change the current game. Some recommendations are speculative, may conflict
-> with the existing prototype, and have not been accepted as project decisions.
-> Current behavior is defined by the code and the tracked documentation under
-> `Documentation/`. Any idea from this file requires a separate design decision
-> before implementation. Appropriate findings may be adopted after they are
-> evaluated against this game's actual architecture and goals.
+> an implementation guide, specification, roadmap, source of truth, or
+> instruction to change the current game. Some recommendations are speculative,
+> may conflict with the existing prototype, and have not been accepted as
+> project decisions. Current behavior is defined by the code and the tracked
+> documentation under `Documentation/`. Any idea from this file requires a
+> separate design decision before implementation. Appropriate findings may be
+> adopted after they are evaluated against this game's actual architecture and
+> goals.
 
 **Purpose:** This preserved research artifact collects design opinions,
 architecture examples, data schemas, source notes, implementation-oriented
@@ -26,79 +27,107 @@ The following sources informed the design recommendations in this document.
 
 ### Wrestling-game specific sources
 
-1. **Fire Pro Wrestling World Grappling Guide, GameFAQs**  
-   URL: https://gamefaqs.gamespot.com/ps4/206703-fire-pro-wrestling-world/faqs/76355/grappling-with-your-opponent  
-   Relevant point: Fire Pro uses a timing-based grapple system. Wrestlers automatically grapple on contact; both have an opportunity to win; button mashing is punished.
+1. **Fire Pro Wrestling World Grappling Guide, GameFAQs**\
+   URL: <https://gamefaqs.gamespot.com/ps4/206703-fire-pro-wrestling-world/faqs/76355/grappling-with-your-opponent>\
+   Relevant
+   point: Fire Pro uses a timing-based grapple system. Wrestlers automatically
+   grapple on contact; both have an opportunity to win; button mashing is
+   punished.
 
-2. **Fire Pro Wrestling World CPU Logic Guide, Steam Community**  
-   URL: https://steamcommunity.com/sharedfiles/filedetails/?id=2838953982  
-   Relevant point: Fire Pro-style simulated matches rely heavily on CPU logic percentages and situational behavior tuning.
+2. **Fire Pro Wrestling World CPU Logic Guide, Steam Community**\
+   URL: <https://steamcommunity.com/sharedfiles/filedetails/?id=2838953982>\
+   Relevant point: Fire Pro-style simulated matches rely heavily on CPU logic
+   percentages and situational behavior tuning.
 
-3. **Fire Pro CPU Logic Guide, SCFL Fire Pro**  
-   URL: https://www.scflfirepro.com/guide-cpu-logic-in-fire-pro-wrestling-wold/  
-   Relevant point: CPU logic is a deep behavior-tuning system that can make simulated wrestlers behave differently without unique code for every wrestler.
+3. **Fire Pro CPU Logic Guide, SCFL Fire Pro**\
+   URL: <https://www.scflfirepro.com/guide-cpu-logic-in-fire-pro-wrestling-wold/>\
+   Relevant
+   point: CPU logic is a deep behavior-tuning system that can make simulated
+   wrestlers behave differently without unique code for every wrestler.
 
-4. **WWE 2K26 Patch Notes, 2K Support**  
-   URL: https://support.wwe2k.com/hc/en-us/sections/48015560292115-Patch-Notes  
-   Relevant point: Modern wrestling games frequently require tuning to stamina, reversal, and pacing systems. This supports the recommendation to keep stamina and reversal logic modular instead of tightly coupled.
+4. **WWE 2K26 Patch Notes, 2K Support**\
+   URL: <https://support.wwe2k.com/hc/en-us/sections/48015560292115-Patch-Notes>\
+   Relevant
+   point: Modern wrestling games frequently require tuning to stamina, reversal,
+   and pacing systems. This supports the recommendation to keep stamina and
+   reversal logic modular instead of tightly coupled.
 
 ### General combat-design sources
 
-5. **The Logic Behind Violence: A Primer on Combat System Design, Game Developer**  
-   URL: https://www.gamedeveloper.com/design/the-logic-behind-violence-a-primer-on-combat-system-design  
-   Relevant point: Combat systems should begin with the intended power fantasy, then use mechanics to reinforce that fantasy.
+1. **The Logic Behind Violence: A Primer on Combat System Design, Game
+   Developer**\
+   URL: <https://www.gamedeveloper.com/design/the-logic-behind-violence-a-primer-on-combat-system-design>\
+   Relevant
+   point: Combat systems should begin with the intended power fantasy, then use
+   mechanics to reinforce that fantasy.
 
-6. **Game Combat Design, Mechanics and Systems Guide, GameDesignSkills**  
-   URL: https://gamedesignskills.com/game-design/combat-design/  
-   Relevant point: Combat design should be structured around clear combat verbs, player feedback, enemy response, risk, reward, and satisfaction.
+2. **Game Combat Design, Mechanics and Systems Guide, GameDesignSkills**\
+   URL: <https://gamedesignskills.com/game-design/combat-design/>\
+   Relevant point: Combat design should be structured around clear combat verbs,
+   player feedback, enemy response, risk, reward, and satisfaction.
 
 ### Architecture / modularity sources
 
-7. **State, Game Programming Patterns**  
-   URL: https://gameprogrammingpatterns.com/state.html  
-   Relevant point: State machines organize complex behavior by enforcing constrained states and transitions, but they can become rigid if overused or flattened.
+1. **State, Game Programming Patterns**\
+   URL: <https://gameprogrammingpatterns.com/state.html>\
+   Relevant point: State machines organize complex behavior by enforcing
+   constrained states and transitions, but they can become rigid if overused or
+   flattened.
 
-8. **Three Ways to Architect Your Game with ScriptableObjects, Unity**  
-   URL: https://unity.com/how-to/architect-game-code-scriptable-objects  
-   Relevant point: Data objects can help keep gameplay code easier to change, debug, and reuse.
+2. **Three Ways to Architect Your Game with ScriptableObjects, Unity**\
+   URL: <https://unity.com/how-to/architect-game-code-scriptable-objects>\
+   Relevant point: Data objects can help keep gameplay code easier to change,
+   debug, and reuse.
 
-9. **Separate Game Data and Logic with ScriptableObjects, Unity**  
-   URL: https://unity.com/how-to/separate-game-data-logic-scriptable-objects  
-   Relevant point: Separating data from logic is useful for configurable gameplay systems.
+3. **Separate Game Data and Logic with ScriptableObjects, Unity**\
+   URL: <https://unity.com/how-to/separate-game-data-logic-scriptable-objects>\
+   Relevant point: Separating data from logic is useful for configurable
+   gameplay systems.
 
-10. **Create Modular Game Architecture with ScriptableObjects, Unity**  
-    URL: https://unity.com/resources/create-modular-game-architecture-scriptableobjects-unity-6  
-    Relevant point: Project-level data assets support modular architecture and reusable gameplay definitions.
+4. **Create Modular Game Architecture with ScriptableObjects, Unity**\
+   URL: <https://unity.com/resources/create-modular-game-architecture-scriptableobjects-unity-6>\
+   Relevant
+   point: Project-level data assets support modular architecture and reusable
+   gameplay definitions.
 
 ### AI behavior sources
 
-11. **A Survey of Behavior Trees in Robotics and AI, arXiv**  
-    URL: https://arxiv.org/abs/2005.05842  
-    Relevant point: Behavior trees originated as a modular AI tool in computer games and became useful because finite state machines scale poorly for complex, reusable behavior.
+1. **A Survey of Behavior Trees in Robotics and AI, arXiv**\
+   URL: <https://arxiv.org/abs/2005.05842>\
+   Relevant point: Behavior trees originated as a modular AI tool in computer
+   games and became useful because finite state machines scale poorly for
+   complex, reusable behavior.
 
-12. **Comparison Between Behavior Trees and Finite State Machines, arXiv**  
-    URL: https://arxiv.org/html/2405.16137v1  
-    Relevant point: Behavior trees and finite state machines can be compared on modularity, readability, reactivity, and design complexity.
+2. **Comparison Between Behavior Trees and Finite State Machines, arXiv**\
+   URL: <https://arxiv.org/html/2405.16137v1>\
+   Relevant point: Behavior trees and finite state machines can be compared on
+   modularity, readability, reactivity, and design complexity.
 
-13. **Behavior Trees in Robot Control Systems, arXiv**  
-    URL: https://arxiv.org/abs/2203.13083  
-    Relevant point: Behavior-tree modularity allows components to be developed, debugged, tested, and extended separately.
+3. **Behavior Trees in Robot Control Systems, arXiv**\
+   URL: <https://arxiv.org/abs/2203.13083>\
+   Relevant point: Behavior-tree modularity allows components to be developed,
+   debugged, tested, and extended separately.
 
 ---
 
 ## 1. Core Thesis
 
-A pro wrestling battle system should not be built like a normal fighting game with wrestling flavor layered on top.
+A pro wrestling battle system should not be built like a normal fighting game
+with wrestling flavor layered on top.
 
 Wrestling has different priorities:
 
 1. **Position matters more than raw attack selection.**
 2. **Momentum matters more than health.**
 3. **The battle system must support both winning and putting on a good match.**
-4. **Reversals, fatigue, rope breaks, crowd reactions, pins, submissions, and character style should all be modular systems, not hardcoded exceptions.**
-5. **Complexity should live in data and state rules, not in giant move-specific scripts.**
+4. **Reversals, fatigue, rope breaks, crowd reactions, pins, submissions, and
+   character style should all be modular systems, not hardcoded exceptions.**
+5. **Complexity should live in data and state rules, not in giant move-specific
+   scripts.**
 
-The strongest design direction is a **modular, state-driven, data-authored battle engine** where each wrestler, move, match type, arena object, and special mechanic is composed from reusable rules.
+The strongest design direction is a **modular, state-driven, data-authored
+battle engine** where each wrestler, move, match type, arena object, and special
+mechanic is composed from reusable rules.
 
 ---
 
@@ -106,7 +135,8 @@ The strongest design direction is a **modular, state-driven, data-authored battl
 
 ### 2.1 Fire Pro Wrestling: Timing, Pacing, and CPU Logic
 
-Fire Pro’s key lesson is that a wrestling game does not need an oversized combo system to create depth. Its grappling model is built around:
+Fire Pro’s key lesson is that a wrestling game does not need an oversized combo
+system to create depth. Its grappling model is built around:
 
 - timing
 - pacing
@@ -115,13 +145,20 @@ Fire Pro’s key lesson is that a wrestling game does not need an oversized comb
 - move sequencing
 - situational decision-making
 
-In Fire Pro, wrestlers collide to initiate a grapple, then both have an opportunity to win the exchange. Button mashing is punished. This implies that complexity can come from **when to engage** and **what state the match is in**, not simply from button count.
+In Fire Pro, wrestlers collide to initiate a grapple, then both have an
+opportunity to win the exchange. Button mashing is punished. This implies that
+complexity can come from **when to engage** and **what state the match is in**,
+not simply from button count.
 
-**Design takeaway:** Grappling should be a state contest, not just an attack button.
+**Design takeaway:** Grappling should be a state contest, not just an attack
+button.
 
 ### 2.2 WWE 2K: Stamina, Reversals, and Tuning Pressure
 
-Modern WWE 2K games show how sensitive stamina and reversal tuning can be. Patch notes for WWE 2K26 include stamina and reversal adjustments, which supports the larger design point: stamina, reversals, fatigue, and pacing should not be one tangled system.
+Modern WWE 2K games show how sensitive stamina and reversal tuning can be. Patch
+notes for WWE 2K26 include stamina and reversal adjustments, which supports the
+larger design point: stamina, reversals, fatigue, and pacing should not be one
+tangled system.
 
 **Design takeaway:** Reversal logic should be a modular rule stack:
 
@@ -141,7 +178,8 @@ What resulting advantage state?
 
 ### 2.3 General Combat Design: Define the Fantasy First
 
-Combat design should begin with the intended fantasy. For a wrestling game, the fantasy is not merely “beat the opponent.” It is:
+Combat design should begin with the intended fantasy. For a wrestling game, the
+fantasy is not merely “beat the opponent.” It is:
 
 - survive punishment
 - control the ring
@@ -149,9 +187,11 @@ Combat design should begin with the intended fantasy. For a wrestling game, the 
 - hit signature moments
 - escape disaster at the last second
 - use character style to create drama
-- win through pin, submission, knockout, count-out, DQ, escape, stipulation, or story condition
+- win through pin, submission, knockout, count-out, DQ, escape, stipulation, or
+  story condition
 
-**Design takeaway:** The battle system needs multiple success axes, not just HP depletion.
+**Design takeaway:** The battle system needs multiple success axes, not just HP
+depletion.
 
 ---
 
@@ -176,13 +216,16 @@ Match Engine
 └── Data Registry
 ```
 
-The **Match Engine** coordinates systems. It should not know the exact behavior of every move.
+The **Match Engine** coordinates systems. It should not know the exact behavior
+of every move.
 
 ---
 
 ## 4. State Machine Foundation
 
-State machines are useful because they constrain complex behavior into explicit states and transitions. However, a flat state machine will become unmanageable for wrestling.
+State machines are useful because they constrain complex behavior into explicit
+states and transitions. However, a flat state machine will become unmanageable
+for wrestling.
 
 Use a **hierarchical state machine**.
 
@@ -239,7 +282,8 @@ Cornered
 
 ### 4.4 Why This Matters
 
-If corner moves, rope moves, apron moves, and grounded moves are hardcoded as attack exceptions, the combat system will collapse under its own complexity.
+If corner moves, rope moves, apron moves, and grounded moves are hardcoded as
+attack exceptions, the combat system will collapse under its own complexity.
 
 Instead, each move should ask:
 
@@ -258,7 +302,8 @@ What transitions are legal?
 
 Every move should be data first.
 
-Do not write hundreds of one-off move scripts. Define moves as data objects consumed by resolvers.
+Do not write hundreds of one-off move scripts. Define moves as data objects
+consumed by resolvers.
 
 ### 5.1 Move Definition Schema
 
@@ -414,13 +459,13 @@ Position changes
 
 ### 7.2 Move Tiers
 
-| Tier | Example | Match Phase |
-|---|---|---|
-| Light | arm drag, body slam, snapmare | early match |
-| Medium | suplex, DDT, backbreaker | mid match |
-| Heavy | powerbomb, piledriver, superplex | late match |
-| Signature | named character move | high momentum |
-| Finisher | match-ending threat | peak drama |
+| Tier      | Example                          | Match Phase   |
+| --------- | -------------------------------- | ------------- |
+| Light     | arm drag, body slam, snapmare    | early match   |
+| Medium    | suplex, DDT, backbreaker         | mid match     |
+| Heavy     | powerbomb, piledriver, superplex | late match    |
+| Signature | named character move             | high momentum |
+| Finisher  | match-ending threat              | peak drama    |
 
 ### 7.3 Pacing Rule
 
@@ -477,7 +522,8 @@ Momentum governs:
 
 ### 8.3 Design Rule
 
-Momentum should represent **control of the match narrative**, not just a super meter.
+Momentum should represent **control of the match narrative**, not just a super
+meter.
 
 ---
 
@@ -522,7 +568,8 @@ Adrenaline Surge
 
 ### 9.5 Adrenaline Surge
 
-A tired wrestler should sometimes get a short dramatic window. Wrestling needs comeback bursts. Exhaustion should not only be a punishment state.
+A tired wrestler should sometimes get a short dramatic window. Wrestling needs
+comeback bursts. Exhaustion should not only be a punishment state.
 
 ---
 
@@ -561,22 +608,23 @@ Bad reversal design causes:
 
 ### 10.2 Reversal Types
 
-| Type | Use |
-|---|---|
-| Strike counter | punch catch, duck, parry |
-| Grapple counter | arm wringer, go-behind, shove-off |
-| Mid-move counter | escape lift, sunset flip, roll-through |
-| Ground counter | trip, leg sweep, small package |
-| Rope counter | hold ropes, rebound reversal |
-| Corner counter | boot up, shove from turnbuckle |
-| Finisher counter | rare, high drama |
-| Desperation counter | low stamina, high risk |
+| Type                | Use                                    |
+| ------------------- | -------------------------------------- |
+| Strike counter      | punch catch, duck, parry               |
+| Grapple counter     | arm wringer, go-behind, shove-off      |
+| Mid-move counter    | escape lift, sunset flip, roll-through |
+| Ground counter      | trip, leg sweep, small package         |
+| Rope counter        | hold ropes, rebound reversal           |
+| Corner counter      | boot up, shove from turnbuckle         |
+| Finisher counter    | rare, high drama                       |
+| Desperation counter | low stamina, high risk                 |
 
 ### 10.3 Rule
 
 Do not use one generic “reverse” button internally for everything.
 
-Even if the player presses the same button, the engine should resolve different reversal modules based on:
+Even if the player presses the same button, the engine should resolve different
+reversal modules based on:
 
 ```text
 move phase + position + stamina + style + move tags + match phase
@@ -604,16 +652,16 @@ RopeBreakEligible
 
 ### 11.2 Rope Mechanics
 
-| Mechanic | Function |
-|---|---|
-| Rope break | breaks pins/submissions |
-| Irish whip | transitions to running/rebound state |
-| Rebound attack | clothesline, back body drop, leapfrog |
-| Rope escape | defensive shove or hold |
-| Illegal choke | referee count |
-| Springboard | high-risk offense |
-| Apron transition | outside/inside boundary |
-| Ring-out | count-out and weapon access |
+| Mechanic         | Function                              |
+| ---------------- | ------------------------------------- |
+| Rope break       | breaks pins/submissions               |
+| Irish whip       | transitions to running/rebound state  |
+| Rebound attack   | clothesline, back body drop, leapfrog |
+| Rope escape      | defensive shove or hold               |
+| Illegal choke    | referee count                         |
+| Springboard      | high-risk offense                     |
+| Apron transition | outside/inside boundary               |
+| Ring-out         | count-out and weapon access           |
 
 ### 11.3 Rope Break Rule Example
 
@@ -681,14 +729,14 @@ pinPressure =
 
 ### 12.3 Pin Types
 
-| Pin Type | Use |
-|---|---|
-| Lateral press | normal pin |
-| Hooked leg | stronger pin |
-| Roll-up | surprise pin |
-| Bridge pin | technical pin |
-| Dirty pin | rope leverage |
-| Post-finisher pin | high pressure |
+| Pin Type                 | Use              |
+| ------------------------ | ---------------- |
+| Lateral press            | normal pin       |
+| Hooked leg               | stronger pin     |
+| Roll-up                  | surprise pin     |
+| Bridge pin               | technical pin    |
+| Dirty pin                | rope leverage    |
+| Post-finisher pin        | high pressure    |
 | Desperation collapse pin | low stamina both |
 
 ### 12.4 Pin State Flow
@@ -764,16 +812,16 @@ Every wrestler should be a bundle of traits, not a unique hardcoded class.
 
 ### 14.1 Archetype Table
 
-| Archetype | Strengths | Weaknesses |
-|---|---|---|
-| Technician | reversals, submissions, chain wrestling | lower raw impact |
-| Powerhouse | slams, lift moves, stun | slow recovery |
-| High flyer | dives, springboards, crowd gain | high miss penalty |
-| Brawler | strikes, weapons, street fight | weaker technical defense |
-| Showman | taunts, crowd control, comeback | risky pacing |
-| Monster | intimidation, no-sell, high damage | slower, vulnerable to speed |
-| Cheater | dirty pins, distractions | referee risk |
-| Underdog | kickouts, desperation counters | low base control |
+| Archetype  | Strengths                               | Weaknesses                  |
+| ---------- | --------------------------------------- | --------------------------- |
+| Technician | reversals, submissions, chain wrestling | lower raw impact            |
+| Powerhouse | slams, lift moves, stun                 | slow recovery               |
+| High flyer | dives, springboards, crowd gain         | high miss penalty           |
+| Brawler    | strikes, weapons, street fight          | weaker technical defense    |
+| Showman    | taunts, crowd control, comeback         | risky pacing                |
+| Monster    | intimidation, no-sell, high damage      | slower, vulnerable to speed |
+| Cheater    | dirty pins, distractions                | referee risk                |
+| Underdog   | kickouts, desperation counters          | low base control            |
 
 ### 14.2 Trait Example
 
@@ -797,7 +845,9 @@ Use:
 - **state machines** for physical wrestler state
 - **behavior trees** for decision-making
 
-Behavior trees are well-suited to modular AI because they organize decision logic hierarchically and are easier to extend than large flat finite state machines.
+Behavior trees are well-suited to modular AI because they organize decision
+logic hierarchically and are easier to extend than large flat finite state
+machines.
 
 ### 15.1 AI Behavior Tree Concept
 
@@ -853,7 +903,8 @@ This makes wrestlers feel distinct without writing custom AI for each wrestler.
 
 ## 16. Match Phase System
 
-Wrestling matches have phases. The system should know which phase the match is in.
+Wrestling matches have phases. The system should know which phase the match is
+in.
 
 ```text
 Opening
@@ -868,7 +919,8 @@ PostMatch
 
 ### 16.1 Why Match Phase Matters
 
-A body slam in the first 20 seconds should not mean the same thing as a body slam after two finishers.
+A body slam in the first 20 seconds should not mean the same thing as a body
+slam after two finishers.
 
 The match phase should influence:
 
@@ -952,10 +1004,7 @@ ref_distracted
     "defender.staminaState:fresh",
     "move.hasTag:lift"
   ],
-  "effects": [
-    "increaseReversalChance:0.15",
-    "increaseAttackerStaminaCost:5"
-  ]
+  "effects": ["increaseReversalChance:0.15", "increaseAttackerStaminaCost:5"]
 }
 ```
 
@@ -1046,7 +1095,8 @@ Only after the expanded system is stable:
 
 Use this rule:
 
-> Every mechanic must either create a new tactical decision, a new dramatic moment, or a new character distinction.
+> Every mechanic must either create a new tactical decision, a new dramatic
+> moment, or a new character distinction.
 
 If it does not, cut it.
 
@@ -1270,12 +1320,9 @@ It should change pin location legality:
 {
   "id": "late_match_resilience",
   "displayName": "Late Match Resilience",
-  "conditions": [
-    "match.phase:FalseFinish",
-    "self.staminaState:TiredOrWorse"
-  ],
+  "conditions": ["match.phase:FalseFinish", "self.staminaState:TiredOrWorse"],
   "effects": [
-    { "stat": "kickoutChance", "modifier": 0.10 },
+    { "stat": "kickoutChance", "modifier": 0.1 },
     { "stat": "desperationReversalChance", "modifier": 0.08 }
   ]
 }
@@ -1375,8 +1422,8 @@ OnKickout or OnCountThree
 
 ## 24. Archived Generic Build Prompt
 
-> This prompt is retained as part of the research record. It is not approved
-> for use against this repository and does not describe required work.
+> This prompt is retained as part of the research record. It is not approved for
+> use against this repository and does not describe required work.
 
 The original research artifact included the following generic prompt:
 
@@ -1471,4 +1518,6 @@ AI chooses intent.
 Animation presents the result.
 ```
 
-That gives the system room to grow into finishers, submissions, rope mechanics, stipulations, managers, weapons, tag matches, and unique character gimmicks without collapsing into hardcoded nonsense.
+That gives the system room to grow into finishers, submissions, rope mechanics,
+stipulations, managers, weapons, tag matches, and unique character gimmicks
+without collapsing into hardcoded nonsense.
