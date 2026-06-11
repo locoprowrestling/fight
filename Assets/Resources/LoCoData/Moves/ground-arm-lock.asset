@@ -56,6 +56,16 @@ MonoBehaviour:
   causesRopeStagger: 0
   canTriggerRopeBreak: 1
   ignoresRopeBreak: 0
+  preferredCounterDirection: 0
+  allowsStrongDirectionalCounter: 0
+  basicReversalMomentum: 6
+  strongReversalMomentum: 11
+  basicReversalStagger: 0.8
+  strongReversalStagger: 1.2
+  basicReversalSeparation: 0.7
+  strongReversalSeparation: 1.25
+  basicReversalPresentationId: reversal-basic
+  strongReversalPresentationId: reversal-strong
   moveStartEventName: 
   hitEventName: 
   impactVfxEventName: 

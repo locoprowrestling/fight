@@ -26,7 +26,7 @@ MonoBehaviour:
   staminaDamage: 0
   momentumGainOnHit: 8
   momentumGainOnReversal: 6.4
-  stunDuration: 0.75
+  stunDuration: 0.9
   downedDuration: 0
   causesDownedState: 0
   canPinAfter: 0
@@ -56,6 +56,16 @@ MonoBehaviour:
   causesRopeStagger: 0
   canTriggerRopeBreak: 1
   ignoresRopeBreak: 0
+  preferredCounterDirection: 2
+  allowsStrongDirectionalCounter: 1
+  basicReversalMomentum: 6.4
+  strongReversalMomentum: 11.4
+  basicReversalStagger: 0.8
+  strongReversalStagger: 1.2
+  basicReversalSeparation: 0.7
+  strongReversalSeparation: 1.25
+  basicReversalPresentationId: reversal-basic
+  strongReversalPresentationId: reversal-strong
   moveStartEventName: 
   hitEventName: 
   impactVfxEventName: 

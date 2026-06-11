@@ -55,6 +55,12 @@ namespace LoCoFight
             m.stunDuration = stun;
             m.momentumGainOnHit = momentum;
             m.momentumGainOnReversal = Mathf.Max(6f, momentum * 0.8f);
+            m.basicReversalMomentum = Mathf.Max(6f, momentum * 0.8f);
+            m.strongReversalMomentum = m.basicReversalMomentum + 5f;
+            m.basicReversalStagger = 0.8f;
+            m.strongReversalStagger = 1.2f;
+            m.basicReversalSeparation = 0.7f;
+            m.strongReversalSeparation = 1.25f;
             m.downedDuration = downed;
             m.causesDownedState = downed > 0f;
             m.canPinAfter = canPin;
@@ -73,6 +79,14 @@ namespace LoCoFight
             m.placeholderPoseName = cat == MoveCategory.QuickGrapple || cat == MoveCategory.PowerGrapple ? "grapple" : "strike";
             set.moves.Add(m);
             return m;
+        }
+
+        static void ConfigureStrongCounter(
+            MoveData move,
+            ReversalReadDirection direction)
+        {
+            move.allowsStrongDirectionalCounter = true;
+            move.preferredCounterDirection = direction;
         }
 
         static void ConfigureGroundAttack(MoveData m, GroundTargetZone zone)
@@ -112,19 +126,30 @@ namespace LoCoFight
             var db = ScriptableObject.CreateInstance<MoveDatabase>();
             db.name = "StarterMoveDatabase";
 
-            db.lightStrikes.Add(Move(set, "quick-jab", "Quick Jab", MoveCategory.LightStrike, 4, 4, 0.15f, 0.10f, 0.25f, 0.40f, 4, tags: new[] { MoveTag.Clean }));
-            db.lightStrikes.Add(Move(set, "short-kick", "Short Kick", MoveCategory.LightStrike, 5, 5, 0.20f, 0.10f, 0.30f, 0.45f, 5, tags: new[] { MoveTag.Clean }));
+            var quickJab = Move(set, "quick-jab", "Quick Jab", MoveCategory.LightStrike, 4, 4, 0.15f, 0.10f, 0.25f, 0.40f, 4, tags: new[] { MoveTag.Clean });
+            var shortKick = Move(set, "short-kick", "Short Kick", MoveCategory.LightStrike, 5, 5, 0.20f, 0.10f, 0.30f, 0.45f, 5, tags: new[] { MoveTag.Clean });
+            ConfigureStrongCounter(quickJab, ReversalReadDirection.Away);
+            ConfigureStrongCounter(shortKick, ReversalReadDirection.Away);
+            db.lightStrikes.Add(quickJab);
+            db.lightStrikes.Add(shortKick);
 
-            db.heavyStrikes.Add(Move(set, "heavy-forearm", "Heavy Forearm", MoveCategory.HeavyStrike, 9, 10, 0.35f, 0.12f, 0.50f, 0.80f, 8, tags: new[] { MoveTag.Clean }));
+            var heavyForearm = Move(set, "heavy-forearm", "Heavy Forearm", MoveCategory.HeavyStrike, 9, 10, 0.35f, 0.12f, 0.50f, 0.80f, 8, tags: new[] { MoveTag.Clean });
             var boot = Move(set, "big-boot", "Big Boot", MoveCategory.HeavyStrike, 11, 13, 0.45f, 0.15f, 0.60f, 0.90f, 10, tags: new[] { MoveTag.Clean });
+            ConfigureStrongCounter(heavyForearm, ReversalReadDirection.Away);
+            ConfigureStrongCounter(boot, ReversalReadDirection.Away);
             boot.downsBelowHealthPercent = 35f;
             boot.downedDuration = 1.5f;
+            db.heavyStrikes.Add(heavyForearm);
             db.heavyStrikes.Add(boot);
 
             var armDrag = Grapple(set, "snap-arm-drag", "Snap Arm Drag", MoveCategory.QuickGrapple, 8, 8, 0.90f, 0.50f, 8, tags: new[] { MoveTag.Clean });
             var headlock = Grapple(set, "headlock-takedown", "Side Headlock Takedown", MoveCategory.QuickGrapple, 10, 10, 1.10f, 0f, 9, downed: 1.25f, tags: new[] { MoveTag.Clean });
             var kneeLift = Grapple(set, "knee-lift", "Knee Lift", MoveCategory.QuickGrapple, 9, 8, 0.80f, 0.90f, 8, tags: new[] { MoveTag.Clean });
             var snapmare = Grapple(set, "snapmare", "Snapmare", MoveCategory.QuickGrapple, 7, 7, 0.85f, 0f, 7, downed: 1.0f, tags: new[] { MoveTag.Clean });
+            ConfigureStrongCounter(armDrag, ReversalReadDirection.Right);
+            ConfigureStrongCounter(headlock, ReversalReadDirection.Left);
+            ConfigureStrongCounter(kneeLift, ReversalReadDirection.Away);
+            ConfigureStrongCounter(snapmare, ReversalReadDirection.Toward);
             db.quickGrapples.Add(armDrag);
             db.quickGrapples.Add(headlock);
             db.quickGrapples.Add(kneeLift);
@@ -142,6 +167,10 @@ namespace LoCoFight
             var verticalDrop = Grapple(set, "vertical-drop", "Vertical Drop", MoveCategory.PowerGrapple, 18, 22, 1.90f, 0f, 15, downed: 2.25f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
             var backbreaker = Grapple(set, "backbreaker", "Backbreaker", MoveCategory.PowerGrapple, 16, 20, 1.70f, 0f, 14, downed: 1.75f, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift });
             var shoulderThrow = Grapple(set, "shoulder-throw", "Shoulder Throw", MoveCategory.PowerGrapple, 14, 17, 1.55f, 0f, 12, downed: 1.8f, tags: new[] { MoveTag.Clean });
+            ConfigureStrongCounter(bodySlam, ReversalReadDirection.Away);
+            ConfigureStrongCounter(verticalDrop, ReversalReadDirection.Away);
+            ConfigureStrongCounter(backbreaker, ReversalReadDirection.Left);
+            ConfigureStrongCounter(shoulderThrow, ReversalReadDirection.Toward);
             db.powerGrapples.Add(bodySlam);
             db.powerGrapples.Add(verticalDrop);
             db.powerGrapples.Add(backbreaker);
@@ -156,9 +185,12 @@ namespace LoCoFight
             shoulderThrow.placeholderPoseName = "snap";
 
             var clothesline = Move(set, "running-clothesline", "Running Clothesline", MoveCategory.RunningStrike, 13, 15, 0.25f, 0.20f, 0.70f, 0f, 12, downed: 1.5f, tags: new[] { MoveTag.Clean, MoveTag.Running });
+            var runningTackle = Grapple(set, "running-tackle", "Running Tackle", MoveCategory.RunningGrapple, 12, 16, 1.0f, 0f, 11, downed: 1.6f, tags: new[] { MoveTag.Clean, MoveTag.Running });
+            ConfigureStrongCounter(clothesline, ReversalReadDirection.Away);
+            ConfigureStrongCounter(runningTackle, ReversalReadDirection.Away);
             clothesline.placeholderPoseName = "lariat";
             db.runningAttacks.Add(clothesline);
-            db.runningAttacks.Add(Grapple(set, "running-tackle", "Running Tackle", MoveCategory.RunningGrapple, 12, 16, 1.0f, 0f, 11, downed: 1.6f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
+            db.runningAttacks.Add(runningTackle);
 
             var elbowDrop = Move(set, "ground-elbow-drop", "Elbow Drop", MoveCategory.GroundUpperAttack, 8, 9, 0.35f, 0.15f, 0.55f, 0f, 8, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundUpper });
             elbowDrop.tier = MoveTier.Medium;
@@ -166,6 +198,10 @@ namespace LoCoFight
             var kneeDrop = Move(set, "ground-knee-drop", "Knee Drop", MoveCategory.GroundLowerAttack, 8, 9, 0.35f, 0.15f, 0.55f, 0f, 8, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundLower });
             kneeDrop.tier = MoveTier.Medium;
             var legStomp = Move(set, "ground-leg-stomp", "Leg Stomp", MoveCategory.GroundLowerAttack, 5, 5, 0.25f, 0.10f, 0.40f, 0f, 5, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundLower });
+            ConfigureStrongCounter(elbowDrop, ReversalReadDirection.Away);
+            ConfigureStrongCounter(headStomp, ReversalReadDirection.Away);
+            ConfigureStrongCounter(kneeDrop, ReversalReadDirection.Away);
+            ConfigureStrongCounter(legStomp, ReversalReadDirection.Away);
             ConfigureGroundAttack(elbowDrop, GroundTargetZone.Upper);
             ConfigureGroundAttack(headStomp, GroundTargetZone.Upper);
             ConfigureGroundAttack(kneeDrop, GroundTargetZone.Lower);
@@ -179,20 +215,24 @@ namespace LoCoFight
 
             var cornerForearm = Move(set, "corner-forearm", "Corner Forearm Smash", MoveCategory.CornerStrike, 9, 10, 0.30f, 0.12f, 0.45f, 1.0f, 8, tags: new[] { MoveTag.Clean, MoveTag.Corner });
             cornerForearm.tier = MoveTier.Medium;
+            ConfigureStrongCounter(cornerForearm, ReversalReadDirection.Away);
             ConfigureCornerMove(cornerForearm);
             var cornerBulldog = Move(set, "corner-bulldog", "Corner Bulldog", MoveCategory.CornerGrapple, 14, 16, 0.40f, 0.25f, 0.60f, 0f, 12, downed: 1.8f, tags: new[] { MoveTag.Clean, MoveTag.Corner });
             cornerBulldog.tier = MoveTier.Heavy;
             cornerBulldog.minimumStamina = 16f;
+            ConfigureStrongCounter(cornerBulldog, ReversalReadDirection.Toward);
             ConfigureCornerMove(cornerBulldog);
             db.cornerStrikes.Add(cornerForearm);
             db.cornerGrapples.Add(cornerBulldog);
 
             var ropeChops = Move(set, "rope-chop-combination", "Rope Chop Combination", MoveCategory.RopeStaggerAttack, 8, 9, 0.30f, 0.15f, 0.50f, 0.8f, 8, tags: new[] { MoveTag.Clean, MoveTag.Rope });
             ropeChops.tier = MoveTier.Medium;
+            ConfigureStrongCounter(ropeChops, ReversalReadDirection.Away);
             ConfigureRopeStaggerMove(ropeChops);
             ropeChops.placeholderPoseName = "chop";
             var ropeSnapmare = Move(set, "rope-snapmare", "Rope Snapmare", MoveCategory.RopeStaggerAttack, 9, 10, 0.30f, 0.30f, 0.30f, 0f, 9, downed: 1.25f, tags: new[] { MoveTag.Clean, MoveTag.Rope });
             ropeSnapmare.tier = MoveTier.Medium;
+            ConfigureStrongCounter(ropeSnapmare, ReversalReadDirection.Toward);
             ConfigureRopeStaggerMove(ropeSnapmare);
             ropeSnapmare.placeholderPoseName = "snap";
             db.ropeStaggerAttacks.Add(ropeChops);
@@ -204,6 +244,7 @@ namespace LoCoFight
             reboundLariat.requiresRopeRebound = true;
             reboundLariat.range = 1.8f;
             reboundLariat.placeholderPoseName = "lariat";
+            ConfigureStrongCounter(reboundLariat, ReversalReadDirection.Away);
             db.ropeReboundAttacks.Add(reboundLariat);
 
             var armLock = Move(set, "ground-arm-lock", "Ground Arm Lock", MoveCategory.Submission, 0, 15, 0.3f, 0.2f, 0.3f, 0f, 4, tags: new[] { MoveTag.Clean });

@@ -40,6 +40,7 @@
 - [ ] U, I, and O do nothing.
 
 ## Strikes & grapples
+
 - [ ] HIT REACTIONS: landing any strike on a mid-move opponent CANCELS their move (their attack never comes out); they recoil, slide back, and visibly wobble in Stunned for the move's stun duration before acting again — trading is decided by whoever's active frame lands first, not by both moves completing.
 - [ ] Movement has weight: starts, stops, and direction changes ramp over ~0.1-0.2 s instead of gliding instantly; the walk/run cycle speed follows the ramp.
 
@@ -211,6 +212,56 @@
       corner offense on a cornered player, rope-stagger attacks at the ropes,
       rebound attacks mid-rebound, and directional grapple follow-ups from
       locks.
+
+## Core match quality regression matrix
+
+### Reversals
+
+- [ ] Neutral, correct, incorrect, late, and unaffordable attempts resolve as
+      designed without duplicate stamina spending or stale wrestler states.
+- [ ] Strike, grapple, grapple-lock, and special reversal paths all use the
+      shared reversal API.
+- [ ] CPU reversals work on Easy, Normal, and Hard; difficulty changes reaction
+      success and timing without changing personality preferences.
+
+### SPECIAL readiness
+
+- [ ] Reaching full momentum transitions to ready exactly once and keeps all
+      three resource bars visible.
+- [ ] Failed special validation preserves momentum and stamina.
+- [ ] Successful activation spends momentum and stamina exactly once.
+- [ ] Match reset clears readiness and its persistent presentation accent.
+
+### Submission defense
+
+- [ ] Test center-ring, sideways, near-rope, exhausted, and no-rope-break
+      submission defense.
+- [ ] Test active escape, rope break, tap-out, reset, and match-end exits; every
+      path clears ownership and scripted movement.
+
+### AI personalities
+
+- [ ] Sample Technician, Brawler, HighFlyer, Powerhouse, Showman, and Evasive
+      wrestlers and confirm recognizable bounded action preferences.
+- [ ] Failed CPU actions never freeze the decision loop.
+- [ ] Repetition memory prevents an action-family spam loop while still
+      allowing a successful family to recur later.
+
+### Semantic presentation
+
+- [ ] Compare light, heavy, basic reversal, strong reversal, special, rope
+      break, submission escape, and tap-out presentation hierarchy.
+- [ ] Repeat representative cases with `FeelSystem.Enabled = false`; gameplay
+      state, resources, timing, and positions remain unchanged.
+
+### Full regression
+
+- [ ] Movement, run, tie-up, quick directional grapples, and power directional
+      grapples still work.
+- [ ] Ground, corner, rope-stagger, and rebound offense still resolve through
+      their contextual validators.
+- [ ] Pin, kickout, dodge, specials, pause, reset, and winner flow complete
+      without console errors.
 
 ## Reset
 

@@ -177,6 +177,37 @@ namespace LoCoFight.EditorTests
             move.tier = MoveTier.Heavy;
             move.minimumStamina = 20f;
             move.recoveryTime = 0.6f;
+            move.allowsStrongDirectionalCounter = true;
+            move.preferredCounterDirection = ReversalReadDirection.Away;
+
+            Assert.That(MoveDataValidator.ValidateWarnings(move, null), Is.Empty);
+        }
+
+        [Test]
+        public void ValidateWarnings_UntunedReversalFieldsWarn()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "untuned";
+            move.basicReversalPresentationId = "";
+            move.strongReversalMomentum = move.basicReversalMomentum;
+            move.strongReversalStagger = move.basicReversalStagger;
+            move.strongReversalSeparation = move.basicReversalSeparation;
+
+            var warnings = MoveDataValidator.ValidateWarnings(move, null);
+
+            Assert.That(warnings, Has.Some.Contains("directional counter"));
+            Assert.That(warnings, Has.Some.Contains("presentation identifiers"));
+            Assert.That(warnings, Has.Some.Contains("momentum"));
+            Assert.That(warnings, Has.Some.Contains("stagger"));
+            Assert.That(warnings, Has.Some.Contains("separation"));
+        }
+
+        [Test]
+        public void ValidateWarnings_SubmissionDoesNotRequireDirectionalCounter()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = "submission";
+            move.category = MoveCategory.Submission;
 
             Assert.That(MoveDataValidator.ValidateWarnings(move, null), Is.Empty);
         }

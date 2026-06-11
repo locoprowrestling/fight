@@ -49,7 +49,10 @@ Examples enforced by profiles:
   action; gates heavy/power/special moves; drained by running and holding
   submissions.
 - **Momentum** (0–100): gained on offense/reversals; specials require full
-  momentum and spend it all.
+  momentum. Full momentum creates persistent SPECIAL readiness rather than a
+  temporary combat state; readiness remains until a validated activation
+  spends momentum. Failed validation spends neither momentum nor stamina, and
+  successful activation spends each resource exactly once.
 
 ## Combat resolution
 
@@ -63,9 +66,13 @@ Examples enforced by profiles:
 - Lift rules: attacker lift class must cover defender weight class; Johnny
   Crash's Heavyweight Anchor vetoes lifts from non-heavyweights (failed lift =
   stamina loss, stun, defender momentum).
-- Reversals: timed windows defined per move; costs 8/12/18 stamina
-  (strike/grapple/special) modified by traits and buffs; human cooldown 0.35 s,
-  CPU cooldown by difficulty.
+- Reversals: one reversal button plus an optional camera-relative direction.
+  Valid timing and sufficient stamina always produce a basic reversal; a
+  direction matching the move's authored read upgrades it to a strong reversal
+  with more momentum, stagger, separation, and presentation. Neutral or
+  incorrect reads remain basic. Failed timing or affordability changes no
+  wrestler state and spends no stamina. Player and CPU call the same resolver
+  and runtime API.
 - Dodges: universal sidestep; The Vigilante's data-driven Vanishing Dodge can
   escape lifts, carries, combos, traps, and running attacks during early phases,
   with a once-per-match emergency version.
@@ -149,7 +156,12 @@ momentum rules. Player and CPU share the same gates.
   documented chance formula every 0.25 s. Rope break interrupts when
   `MatchRulesData` allows.
 - **Submissions**: pressure vs escape race to 100 with rope breaks, ramping
-  pressure, stamina drains, and per-special pressure rates.
+  pressure, stamina drains, and per-special pressure rates. The defender can
+  move the attached pair toward the nearest rope; direct movement is strongest,
+  sideways movement is reduced, and movement away does nothing. Low stamina
+  weakens both crawl speed and active escape effort. When rope breaks are
+  disabled, crawl intent contributes reduced escape meter instead. Every exit
+  clears submission ownership and scripted movement through one cleanup path.
 - **Referee five-count**: UI/system referee for illegal rope holds (The
   Tarantula); auto-release at 5 under standard rules.
 
@@ -169,6 +181,15 @@ herd to ropes for Morgana). `AIMemory` cools down repeated actions so the CPU
 doesn't spam. Difficulty data controls aggression, reversal/dodge accuracy,
 reaction delay, kickout and escape bonuses.
 
+Difficulty and personality are separate. Difficulty owns reaction timing,
+accuracy, and defensive bonuses. `AIPersonalityProfile` applies bounded
+preference multipliers to valid action families such as strikes, grapples,
+power moves, ground offense, submissions, pins, specials, and rope/corner
+strategy; it never changes accuracy, damage, health, stamina, or timing.
+Attempt and success memory penalizes repeated families, with successful
+repetition penalized more heavily. Failed actions always return control to the
+decision loop.
+
 Contextual priorities (same `WrestlerCombat` API as the player):
 
 - Downed target: credible pin or submission → ground attack → reposition/wait.
@@ -179,6 +200,17 @@ Contextual priorities (same `WrestlerCombat` API as the player):
 - Grapple-lock attacker: directional quick or power follow-up (power gated by
   `MovePacingRules.CanAttempt`) → release the lock if nothing resolves.
 - Rebound state: dedicated rebound attack → ordinary running attack.
+
+## Semantic presentation
+
+Gameplay systems emit `CombatPresentationEvent` values only after an outcome is
+resolved. `FeelSystem`, `IAnimationDriver`, and HUD effects consume light,
+medium, heavy, basic-reversal, strong-reversal, special, submission-release,
+rope-break, tap-out, and SPECIAL-ready events without changing gameplay.
+Disabling `FeelSystem` changes no state, timing, position, damage, or resource
+result. Animation markers may synchronize paired clips and request audio, VFX,
+or camera cues, but `MoveData` and gameplay systems remain authoritative for
+timing and roots. See [AnimationContract.md](AnimationContract.md).
 
 ## Match flow
 

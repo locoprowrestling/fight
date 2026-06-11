@@ -85,6 +85,21 @@ namespace LoCoFight
             if (move.tier == MoveTier.Special && database != null)
                 warnings.Add($"{id}: special-tier MoveData belongs in SpecialController data.");
 
+            if (move.category != MoveCategory.Submission)
+            {
+                if (!move.allowsStrongDirectionalCounter)
+                    warnings.Add($"{id}: reversible move has no strong directional counter.");
+                if (string.IsNullOrWhiteSpace(move.basicReversalPresentationId) ||
+                    string.IsNullOrWhiteSpace(move.strongReversalPresentationId))
+                    warnings.Add($"{id}: reversal presentation identifiers are incomplete.");
+                if (move.strongReversalMomentum <= move.basicReversalMomentum)
+                    warnings.Add($"{id}: strong reversal momentum must exceed basic momentum.");
+                if (move.strongReversalStagger <= move.basicReversalStagger)
+                    warnings.Add($"{id}: strong reversal stagger must exceed basic stagger.");
+                if (move.strongReversalSeparation <= move.basicReversalSeparation)
+                    warnings.Add($"{id}: strong reversal separation must exceed basic separation.");
+            }
+
             return warnings;
         }
 
