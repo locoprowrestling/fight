@@ -19,20 +19,6 @@ namespace LoCoFight.EditorTests
         }
 
         [Test]
-        public void ResolveLockAction_HeavyTakesPriorityWhenBothButtonsArePressed()
-        {
-            var result = Invoke("ResolveLockAction", true, true);
-            Assert.That(result.ToString(), Is.EqualTo("Heavy"));
-        }
-
-        [Test]
-        public void ResolveLockAction_GrappleIsUsedWhenHeavyIsNotPressed()
-        {
-            var result = Invoke("ResolveLockAction", false, true);
-            Assert.That(result.ToString(), Is.EqualTo("Grapple"));
-        }
-
-        [Test]
         public void CalculateRollTarget_StartsFromWrestlerPosition()
         {
             var wrestlerPosition = new Vector3(7f, 0.5f, -3f);

@@ -43,7 +43,7 @@ namespace LoCoFight
             if (Instance == null) return;
             string text = Instance._inputDevice == PlayerInputDevice.Controller
                 ? "A: shake  X: cheap shot  B: refuse"
-                : "T: shake  J: cheap shot  L: refuse";
+                : "T: shake  J: cheap shot  K: refuse";
             Instance.ShowMessage(text, duration);
         }
 
@@ -159,8 +159,8 @@ namespace LoCoFight
             _inputDevice = device;
             if (_controls == null) return;
             _controls.text = device == PlayerInputDevice.Controller
-                ? "Left stick move | LB run | X light | Y heavy | A grapple | RB reversal | B dodge\nR3 special | View pin | L3 submission | mash buttons/stick to escape | Menu pause/reset"
-                : "WASD move | Shift run | J light | K heavy | L grapple | Space reversal | Alt dodge\nU special | I pin | O submission | mash Space when pinned | F1 debug | R reset";
+                ? "Left stick move | LB run | X strike (hold: heavy) | A grapple/pin (hold: power/submission)\nRB reversal | B dodge | Y special | mash buttons/stick to escape | Menu pause/reset"
+                : "WASD move | Shift run | J strike (hold: heavy) | K grapple/pin (hold: power/submission)\nSpace reversal | ; dodge | L special | mash Space when pinned | F1 debug | R reset";
         }
 
         void Update()

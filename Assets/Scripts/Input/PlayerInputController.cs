@@ -11,6 +11,9 @@ namespace LoCoFight
         readonly InputBuffer _buffer = new InputBuffer();
         readonly LegacyPlayerInputSource _input = new LegacyPlayerInputSource();
         readonly PressTracker _strikeTracker = new PressTracker();
+        readonly PressTracker _controlTracker = new PressTracker();
+
+        const float DownedControlRange = 1.2f; // matches TryPin/TrySubmission reach
         Camera _camera;
         PlayerInputDevice _lastDevice = PlayerInputDevice.Keyboard;
 
@@ -144,24 +147,39 @@ namespace LoCoFight
                 _buffer.Buffer(PlayerAction.Heavy, () => _core.Combat.TryHeavyStrike());
             }
 
+            // Control button: in a lock, tap = quick / hold = power grapple
+            // (held direction picks the bucket); beside a downed opponent,
+            // tap = pin / hold = submission (unbuffered — they only fire when
+            // valid right now); otherwise tap = grapple attempt.
+            PressKind controlKind = _controlTracker.Update(
+                frame.ControlPressed, frame.ControlHeld, frame.ControlReleased,
+                Time.deltaTime, PlayerInputLogic.HoldThreshold);
             if (inLock)
             {
                 MoveDirection direction = ResolveGrappleDirection(frame);
-                switch (PlayerInputLogic.ResolveLockAction(frame.HeavyPressed, frame.GrapplePressed))
-                {
-                    case PlayerAction.Heavy:
-                        _core.Combat.TryPowerGrappleFromLock(direction);
-                        break;
-                    case PlayerAction.Grapple:
-                        _core.Combat.TryQuickGrappleFromLock(direction);
-                        break;
-                }
+                if (controlKind == PressKind.Tap)
+                    _core.Combat.TryQuickGrappleFromLock(direction);
+                else if (controlKind == PressKind.HoldCommitted)
+                    _core.Combat.TryPowerGrappleFromLock(direction);
             }
-            else if (frame.GrapplePressed)
+            else if (controlKind != PressKind.None)
             {
-                _buffer.Buffer(PlayerAction.Grapple,
-                    () => _core.Combat.TryCornerGrapple() ||
-                          _core.Combat.TryGrappleAttempt());
+                bool downedNear = _core.Opponent != null &&
+                                  _core.Opponent.States.IsDowned &&
+                                  _core.DistanceToOpponent() <= DownedControlRange;
+                if (controlKind == PressKind.Tap)
+                {
+                    if (downedNear)
+                        _core.Combat.TryPin();
+                    else
+                        _buffer.Buffer(PlayerAction.Grapple,
+                            () => _core.Combat.TryCornerGrapple() ||
+                                  _core.Combat.TryGrappleAttempt());
+                }
+                else if (downedNear)
+                {
+                    _core.Combat.TrySubmission();
+                }
             }
 
             if (frame.ReversalPressed)
@@ -172,13 +190,6 @@ namespace LoCoFight
 
             if (frame.SpecialPressed)
                 _buffer.Buffer(PlayerAction.Special, () => _core.Combat.TrySpecial(), 0.10f);
-
-            // Pins/submissions are not buffered: they only fire when valid right now.
-            if (frame.PinPressed)
-                _core.Combat.TryPin();
-
-            if (frame.SubmissionPressed)
-                _core.Combat.TrySubmission();
         }
 
         MoveDirection ResolveGrappleDirection(PlayerInputFrame frame)
@@ -194,6 +205,7 @@ namespace LoCoFight
         {
             _buffer.Clear();
             _strikeTracker.Reset();
+            _controlTracker.Reset();
             if (_core != null) _core.Motor.SetMoveInput(Vector3.zero, false);
         }
     }

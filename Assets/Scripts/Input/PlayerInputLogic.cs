@@ -8,13 +8,6 @@ namespace LoCoFight
         /// crossing it while held commits the hold action.
         public const float HoldThreshold = 0.22f;
 
-        public static PlayerAction ResolveLockAction(bool heavyPressed, bool grapplePressed)
-        {
-            if (heavyPressed) return PlayerAction.Heavy;
-            if (grapplePressed) return PlayerAction.Grapple;
-            return PlayerAction.None;
-        }
-
         public static Vector3 CalculateRollTarget(
             Vector3 wrestlerPosition,
             Vector3 worldDirection,

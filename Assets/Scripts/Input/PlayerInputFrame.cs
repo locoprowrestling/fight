@@ -8,13 +8,11 @@ namespace LoCoFight
         public PlayerInputDevice Device;
 
         public bool RunHeld;
-        public bool LightPressed;
-        public bool HeavyPressed;
-        public bool GrapplePressed;
 
-        // Press phases for the two tap/hold core buttons of the redesigned
-        // scheme: Strike (J / joystick 2) and Control (K / joystick 0).
-        // LightPressed doubles as the Strike pressed edge.
+        // Press phases for the two tap/hold core buttons: Strike (J /
+        // joystick 2) and Control (K / joystick 0). LightPressed doubles as
+        // the Strike pressed edge.
+        public bool LightPressed;
         public bool StrikeHeld;
         public bool StrikeReleased;
         public bool ControlPressed;
@@ -23,8 +21,6 @@ namespace LoCoFight
         public bool ReversalPressed;
         public bool DodgePressed;
         public bool SpecialPressed;
-        public bool PinPressed;
-        public bool SubmissionPressed;
 
         public bool PausePressed;
         public bool ResetPressed;

@@ -28,7 +28,8 @@ namespace LoCoFight
 
             bool stickMash = ReadStickMash(move);
             bool reversal = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton5);
-            bool dodge = Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.JoystickButton1);
+            bool dodge = Input.GetKeyDown(KeyCode.Semicolon) || Input.GetKeyDown(KeyCode.LeftAlt) ||
+                         Input.GetKeyDown(KeyCode.JoystickButton1);
 
             return new PlayerInputFrame
             {
@@ -36,8 +37,6 @@ namespace LoCoFight
                 Device = _lastDevice,
                 RunHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.JoystickButton4),
                 LightPressed = Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.JoystickButton2),
-                HeavyPressed = Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.JoystickButton3),
-                GrapplePressed = Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.JoystickButton0),
                 StrikeHeld = Input.GetKey(KeyCode.J) || Input.GetKey(KeyCode.JoystickButton2),
                 StrikeReleased = Input.GetKeyUp(KeyCode.J) || Input.GetKeyUp(KeyCode.JoystickButton2),
                 ControlPressed = Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.JoystickButton0),
@@ -45,9 +44,7 @@ namespace LoCoFight
                 ControlReleased = Input.GetKeyUp(KeyCode.K) || Input.GetKeyUp(KeyCode.JoystickButton0),
                 ReversalPressed = reversal,
                 DodgePressed = dodge,
-                SpecialPressed = Input.GetKeyDown(KeyCode.U) || Input.GetKeyDown(KeyCode.JoystickButton9),
-                PinPressed = Input.GetKeyDown(KeyCode.I) || Input.GetKeyDown(KeyCode.JoystickButton6),
-                SubmissionPressed = Input.GetKeyDown(KeyCode.O) || Input.GetKeyDown(KeyCode.JoystickButton8),
+                SpecialPressed = Input.GetKeyDown(KeyCode.L) || Input.GetKeyDown(KeyCode.JoystickButton3),
                 PausePressed = Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.JoystickButton7),
                 ResetPressed = Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.JoystickButton7),
                 DebugPressed = Input.GetKeyDown(KeyCode.F1),
@@ -57,7 +54,7 @@ namespace LoCoFight
                                          Input.GetKeyDown(KeyCode.JoystickButton0),
                 HandshakeCheapShotPressed = Input.GetKeyDown(KeyCode.J) ||
                                             Input.GetKeyDown(KeyCode.JoystickButton2),
-                HandshakeRefusePressed = Input.GetKeyDown(KeyCode.L) ||
+                HandshakeRefusePressed = Input.GetKeyDown(KeyCode.K) ||
                                          Input.GetKeyDown(KeyCode.JoystickButton1)
             };
         }
@@ -87,11 +84,9 @@ namespace LoCoFight
                    Input.GetKeyDown(KeyCode.J) ||
                    Input.GetKeyDown(KeyCode.K) ||
                    Input.GetKeyDown(KeyCode.L) ||
+                   Input.GetKeyDown(KeyCode.Semicolon) ||
                    Input.GetKeyDown(KeyCode.Space) ||
                    Input.GetKeyDown(KeyCode.LeftAlt) ||
-                   Input.GetKeyDown(KeyCode.U) ||
-                   Input.GetKeyDown(KeyCode.I) ||
-                   Input.GetKeyDown(KeyCode.O) ||
                    Input.GetKeyDown(KeyCode.Escape);
         }
 
