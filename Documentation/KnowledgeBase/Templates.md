@@ -44,6 +44,40 @@ Notes:
 - Verify the failure path as well as the success path: insufficient stamina, invalid context, failed lift, missed hit, and interrupted grapple must leave both wrestlers in valid states.
 - Keep damage, timing, stamina, momentum, reversal windows, and state consequences in move/combat data. Animation names and placeholder poses are presentation hooks only.
 
+## New contextual move
+
+Contextual families (ground, corner, rope stagger, rebound, directional
+grapples) follow the same `Move`/`Grapple` factories plus a compatibility
+contract and a database family:
+
+```csharp
+// Ground attack — zone-gated against a downed defender:
+var axeHandle = Move(set, "ground-axe-handle", "Axe Handle", MoveCategory.GroundUpperAttack,
+    7, 8, 0.30f, 0.12f, 0.50f, 0f, 7, tags: new[] { MoveTag.Clean, MoveTag.Ground, MoveTag.GroundUpper });
+axeHandle.tier = MoveTier.Medium;            // pacing class
+ConfigureGroundAttack(axeHandle, GroundTargetZone.Upper); // requiresTargetDowned + zone + pose + range
+db.groundUpperAttacks.Add(axeHandle);
+
+// Directional grapple — assign a bucket; neutral is the required fallback:
+db.directionalQuickGrapples.forward.Add(snapmare);
+```
+
+Required compatibility fields by family (validated in `ContextualMoveValidator`):
+
+- Ground: `requiresTargetDowned`, `requiredGroundZone` (Upper/Lower)
+- Corner: `requiresTargetCornered`, `requiresCornerZone`
+- Rope stagger: `requiresTargetRopeStaggered`, `requiresOpponentNearRopes`
+- Rebound: `requiresRopeRebound`
+- Heavy tier: set `minimumStamina` (gate only — `staminaCost` is what's spent)
+
+Checklist before calling it done:
+
+1. The move sits in exactly one contextual family list (or directional bucket); directional sets keep a non-empty neutral bucket (`MoveDataValidator` errors otherwise).
+2. Validation rejects each missing requirement with the right `MoveRejectionReason` and spends no stamina (watch F1 while testing).
+3. The result state is documented and applied (remain in context, stunned, downed, or exit) and an interrupted attempt leaves both wrestlers in valid, timeout-recoverable states.
+4. The CPU can reach the move through the shared `WrestlerCombat` API (it must not need controller-specific code).
+5. Regenerate assets via **Tools > LoCo Fight Game > Create Default Prototype Assets** and check the console for `[MoveData]` errors/warnings.
+
 ## New special
 
 Factory next to the other `*Special(set)` methods:

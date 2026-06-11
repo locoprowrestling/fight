@@ -75,6 +75,32 @@ fallback such as `fallbackMoveIfLiftFails`.
 *Why:* silent no-ops and partially entered states create stuck wrestlers,
 unclear controls, and animation/gameplay disagreement.
 
+**New contextual families resolve context through `CombatContextResolver`.**
+Context (grapple lock, ground upper/lower, corner, rope stagger, rebound,
+standing) is computed transiently when an action is attempted — never cached as
+a second persistent state and never re-derived ad hoc in controllers. Geometry
+questions still go to `RingInteractionSystem`, state questions to
+`WrestlerStateMachine`.
+*Why:* one resolution priority keeps player and CPU agreeing about which family
+applies and avoids stale-context execution.
+
+**Validate structurally before spending resources.** Every contextual request
+goes through a `ContextualMoveValidator` method that returns a
+`MoveValidationResult` (validity, `MoveRejectionReason`, debug message) before
+any stamina is spent or temporary state taken. Stamina gates use
+`MovePacingRules.RequiredStamina` (max of cost and minimum); only `staminaCost`
+is spent. Intentional resolved failures (failed lifts) may still consume
+resources.
+*Why:* invalid attempts must be free and explainable, and player/CPU must hit
+the identical rejection path.
+
+**Record every contextual request for F1.** Use the `RecordContext` funnel in
+`WrestlerCombat` so the overlay shows context, zone, direction, family,
+candidate count, selection, tier, validation result, and fallback use; log
+rejections.
+*Why:* "nothing happened" is the costliest bug class in contextual input — the
+overlay must always be able to say why.
+
 **Gameplay data owns effects and timing; animation only presents them.**
 `MoveData` and combat routines define startup, active, recovery, damage,
 reversal windows, stamina, momentum, and result states.

@@ -57,8 +57,14 @@
 - [ ] Vigilante — Alt escapes a power grapple lift via Vanishing Dodge (8 s cooldown, not infinite).
 - [ ] Zeak's handshake fires at match start; as the opponent you can accept (T), refuse (L), cheap shot (J), or ignore.
 
+## Pacing (move tiers)
+- [ ] At low-but-affordable stamina, light offense (Quick Jab, Head Stomp) still fires while heavy moves (Corner Bulldog, Rebound Lariat, power grapples) reject with InsufficientStamina in F1; above their minimum they execute and spend only their listed cost.
+- [ ] Heavy misses keep their long recovery (punishable); specials still require full momentum; the CPU stops attempting power/corner-grapple offense it cannot afford instead of spamming failed attempts.
+- [ ] Running **Create Default Prototype Assets** logs no `[MoveData]` errors and only advisory warnings.
+
 ## CPU
 - [ ] The CPU approaches, circles, strikes, grapples, herds you to ropes/corners, reverses sometimes, pins when you're hurt, and sets up its own special at full momentum. It never stands still for long and doesn't spam one move.
+- [ ] The CPU uses every contextual family: ground attacks on a downed player, corner offense on a cornered player, rope-stagger attacks at the ropes, rebound attacks mid-rebound, and directional grapple follow-ups from locks.
 
 ## Reset
 - [ ] After the winner banner, R restarts cleanly (works in saved scenes and untitled scenes).

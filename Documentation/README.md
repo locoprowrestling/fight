@@ -20,10 +20,12 @@ Default match: **Zeak Gallent (player) vs JT Staten (CPU)**. Press **F2** in Pla
 |---|---|
 | Move | W / A / S / D |
 | Run | Left Shift |
-| Light strike | J |
+| Light strike (contextual: ground / corner / rope attack when one applies) | J |
 | Heavy strike | K |
 | Grapple / quick grapple from lock | L |
 | Power grapple from lock | K (or hold L + K) |
+| Directional grapple from lock | hold a movement direction + L or K |
+| Corner grapple (opponent cornered) | L |
 | Reversal / block / kickout mash | Space |
 | Dodge / escape / kickout mash | Left Alt |
 | Special | U |

@@ -46,6 +46,58 @@ The `WrestlerStateMachine` defines 40+ states (Idle through Victory/Defeat). Eve
 - Reversals: timed windows defined per move; costs 8/12/18 stamina (strike/grapple/special) modified by traits and buffs; human cooldown 0.35 s, CPU cooldown by difficulty.
 - Dodges: universal sidestep; The Vigilante's data-driven Vanishing Dodge can escape lifts, carries, combos, traps, and running attacks during early phases, with a once-per-match emergency version.
 
+## Contextual combat
+
+Wrestler state and ring position produce distinct offensive families. Context is
+resolved transiently by `CombatContextResolver` at the moment an action is
+attempted (never stored as a second persistent state), with fixed priority:
+
+1. Active grapple lock
+2. Downed target (ground upper/lower by attacker position along the defender's facing axis)
+3. Cornered target inside a corner zone
+4. Rope-staggered target near a rope
+5. Attacker in a rebound state
+6. Standing
+
+Families in `MoveDatabase`: `groundUpperAttacks`, `groundLowerAttacks`,
+`directionalQuickGrapples` / `directionalPowerGrapples` (neutral / forward /
+backward / lateral buckets with neutral fallback), `cornerStrikes`,
+`cornerGrapples`, `ropeStaggerAttacks`, `ropeReboundAttacks`.
+
+- **Ground offense**: J near a downed target picks the upper or lower family
+  from the attacker's position; standing strikes still whiff on downed targets;
+  pins (I) and submissions (O) are unchanged. Ground hits never reset the
+  defender's downed timer, so recovery can't be suppressed.
+- **Directional grapples**: in a lock, the held movement direction (facing-
+  relative, dead-zoned) selects the bucket for L (quick) or K (power); an empty
+  bucket falls back to neutral; an empty neutral releases the lock cleanly.
+- **Corner offense**: requires both the Cornered state and live corner-zone
+  geometry. Each move ends in a documented result (remain cornered / downed
+  toward ring center); the defender keeps a reversal window and the timeout
+  escape.
+- **Rope offense**: rope-stagger attacks require a rope-staggered target near a
+  rope (`RingInteractionSystem` stays the only rope authority); the dedicated
+  rebound family requires an active rebound state and stays distinct from
+  ordinary running attacks.
+
+Every contextual request goes through `ContextualMoveValidator` before any
+stamina is spent and returns a structured result (validity, rejection reason,
+debug message), recorded in a `CombatContextSnapshot` shown in the F1 overlay.
+
+**Move tiers** (`MoveTier`) regulate pacing without a match-phase system:
+
+| Tier | Cost | Recovery | Intended use |
+|---|---|---|---|
+| Light | Low | Short | Frequent setup |
+| Medium | Moderate | Moderate | Sustained control |
+| Heavy | High | Long | Escalation and payoff |
+| Special | Existing special rules | Category-specific | Peak offense |
+
+`MovePacingRules.RequiredStamina` gates attempts on the greater of
+`staminaCost` and `minimumStamina`; only `staminaCost` is spent. Light offense
+stays available at low stamina; heavy moves need a real stamina commitment;
+specials keep their momentum rules. Player and CPU share the same gates.
+
 ## Pins, submissions, referee
 
 - **Pins**: count at 1/2/3 s; human defender mashes (required effort scales with health, stamina, kickout skill, recent damage, penalties); CPU evaluates a documented chance formula every 0.25 s. Rope break interrupts when `MatchRulesData` allows.
@@ -59,6 +111,14 @@ The `WrestlerStateMachine` defines 40+ states (Idle through Victory/Defeat). Eve
 ## CPU AI
 
 `CPUWrestlerAI` is a reaction-delay-gated FSM (Approach, Circle, BackOff, strike/grapple attempts, rope/corner herding, special setup, pin/submission, defense). `AISpecialPlanner` knows how to position each special archetype (climb a corner for aerials, stand at the head for JT, back off for Johnny's charge, herd to ropes for Morgana). `AIMemory` cools down repeated actions so the CPU doesn't spam. Difficulty data controls aggression, reversal/dodge accuracy, reaction delay, kickout and escape bonuses.
+
+Contextual priorities (same `WrestlerCombat` API as the player):
+
+- Downed target: credible pin or submission → ground attack → reposition/wait.
+- Cornered target: corner grapple or strike (by `cornerStrategyPreference` and tier-pacing affordability) → normal fallback; never herds an already-cornered opponent.
+- Rope-staggered target: rope-context attack → normal fallback.
+- Grapple-lock attacker: directional quick or power follow-up (power gated by `MovePacingRules.CanAttempt`) → release the lock if nothing resolves.
+- Rebound state: dedicated rebound attack → ordinary running attack.
 
 ## Match flow
 
