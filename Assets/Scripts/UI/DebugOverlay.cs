@@ -23,7 +23,14 @@ namespace LoCoFight
             DrawWrestler(mm.Cpu, "CPU");
 
             var ai = mm.Cpu.GetComponent<CPUWrestlerAI>();
-            if (ai != null) GUILayout.Label($"AI state: {ai.CurrentState}  behavior(F3): {ai.BehaviorMode}");
+            if (ai != null)
+            {
+                GUILayout.Label($"AI state: {ai.CurrentState}  behavior(F3): {ai.BehaviorMode}");
+                GUILayout.Label($"AI: {ai.PersonalityKind} state={ai.CurrentState} " +
+                                $"selected={ai.LastSelectedFamily}");
+                GUILayout.Label($"AI weights: {ai.LastWeightsDebug}");
+                GUILayout.Label($"AI memory: {ai.MemoryDebug}");
+            }
 
             var pic = mm.Player.GetComponent<PlayerInputController>();
             if (pic != null)

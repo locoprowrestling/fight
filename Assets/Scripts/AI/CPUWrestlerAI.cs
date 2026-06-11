@@ -16,19 +16,88 @@ namespace LoCoFight
         WrestlerCore _core;
         AIDifficultyData _difficulty;
         readonly AIMemory _memory = new AIMemory();
+        AIPersonalityProfile _personality = AIPersonalityProfiles.Balanced;
+        AIPersonality _personalityKind = AIPersonality.Balanced;
 
         float _nextDecisionAt;
         float _reversalCooldownUntil;
 
+        // F1 diagnostics: what the last weighted decision saw and chose.
+        public AIPersonality PersonalityKind => _personalityKind;
+        public string LastSelectedFamily { get; private set; } = "-";
+        public string LastWeightsDebug { get; private set; } = "-";
+        public string MemoryDebug => _memory.DebugSummary(Time.time);
+
         public void Bind(WrestlerCore core, AIDifficultyData difficulty)
         {
+            Unsubscribe();
             _core = core;
             _difficulty = difficulty;
+            ResolvePersonality();
+            if (_core != null)
+            {
+                // Success memory comes from resolved combat outcomes, not
+                // from the attempt sites: a whiff is an attempt, a landed
+                // move or completed reversal is a success.
+                _core.Combat.OnLandedHit += HandleLandedHit;
+                _core.Combat.OnReversedOpponent += HandleReversedOpponent;
+            }
+        }
+
+        void OnDestroy() => Unsubscribe();
+
+        void Unsubscribe()
+        {
+            if (_core == null) return;
+            _core.Combat.OnLandedHit -= HandleLandedHit;
+            _core.Combat.OnReversedOpponent -= HandleReversedOpponent;
+        }
+
+        void HandleLandedHit(MoveData move) =>
+            _memory.NoteSuccess(FamilyFor(move), Time.time);
+
+        void HandleReversedOpponent() =>
+            _memory.NoteSuccess("reversal", Time.time);
+
+        void ResolvePersonality()
+        {
+            _personalityKind = _core != null && _core.Stats != null && _core.Stats.Data != null
+                ? _core.Stats.Data.aiPersonality
+                : AIPersonality.Balanced;
+            _personality = AIPersonalityProfiles.For(_personalityKind);
+        }
+
+        /// Maps a landed move back to the decision family that produced it.
+        static string FamilyFor(MoveData move)
+        {
+            if (move == null) return "unknown";
+            switch (move.category)
+            {
+                case MoveCategory.LightStrike: return "light";
+                case MoveCategory.HeavyStrike: return "heavy";
+                case MoveCategory.QuickGrapple:
+                case MoveCategory.PowerGrapple:
+                case MoveCategory.RunningGrapple: return "grapple";
+                case MoveCategory.RunningStrike:
+                case MoveCategory.RopeReboundAttack: return "running";
+                case MoveCategory.Submission: return "submission";
+                case MoveCategory.Pin: return "pin";
+                case MoveCategory.GroundUpperAttack:
+                case MoveCategory.GroundLowerAttack: return "ground";
+                case MoveCategory.CornerAttack:
+                case MoveCategory.CornerStrike:
+                case MoveCategory.CornerGrapple: return "corner";
+                case MoveCategory.RopeStaggerAttack: return "rope";
+                default: return "other";
+            }
         }
 
         public void ResetForMatch()
         {
             _memory.Clear();
+            ResolvePersonality();
+            LastSelectedFamily = "-";
+            LastWeightsDebug = "-";
             CurrentState = AIState.IdleThink;
         }
 
@@ -118,9 +187,7 @@ namespace LoCoFight
                         incoming != null
                             ? incoming.preferredCounterDirection
                             : ReversalReadDirection.Neutral,
-                        _core.Stats.Data != null
-                            ? _core.Stats.Data.aiPersonality
-                            : AIPersonality.Balanced,
+                        _personalityKind,
                         Random.value);
                     _core.Combat.TryReversal(read, read != MoveDirection.Neutral);
                 }
@@ -225,38 +292,50 @@ namespace LoCoFight
                 return;
             }
 
-            // Stamina caution: back off and breathe.
-            if (_core.Stats.StaminaPercent < _difficulty.staminaCautionThreshold)
+            float now = Time.time;
+
+            // Stamina caution: back off and breathe. Personalities that rest
+            // more (Showman, Evasive) raise the threshold; Brawler lowers it.
+            if (_core.Stats.StaminaPercent <
+                _difficulty.staminaCautionThreshold * _personality.BreatherFrequency)
             {
                 CurrentState = AIState.BackOff;
                 return;
             }
 
-            // Special: fire it or set it up.
-            if (_core.Stats.HasFullMomentum && Random.value < _difficulty.specialSetupPreference)
+            // Special: fire it or set it up. A valid setup is a tactically
+            // obvious opportunity, so personality only shades the chance.
+            if (_core.Stats.HasFullMomentum &&
+                Random.value < AIDecisionWeights.Apply(
+                    _difficulty.specialSetupPreference, _personality.SpecialSetup, 0f))
             {
                 CurrentState = AIState.AttemptSpecial;
                 return;
             }
 
-            // Opponent downed: pin, submit, or wait for them to rise.
+            // Opponent downed: pin, submit, or work the ground. A credible
+            // late pin stays ahead of personality preferences.
             if (Opp.States.IsDowned)
             {
-                bool hurtEnough = Opp.Stats.HealthPercent <= _difficulty.pinAttemptThreshold;
-                if (hurtEnough && _memory.CanUse("pin", 3f))
+                bool hurtEnough = Opp.Stats.HealthPercent <=
+                    Mathf.Clamp01(_difficulty.pinAttemptThreshold * _personality.PinUrgency);
+                if (hurtEnough && _memory.CanUse("pin", 3f, now))
                 {
                     CurrentState = AIState.AttemptPin;
                     return;
                 }
-                if (Opp.Stats.HealthPercent <= _difficulty.submissionAttemptThreshold &&
-                    _core.Stats.StaminaPercent > 0.35f && _memory.CanUse("submission", 6f))
+                if (Opp.Stats.HealthPercent <=
+                    Mathf.Clamp01(_difficulty.submissionAttemptThreshold * _personality.Submission) &&
+                    _core.Stats.StaminaPercent > 0.35f && _memory.CanUse("submission", 6f, now))
                 {
                     CurrentState = AIState.AttemptSubmission;
                     return;
                 }
                 // Ground offense never outranks a credible pin or submission —
                 // both checks above already returned.
-                if (_memory.CanUse("ground", 1.4f))
+                if (_memory.CanUse("ground", 1.4f, now) &&
+                    Random.value < AIDecisionWeights.Apply(
+                        0.9f, _personality.GroundOffense, _memory.RepetitionPenalty("ground", now)))
                 {
                     CurrentState = AIState.AttemptGroundAttack;
                     return;
@@ -270,12 +349,21 @@ namespace LoCoFight
 
             if (dist > 4.5f)
             {
-                CurrentState = roll < _difficulty.ropeStrategyPreference ? AIState.UseRopeRebound : AIState.Approach;
+                CurrentState = roll < AIDecisionWeights.Apply(
+                        _difficulty.ropeStrategyPreference, _personality.RopeCornerStrategy, 0f)
+                    ? AIState.UseRopeRebound
+                    : AIState.Approach;
             }
             else if (dist > 2.2f)
             {
-                if (roll < _difficulty.aggression * 0.5f) CurrentState = AIState.AttemptRunningAttack;
-                else if (roll < _difficulty.aggression) CurrentState = AIState.Approach;
+                // The charge is the risky play at mid range.
+                if (roll < AIDecisionWeights.Apply(
+                        _difficulty.aggression * 0.5f, _personality.RiskTolerance,
+                        _memory.RepetitionPenalty("running", now)))
+                    CurrentState = AIState.AttemptRunningAttack;
+                else if (roll < AIDecisionWeights.Apply(
+                        _difficulty.aggression, _personality.Aggression, 0f))
+                    CurrentState = AIState.Approach;
                 else CurrentState = AIState.Circle;
             }
             else
@@ -304,21 +392,63 @@ namespace LoCoFight
                 // so the match has readable pauses. Contextual windows above
                 // (staggered/cornered/downed) are exempt — exploiting those
                 // is correct urgency.
-                else if (Random.value > _difficulty.aggression)
+                else if (Random.value > AIDecisionWeights.Apply(
+                        _difficulty.aggression, _personality.Aggression, 0f))
                 {
-                    CurrentState = Random.value < 0.3f ? AIState.BackOff : AIState.Circle;
+                    CurrentState = Random.value < 0.3f * _personality.BreatherFrequency
+                        ? AIState.BackOff
+                        : AIState.Circle;
                 }
-                else if (roll < _difficulty.strikePreference * 0.6f && _memory.CanUse("light", 0.6f))
-                    CurrentState = AIState.AttemptLightStrike;
-                else if (roll < _difficulty.strikePreference && _memory.CanUse("heavy", 1.4f))
-                    CurrentState = AIState.AttemptHeavyStrike;
-                else if (roll < _difficulty.strikePreference + _difficulty.grapplePreference && _memory.CanUse("grapple", 1.2f))
-                    CurrentState = AIState.AttemptGrapple;
-                else if (roll < 0.9f)
-                    CurrentState = AIState.ForceOpponentToRopes;
                 else
-                    CurrentState = AIState.Circle;
+                {
+                    ChooseNeutralCloseAction(now);
+                }
             }
+        }
+
+        /// Weighted neutral close-range decision: difficulty supplies the
+        /// base envelope, personality reshapes it inside bounds, and the
+        /// repetition memory taxes families the CPU keeps leaning on.
+        void ChooseNeutralCloseAction(float now)
+        {
+            float lightWeight = _memory.CanUse("light", 0.6f, now)
+                ? AIDecisionWeights.Apply(
+                    _difficulty.strikePreference * 0.6f, _personality.Strike,
+                    _memory.RepetitionPenalty("light", now))
+                : 0f;
+            float heavyWeight = _memory.CanUse("heavy", 1.4f, now)
+                ? AIDecisionWeights.Apply(
+                    _difficulty.strikePreference * 0.5f,
+                    (_personality.Strike + _personality.PowerMove) * 0.5f,
+                    _memory.RepetitionPenalty("heavy", now))
+                : 0f;
+            float grappleWeight = _memory.CanUse("grapple", 1.2f, now)
+                ? AIDecisionWeights.Apply(
+                    _difficulty.grapplePreference, _personality.Grapple,
+                    _memory.RepetitionPenalty("grapple", now))
+                : 0f;
+            float herdWeight = AIDecisionWeights.Apply(
+                0.25f, _personality.RopeCornerStrategy, 0f);
+
+            CurrentState = AIDecisionWeights.ChooseWeighted(
+                Random.value,
+                new WeightedAIAction(AIState.AttemptLightStrike, lightWeight),
+                new WeightedAIAction(AIState.AttemptHeavyStrike, heavyWeight),
+                new WeightedAIAction(AIState.AttemptGrapple, grappleWeight),
+                new WeightedAIAction(AIState.ForceOpponentToRopes, herdWeight),
+                new WeightedAIAction(AIState.Circle, 0.1f));
+
+            LastSelectedFamily = CurrentState switch
+            {
+                AIState.AttemptLightStrike => "light",
+                AIState.AttemptHeavyStrike => "heavy",
+                AIState.AttemptGrapple => "grapple",
+                AIState.ForceOpponentToRopes => "herd",
+                _ => "circle",
+            };
+            LastWeightsDebug =
+                $"light={lightWeight:0.00} heavy={heavyWeight:0.00} " +
+                $"grapple={grappleWeight:0.00} herd={herdWeight:0.00}";
         }
 
         void Act()
@@ -340,9 +470,13 @@ namespace LoCoFight
                 case AIState.AttemptLightStrike:
                     if (InRange(WrestlerCombat.StrikeRange))
                     {
-                        _memory.Note("light");
-                        if (!_core.Combat.TryLightStrike()) CurrentState = AIState.IdleThink;
-                        Rethink();
+                        // Success rule: only a successful (or state-changing)
+                        // action re-arms the decision timer; a failed Try*
+                        // must yield to Decide through IdleThink.
+                        bool litConnected = _core.Combat.TryLightStrike();
+                        _memory.NoteAttempt("light", Time.time);
+                        if (litConnected) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
@@ -350,9 +484,10 @@ namespace LoCoFight
                 case AIState.AttemptHeavyStrike:
                     if (InRange(WrestlerCombat.StrikeRange))
                     {
-                        _memory.Note("heavy");
-                        if (!_core.Combat.TryHeavyStrike()) CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool heavyStarted = _core.Combat.TryHeavyStrike();
+                        _memory.NoteAttempt("heavy", Time.time);
+                        if (heavyStarted) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
@@ -368,9 +503,10 @@ namespace LoCoFight
                     }
                     else if (InRange(WrestlerCombat.GrappleRange))
                     {
-                        _memory.Note("grapple");
-                        if (!_core.Combat.TryGrappleAttempt()) CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool locked = _core.Combat.TryGrappleAttempt();
+                        _memory.NoteAttempt("grapple", Time.time);
+                        if (locked) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
@@ -382,7 +518,9 @@ namespace LoCoFight
                         // downgrades unaffordable picks and keeps the lock when a
                         // family has nothing affordable, so the quick fallback below
                         // still gets its chance.
-                        bool power = Random.value < _difficulty.grapplePreference &&
+                        // Power follow-up preference is personality-shaped.
+                        bool power = Random.value < AIDecisionWeights.Apply(
+                                         _difficulty.grapplePreference, _personality.PowerMove, 0f) &&
                                      MovePacingRules.CanAttempt(
                                          _core.Moveset != null ? _core.Moveset.RandomPowerGrapple() : null,
                                          _core.Stats.Stamina);
@@ -390,7 +528,12 @@ namespace LoCoFight
                         bool executed = power
                             ? _core.Combat.TryPowerGrappleFromLock(direction) || _core.Combat.TryQuickGrappleFromLock(direction)
                             : _core.Combat.TryQuickGrappleFromLock(direction) || _core.Combat.TryPowerGrappleFromLock(direction);
-                        if (!executed)
+                        _memory.NoteAttempt("grapple", Time.time);
+                        if (executed)
+                        {
+                            Rethink();
+                        }
+                        else
                         {
                             // Never leave a lock dangling, and never dangle
                             // silently: release, say why, and breathe.
@@ -398,7 +541,6 @@ namespace LoCoFight
                             Debug.Log($"[AI] {_core.DisplayName} releases the lock — no affordable follow-up");
                             CurrentState = AIState.BackOff;
                         }
-                        Rethink();
                     }
                     else
                     {
@@ -416,9 +558,11 @@ namespace LoCoFight
                     {
                         // Rebound-specific attack while rebounding; ordinary
                         // running attack outside the rebound states.
-                        if (!_core.Combat.TryRopeReboundAttack() && !_core.Combat.TryRunningAttack())
-                            CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool charged = _core.Combat.TryRopeReboundAttack() ||
+                                       _core.Combat.TryRunningAttack();
+                        _memory.NoteAttempt("running", Time.time);
+                        if (charged) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     break;
 
@@ -426,9 +570,11 @@ namespace LoCoFight
                     if (InRange(1.6f))
                     {
                         // Rope-context attack with a normal-offense fallback.
-                        if (!_core.Combat.TryRopeStaggerAttack() && !_core.Combat.TryHeavyStrike())
-                            CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool roped = _core.Combat.TryRopeStaggerAttack() ||
+                                     _core.Combat.TryHeavyStrike();
+                        _memory.NoteAttempt("rope", Time.time);
+                        if (roped) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
@@ -438,8 +584,10 @@ namespace LoCoFight
                     // Keep striking at close range — knockback pushes them toward ropes/corners.
                     if (InRange(WrestlerCombat.StrikeRange))
                     {
-                        if (!_core.Combat.TryLightStrike()) CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool herded = _core.Combat.TryLightStrike();
+                        _memory.NoteAttempt("light", Time.time);
+                        if (herded) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
@@ -453,15 +601,18 @@ namespace LoCoFight
                 case AIState.AttemptCornerOffense:
                     if (InRange(1.55f))
                     {
-                        bool cornerGrapple = Random.value < _difficulty.cornerStrategyPreference &&
+                        bool cornerGrapple = Random.value < AIDecisionWeights.Apply(
+                                                 _difficulty.cornerStrategyPreference,
+                                                 _personality.RopeCornerStrategy, 0f) &&
                                              MovePacingRules.CanAttempt(
                                                  _core.Moveset != null ? _core.Moveset.RandomCornerGrapple() : null,
                                                  _core.Stats.Stamina);
                         bool done = cornerGrapple
                             ? _core.Combat.TryCornerGrapple() || _core.Combat.TryCornerStrike()
                             : _core.Combat.TryCornerStrike() || _core.Combat.TryCornerGrapple();
-                        if (!done) CurrentState = AIState.Circle;
-                        Rethink();
+                        _memory.NoteAttempt("corner", Time.time);
+                        if (done) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
@@ -469,9 +620,10 @@ namespace LoCoFight
                 case AIState.AttemptGroundAttack:
                     if (InRange(1.5f))
                     {
-                        _memory.Note("ground");
-                        if (!_core.Combat.TryGroundAttack()) CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool grounded = _core.Combat.TryGroundAttack();
+                        _memory.NoteAttempt("ground", Time.time);
+                        if (grounded) Rethink();
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
@@ -479,9 +631,15 @@ namespace LoCoFight
                 case AIState.AttemptPin:
                     if (InRange(1.3f))
                     {
-                        _memory.Note("pin");
-                        if (!_core.Combat.TryPin()) CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool covered = _core.Combat.TryPin();
+                        _memory.NoteAttempt("pin", Time.time);
+                        if (covered)
+                        {
+                            // A started pin is already its own success.
+                            _memory.NoteSuccess("pin", Time.time);
+                            Rethink();
+                        }
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, run: true);
                     break;
@@ -489,9 +647,14 @@ namespace LoCoFight
                 case AIState.AttemptSubmission:
                     if (InRange(1.3f))
                     {
-                        _memory.Note("submission");
-                        if (!_core.Combat.TrySubmission()) CurrentState = AIState.IdleThink;
-                        Rethink();
+                        bool lockedIn = _core.Combat.TrySubmission();
+                        _memory.NoteAttempt("submission", Time.time);
+                        if (lockedIn)
+                        {
+                            _memory.NoteSuccess("submission", Time.time);
+                            Rethink();
+                        }
+                        else CurrentState = AIState.IdleThink;
                     }
                     else MoveToward(Opp.transform.position, false);
                     break;
