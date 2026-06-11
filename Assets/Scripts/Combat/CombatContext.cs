@@ -22,4 +22,41 @@ namespace LoCoFight
         Upper,
         Lower
     }
+
+    /// Diagnostic record of the most recent contextual move request, surfaced
+    /// through the F1 overlay. Presentation/debug only — never gameplay input.
+    public readonly struct CombatContextSnapshot
+    {
+        public CombatContext Context { get; }
+        public GroundTargetZone GroundZone { get; }
+        public MoveDirection Direction { get; }
+        public string RequestedFamily { get; }
+        public int CandidateCount { get; }
+        public string SelectedMove { get; }
+        public MoveTier Tier { get; }
+        public MoveValidationResult Validation { get; }
+        public bool UsedFallback { get; }
+
+        public CombatContextSnapshot(
+            CombatContext context,
+            GroundTargetZone groundZone,
+            MoveDirection direction,
+            string requestedFamily,
+            int candidateCount,
+            string selectedMove,
+            MoveTier tier,
+            MoveValidationResult validation,
+            bool usedFallback)
+        {
+            Context = context;
+            GroundZone = groundZone;
+            Direction = direction;
+            RequestedFamily = requestedFamily;
+            CandidateCount = candidateCount;
+            SelectedMove = selectedMove;
+            Tier = tier;
+            Validation = validation;
+            UsedFallback = usedFallback;
+        }
+    }
 }

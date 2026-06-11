@@ -16,7 +16,7 @@ namespace LoCoFight
             var mm = MatchManager.Instance;
             if (mm == null || mm.Player == null || mm.Cpu == null) return;
 
-            GUILayout.BeginArea(new Rect(10, 100, 460, 560), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(10, 100, 460, 660), GUI.skin.box);
             GUILayout.Label($"Match: {mm.State}   Referee: {mm.RefereeAttention}");
             GUILayout.Label($"Distance: {mm.Player.DistanceToOpponent():0.00}");
             DrawWrestler(mm.Player, "PLAYER");
@@ -58,6 +58,14 @@ namespace LoCoFight
                 GUILayout.Label($"Effects: {effects}");
             }
             GUILayout.Label($"ReversalWindow open vs opp: {w.Combat.IsReversalWindowOpenFor(w.Opponent ?? w)}");
+            var snapshot = w.Combat.LastContextSnapshot;
+            GUILayout.Label(
+                $"Context: {w.Combat.CurrentContext} zone={snapshot.GroundZone} " +
+                $"dir={snapshot.Direction} family={snapshot.RequestedFamily}");
+            GUILayout.Label(
+                $"Selected: {snapshot.SelectedMove} tier={snapshot.Tier} " +
+                $"valid={snapshot.Validation.IsValid} reason={snapshot.Validation.Reason} " +
+                $"fallback={snapshot.UsedFallback}");
         }
     }
 }

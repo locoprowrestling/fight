@@ -23,6 +23,43 @@ namespace LoCoFight
             return CombatContext.Standing;
         }
 
+        /// Transient resolution from live wrestlers, evaluated at the moment an
+        /// action is attempted. Geometry questions go to RingInteractionSystem;
+        /// state questions go to the WrestlerStateMachine.
+        public static CombatContext Resolve(WrestlerCore attacker, WrestlerCore defender)
+        {
+            bool grapple = attacker != null && attacker.Combat != null &&
+                           attacker.Combat.InGrappleLockAsAttacker;
+            bool downed = defender != null && defender.States.IsDowned;
+            bool cornered = defender != null &&
+                            defender.States.Current == WrestlerState.Cornered &&
+                            RingInteractionSystem.Instance != null &&
+                            RingInteractionSystem.Instance.IsInCornerZone(defender);
+            bool ropeStaggered = defender != null &&
+                                 defender.States.Current == WrestlerState.RopeStaggered &&
+                                 RingInteractionSystem.Instance != null &&
+                                 RingInteractionSystem.Instance.IsNearRope(
+                                     defender, RingInteractionSystem.RopeContactRange + 0.2f);
+            bool rebounding = attacker != null &&
+                              (attacker.States.Current == WrestlerState.RopeReboundRun ||
+                               attacker.States.Current == WrestlerState.RopeReboundReturn);
+
+            CombatContext context = ResolvePriority(
+                grapple, downed, cornered, ropeStaggered, rebounding);
+            if (context == CombatContext.GroundUpper)
+            {
+                GroundTargetZone zone = ResolveGroundZone(
+                    defender.transform.position,
+                    defender.transform.forward,
+                    attacker.transform.position,
+                    0.2f);
+                return zone == GroundTargetZone.Lower
+                    ? CombatContext.GroundLower
+                    : CombatContext.GroundUpper;
+            }
+            return context;
+        }
+
         /// Upper/lower half of a downed defender, from the attacker's flat
         /// offset projected onto the defender's facing axis. Inside the
         /// threshold band (roughly side-on) neither zone applies.

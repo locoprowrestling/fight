@@ -31,7 +31,34 @@ namespace LoCoFight
         public event System.Action<MoveData> OnLandedHit;
         public event System.Action OnReversedOpponent;
 
+        public CombatContextSnapshot LastContextSnapshot { get; private set; }
+        public CombatContext CurrentContext =>
+            CombatContextResolver.Resolve(_core, Opp);
+
         public void Bind(WrestlerCore core) => _core = core;
+
+        /// Records every contextual move request for the F1 overlay and logs
+        /// rejections; the single funnel for context diagnostics.
+        void RecordContext(
+            CombatContext context,
+            GroundTargetZone zone,
+            MoveDirection direction,
+            string family,
+            int candidates,
+            MoveData selected,
+            MoveValidationResult validation,
+            bool fallback)
+        {
+            LastContextSnapshot = new CombatContextSnapshot(
+                context, zone, direction, family, candidates,
+                selected != null ? selected.displayName : "",
+                selected != null ? selected.tier : MoveTier.Light,
+                validation, fallback);
+
+            if (!validation.IsValid)
+                Debug.Log($"[Move] {_core.DisplayName} rejected {family}: " +
+                          $"{validation.Reason} ({validation.DebugMessage})");
+        }
 
         void Update()
         {
