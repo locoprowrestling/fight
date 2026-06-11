@@ -1,6 +1,6 @@
 # Control Scheme Redesign Milestone Design
 
-**Status:** Draft for review
+**Status:** Approved design
 
 **Audience:** Internal team
 
