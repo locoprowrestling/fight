@@ -16,6 +16,8 @@
 ## Strikes & grapples
 - [ ] J/K strikes connect at close range, damage the CPU, and update bars; whiffs at distance do nothing.
 - [ ] L at close range enters a grapple lock; L again = quick grapple, K = power grapple; power grapples knock down.
+- [ ] In a lock, holding a movement direction changes the selected grapple (F1 shows dir/family/fallback): quick — neutral Knee Lift, forward Snapmare, backward Headlock Takedown, lateral Snap Arm Drag; power — neutral Body Slam, forward Vertical Drop, backward Backbreaker, lateral Shoulder Throw.
+- [ ] A direction with no assigned move falls back to neutral (F1 fallback=True); lift failures and lock timeouts behave exactly as before; the CPU also uses directional grapples.
 - [ ] Pressing heavy and grapple together during a lock executes exactly one power grapple and spends stamina once.
 - [ ] When the CPU initiates a lockup, it follows up with a grapple move within ~2 s — the match never falls into an endless lockup → release → lockup loop.
 - [ ] Select Erza vs Johnny Crash: every lift-based power grapple fails with "Too heavy to lift!", stuns Erza, and gives Johnny momentum.

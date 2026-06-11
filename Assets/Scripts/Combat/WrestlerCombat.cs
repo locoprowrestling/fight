@@ -370,18 +370,66 @@ namespace LoCoFight
             Role == GrappleRole.Attacker && _core.States.Current == WrestlerState.GrappleLock;
 
         public bool TryQuickGrappleFromLock() =>
-            ExecuteGrappleMove(_core.Moveset != null ? _core.Moveset.RandomQuickGrapple() : null);
+            TryQuickGrappleFromLock(MoveDirection.Neutral);
 
         public bool TryPowerGrappleFromLock() =>
-            ExecuteGrappleMove(_core.Moveset != null ? _core.Moveset.RandomPowerGrapple() : null);
+            TryPowerGrappleFromLock(MoveDirection.Neutral);
 
-        // Directional selection lands with the directional-grapple milestone
-        // task; until then these keep direction-aware callers playable.
         public bool TryQuickGrappleFromLock(MoveDirection direction) =>
-            TryQuickGrappleFromLock();
+            ExecuteDirectionalGrapple(
+                _core.Moveset != null ? _core.Moveset.directionalQuickGrapples : null,
+                _core.Moveset != null ? _core.Moveset.RandomQuickGrapple() : null,
+                direction, "QuickGrapple");
 
         public bool TryPowerGrappleFromLock(MoveDirection direction) =>
-            TryPowerGrappleFromLock();
+            ExecuteDirectionalGrapple(
+                _core.Moveset != null ? _core.Moveset.directionalPowerGrapples : null,
+                _core.Moveset != null ? _core.Moveset.RandomPowerGrapple() : null,
+                direction, "PowerGrapple");
+
+        /// Directional bucket → neutral fallback → legacy list (so movesets
+        /// saved before the directional migration keep working) → clean
+        /// release when nothing is assigned anywhere.
+        bool ExecuteDirectionalGrapple(
+            DirectionalMoveSet set,
+            MoveData legacyFallback,
+            MoveDirection direction,
+            string family)
+        {
+            if (!InGrappleLockAsAttacker || Opp == null) return false;
+
+            bool fallback = false;
+            MoveData move = null;
+            int candidates = 0;
+            if (set != null)
+            {
+                move = set.Pick(direction, out fallback);
+                candidates = (fallback ? set.Bucket(MoveDirection.Neutral) : set.Bucket(direction)).Count;
+            }
+            if (move == null && legacyFallback != null)
+            {
+                move = legacyFallback;
+                fallback = true;
+                candidates = 1;
+            }
+
+            if (move == null)
+            {
+                RecordContext(CombatContext.GrappleLock, GroundTargetZone.None,
+                    direction, family, candidates, null,
+                    MoveValidationResult.Reject(
+                        MoveRejectionReason.MissingMove,
+                        "No move in requested, neutral, or legacy bucket"),
+                    fallback);
+                ReleaseGrapple();
+                return false;
+            }
+
+            RecordContext(CombatContext.GrappleLock, GroundTargetZone.None,
+                direction, family, candidates, move,
+                MoveValidationResult.Valid(), fallback);
+            return ExecuteGrappleMove(move);
+        }
 
         bool ExecuteGrappleMove(MoveData move)
         {

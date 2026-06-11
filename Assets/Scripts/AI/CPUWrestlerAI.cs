@@ -250,9 +250,10 @@ namespace LoCoFight
                     if (_core.Combat.InGrappleLockAsAttacker)
                     {
                         bool power = Random.value < _difficulty.grapplePreference && _core.Stats.StaminaPercent > 0.3f;
+                        MoveDirection direction = ChooseGrappleDirection(power, _core.Stats.StaminaPercent);
                         bool executed = power
-                            ? _core.Combat.TryPowerGrappleFromLock() || _core.Combat.TryQuickGrappleFromLock()
-                            : _core.Combat.TryQuickGrappleFromLock() || _core.Combat.TryPowerGrappleFromLock();
+                            ? _core.Combat.TryPowerGrappleFromLock(direction) || _core.Combat.TryQuickGrappleFromLock(direction)
+                            : _core.Combat.TryQuickGrappleFromLock(direction) || _core.Combat.TryPowerGrappleFromLock(direction);
                         // Never leave a lock dangling (e.g. empty moveset):
                         // release so both wrestlers return to neutral.
                         if (!executed) _core.Combat.ReleaseGrapple();
@@ -303,6 +304,19 @@ namespace LoCoFight
                     _core.Motor.SetMoveInput(Vector3.zero, false);
                     break;
             }
+        }
+
+        /// Confident power attempts commit forward; a tired CPU keeps the safe
+        /// neutral follow-up; otherwise spread across the remaining buckets.
+        static MoveDirection ChooseGrappleDirection(bool power, float staminaPercent)
+        {
+            if (power && staminaPercent > 0.65f) return MoveDirection.Forward;
+            if (staminaPercent < 0.35f) return MoveDirection.Neutral;
+            float roll = Random.value;
+            if (roll < 0.25f) return MoveDirection.Backward;
+            if (roll < 0.5f) return MoveDirection.Left;
+            if (roll < 0.75f) return MoveDirection.Right;
+            return MoveDirection.Neutral;
         }
 
         bool InRange(float range) => _core.DistanceToOpponent() <= range;

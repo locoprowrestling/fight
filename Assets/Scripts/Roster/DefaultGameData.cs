@@ -114,10 +114,10 @@ namespace LoCoFight
             db.quickGrapples.Add(headlock);
             db.quickGrapples.Add(kneeLift);
             db.quickGrapples.Add(snapmare);
-            db.directionalQuickGrapples.neutral.Add(armDrag);
-            db.directionalQuickGrapples.neutral.Add(headlock);
             db.directionalQuickGrapples.neutral.Add(kneeLift);
-            db.directionalQuickGrapples.neutral.Add(snapmare);
+            db.directionalQuickGrapples.forward.Add(snapmare);
+            db.directionalQuickGrapples.backward.Add(headlock);
+            db.directionalQuickGrapples.lateral.Add(armDrag);
 
             var bodySlam = Grapple(set, "body-slam", "Body Slam", MoveCategory.PowerGrapple, 15, 18, 1.35f, 0f, 13, downed: 2.0f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
             var verticalDrop = Grapple(set, "vertical-drop", "Vertical Drop", MoveCategory.PowerGrapple, 18, 22, 1.60f, 0f, 15, downed: 2.25f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
@@ -128,9 +128,9 @@ namespace LoCoFight
             db.powerGrapples.Add(backbreaker);
             db.powerGrapples.Add(shoulderThrow);
             db.directionalPowerGrapples.neutral.Add(bodySlam);
-            db.directionalPowerGrapples.neutral.Add(verticalDrop);
-            db.directionalPowerGrapples.neutral.Add(backbreaker);
-            db.directionalPowerGrapples.neutral.Add(shoulderThrow);
+            db.directionalPowerGrapples.forward.Add(verticalDrop);
+            db.directionalPowerGrapples.backward.Add(backbreaker);
+            db.directionalPowerGrapples.lateral.Add(shoulderThrow);
 
             db.runningAttacks.Add(Move(set, "running-clothesline", "Running Clothesline", MoveCategory.RunningStrike, 13, 15, 0.25f, 0.20f, 0.70f, 0f, 12, downed: 1.5f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
             db.runningAttacks.Add(Grapple(set, "running-tackle", "Running Tackle", MoveCategory.RunningGrapple, 12, 16, 1.0f, 0f, 11, downed: 1.6f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
