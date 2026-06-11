@@ -205,6 +205,13 @@ namespace LoCoFight
                 {
                     CurrentState = AIState.AttemptCornerOffense;
                 }
+                else if (Opp.States.Current == WrestlerState.RopeStaggered &&
+                         RingInteractionSystem.Instance != null &&
+                         RingInteractionSystem.Instance.IsNearRope(
+                             Opp, RingInteractionSystem.RopeContactRange + 0.2f))
+                {
+                    CurrentState = AIState.AttemptRopeOffense;
+                }
                 else if (Opp.States.Current == WrestlerState.RopeStaggered || Opp.States.Current == WrestlerState.Cornered)
                 {
                     CurrentState = roll < 0.5f ? AIState.AttemptHeavyStrike : AIState.AttemptGrapple;
@@ -271,7 +278,23 @@ namespace LoCoFight
                 case AIState.AttemptRunningAttack:
                 case AIState.UseRopeRebound:
                     MoveToward(Opp.transform.position, run: true);
-                    if (InRange(WrestlerCombat.StrikeRange + 0.3f)) { _core.Combat.TryRunningAttack(); Rethink(); }
+                    if (InRange(WrestlerCombat.StrikeRange + 0.3f))
+                    {
+                        // Rebound-specific attack while rebounding; ordinary
+                        // running attack outside the rebound states.
+                        if (!_core.Combat.TryRopeReboundAttack()) _core.Combat.TryRunningAttack();
+                        Rethink();
+                    }
+                    break;
+
+                case AIState.AttemptRopeOffense:
+                    if (InRange(1.35f))
+                    {
+                        // Rope-context attack with a normal-offense fallback.
+                        if (!_core.Combat.TryRopeStaggerAttack()) _core.Combat.TryHeavyStrike();
+                        Rethink();
+                    }
+                    else MoveToward(Opp.transform.position, false);
                     break;
 
                 case AIState.ForceOpponentToRopes:

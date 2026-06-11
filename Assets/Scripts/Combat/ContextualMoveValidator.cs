@@ -90,5 +90,37 @@ namespace LoCoFight
                     MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
             return MoveValidationResult.Valid();
         }
+
+        /// Rope-context moves: stagger attacks check the defender's state and
+        /// live rope proximity; rebound attacks check the attacker's rebound
+        /// state. Which checks apply comes from the move's own requirements.
+        public static MoveValidationResult ValidateRope(
+            MoveData move,
+            bool targetRopeStaggered,
+            bool targetNearRope,
+            bool attackerRebounding,
+            bool inRange,
+            float currentStamina)
+        {
+            if (move == null)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.MissingMove, "No rope move assigned");
+            if (move.requiresTargetRopeStaggered && !targetRopeStaggered)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.WrongTargetState, "Target is not rope-staggered");
+            if (move.requiresOpponentNearRopes && !targetNearRope)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.NotNearRopes, "Target left the ropes");
+            if (move.requiresRopeRebound && !attackerRebounding)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.NotRebounding, "Attacker is not rebounding");
+            if (!inRange)
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.OutOfRange, "Rope target is out of range");
+            if (currentStamina < Mathf.Max(move.staminaCost, move.minimumStamina))
+                return MoveValidationResult.Reject(
+                    MoveRejectionReason.InsufficientStamina, "Insufficient stamina");
+            return MoveValidationResult.Valid();
+        }
     }
 }

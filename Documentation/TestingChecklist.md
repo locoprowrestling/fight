@@ -33,7 +33,9 @@
 - [ ] Strikes near the ropes put the CPU into RopeStaggered (leaning pose); near a corner, into Cornered.
 - [ ] With the CPU Cornered inside a corner zone, J fires the Corner Forearm Smash (target stays cornered/dazed) and L fires the Corner Bulldog (target ends downed toward ring center); both reject with NotInCorner/WrongTargetState in F1 when state or geometry is missing, spending no stamina.
 - [ ] A cornered defender can reverse during corner-move startup or escape when the Cornered timer lapses; the CPU uses corner offense on you instead of endlessly herding an already-cornered opponent.
-- [ ] Pin or submission applied next to the ropes triggers "Rope break!" and releases (Standard rules). Swap `NoRopeBreaksRules` onto the bootstrap: no break occurs.
+- [ ] With the CPU RopeStaggered on any rope side, J fires a rope-stagger attack (Rope Chop Combination keeps them staggered; Rope Snapmare downs them); a merely Stunned or away-from-rope target rejects (WrongTargetState/NotNearRopes) with no stamina spent.
+- [ ] During a rope-rebound return, J fires the Rebound Lariat (downs on hit); the same press outside rebound states falls through to the ordinary running attack or light strike; the CPU uses both rope-stagger and rebound offense.
+- [ ] Pin or submission applied next to the ropes triggers "Rope break!" and releases (Standard rules). Swap `NoRopeBreaksRules` onto the bootstrap: no break occurs — but rope-stagger context detection still works under all three rulesets.
 
 ## Pins & submissions
 - [ ] Knock the CPU down (Big Boot at low health or a power grapple), press I: count appears; a healthy CPU kicks out fast, a beaten one stays down for 3.

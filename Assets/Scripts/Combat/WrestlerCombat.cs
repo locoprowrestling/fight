@@ -430,6 +430,112 @@ namespace LoCoFight
             OnLandedHit?.Invoke(move);
         }
 
+        // ---------------- Rope offense ----------------
+
+        public bool IsRebounding =>
+            _core.States.Current == WrestlerState.RopeReboundRun ||
+            _core.States.Current == WrestlerState.RopeReboundReturn;
+
+        /// Attack on a rope-staggered defender. Requires both the defender
+        /// state and live rope proximity from RingInteractionSystem (the only
+        /// rope-geometry authority). Documented results: downed, or remain
+        /// rope-staggered.
+        public bool TryRopeStaggerAttack()
+        {
+            if (!MatchActive || Opp == null) return false;
+            if (!_core.States.Profile.canAttack) return false;
+
+            MoveData move = _core.Moveset != null ? _core.Moveset.RandomRopeStaggerAttack() : null;
+            var ring = RingInteractionSystem.Instance;
+            bool staggered = Opp.States.Current == WrestlerState.RopeStaggered;
+            bool nearRope = ring != null &&
+                            ring.IsNearRope(Opp, RingInteractionSystem.RopeContactRange + 0.2f);
+            MoveValidationResult validation = ContextualMoveValidator.ValidateRope(
+                move, staggered, nearRope, IsRebounding,
+                move != null && HitboxProbe.InRange(transform, Opp.transform, move.range),
+                _core.Stats.Stamina);
+            RecordContext(CombatContext.RopeStagger, GroundTargetZone.None,
+                MoveDirection.Neutral, "RopeStaggerAttack",
+                _core.Moveset != null ? _core.Moveset.ropeStaggerAttacks.Count : 0,
+                move, validation, false);
+            if (!validation.IsValid) return false;
+            if (!_core.Stats.SpendStamina(move.staminaCost)) return false;
+
+            _moveRoutine = StartCoroutine(RopeStaggerRoutine(move));
+            return true;
+        }
+
+        IEnumerator RopeStaggerRoutine(MoveData move)
+        {
+            BeginMove(move);
+            _core.Motor.FaceOpponent();
+            _core.States.Set(WrestlerState.StrikeStartup, move.TotalDuration + 0.5f);
+            _core.Anim.PlayMove(move.animationStateName, move.placeholderPoseName, move.animationSpeed);
+            Debug.Log($"[Move] {_core.DisplayName} starts {move.displayName}");
+
+            yield return Phase(move.startupTime);
+
+            _core.States.Set(WrestlerState.StrikeActive, move.activeTime + 0.1f);
+            var ring = RingInteractionSystem.Instance;
+            bool stillValid = Opp != null &&
+                Opp.States.Current == WrestlerState.RopeStaggered &&
+                ring != null &&
+                ring.IsNearRope(Opp, RingInteractionSystem.RopeContactRange + 0.2f) &&
+                HitboxProbe.InRange(transform, Opp.transform, move.range);
+            if (stillValid) ApplyRopeStaggerHit(move);
+            else Debug.Log($"[Move] {move.displayName} missed");
+
+            yield return Phase(move.activeTime);
+
+            _core.States.Set(WrestlerState.StrikeRecovery, move.recoveryTime);
+            yield return Phase(move.recoveryTime);
+
+            EndMove();
+            _core.States.Set(WrestlerState.Idle);
+        }
+
+        void ApplyRopeStaggerHit(MoveData move)
+        {
+            var defender = Opp;
+            float damage = CombatResolver.ScaleDamage(_core, move);
+            defender.Stats.ApplyDamage(damage, _core);
+            if (move.staminaDamage > 0f) defender.Stats.DrainStamina(move.staminaDamage);
+            _core.Stats.AddMomentum(move.momentumGainOnHit);
+
+            if (move.causesDownedState)
+                EnterDowned(defender, move.downedDuration > 0f ? move.downedDuration : 1.5f);
+            else
+                ApplyRopeStagger(defender); // documented result: remain staggered
+
+            Debug.Log($"[Move] {move.displayName} hit rope-staggered {defender.DisplayName} for {damage:0.#}");
+            OnLandedHit?.Invoke(move);
+        }
+
+        /// Dedicated rebound attack, distinct from ordinary running attacks.
+        /// Requires an active rebound state; falls through to the standard
+        /// strike pipeline (ApplyHit) once validated, so knockdown and
+        /// post-knockback results stay authored on the move.
+        public bool TryRopeReboundAttack()
+        {
+            if (!MatchActive || Opp == null) return false;
+            if (!_core.States.Profile.canAttack) return false;
+
+            MoveData move = _core.Moveset != null ? _core.Moveset.RandomRopeReboundAttack() : null;
+            MoveValidationResult validation = ContextualMoveValidator.ValidateRope(
+                move, false, false, IsRebounding,
+                move != null && HitboxProbe.InRange(transform, Opp.transform, move.range + 0.3f),
+                _core.Stats.Stamina);
+            RecordContext(CombatContext.RopeRebound, GroundTargetZone.None,
+                MoveDirection.Neutral, "RopeReboundAttack",
+                _core.Moveset != null ? _core.Moveset.ropeReboundAttacks.Count : 0,
+                move, validation, false);
+            if (!validation.IsValid) return false;
+            if (!_core.Stats.SpendStamina(move.staminaCost)) return false;
+
+            _moveRoutine = StartCoroutine(StrikeRoutine(move));
+            return true;
+        }
+
         // ---------------- Grapples ----------------
 
         public bool TryGrappleAttempt()

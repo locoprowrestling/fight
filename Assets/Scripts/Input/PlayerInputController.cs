@@ -124,9 +124,13 @@ namespace LoCoFight
             if (frame.LightPressed)
             {
                 if (_core.DistanceToOpponent() <= WrestlerCombat.StrikeRange + 0.5f || _core.Motor.IsRunning)
+                    // Context precedence: ground, corner, rope stagger,
+                    // rebound, ordinary running, standing light.
                     _buffer.Buffer(PlayerAction.Light,
                         () => _core.Combat.TryGroundAttack() ||
                               _core.Combat.TryCornerStrike() ||
+                              _core.Combat.TryRopeStaggerAttack() ||
+                              _core.Combat.TryRopeReboundAttack() ||
                               _core.Combat.TryRunningAttack() ||
                               _core.Combat.TryLightStrike());
             }

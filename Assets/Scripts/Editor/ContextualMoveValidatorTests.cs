@@ -131,5 +131,56 @@ namespace LoCoFight.EditorTests
                     move, true, true, true, 100f).IsValid,
                 Is.True);
         }
+
+        [Test]
+        public void ValidateRopeStagger_RejectsNormalStunnedTarget()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetRopeStaggered = true;
+
+            var result = ContextualMoveValidator.ValidateRope(
+                move, targetRopeStaggered: false, targetNearRope: true,
+                attackerRebounding: false, inRange: true, currentStamina: 100f);
+
+            Assert.That(result.Reason, Is.EqualTo(MoveRejectionReason.WrongTargetState));
+        }
+
+        [Test]
+        public void ValidateRopeStagger_RejectsTargetAwayFromRopes()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresTargetRopeStaggered = true;
+            move.requiresOpponentNearRopes = true;
+
+            var result = ContextualMoveValidator.ValidateRope(
+                move, true, false, false, true, 100f);
+
+            Assert.That(result.Reason, Is.EqualTo(MoveRejectionReason.NotNearRopes));
+        }
+
+        [Test]
+        public void ValidateRebound_RequiresReboundState()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresRopeRebound = true;
+
+            var result = ContextualMoveValidator.ValidateRope(
+                move, false, false, attackerRebounding: false,
+                inRange: true, currentStamina: 100f);
+
+            Assert.That(result.Reason, Is.EqualTo(MoveRejectionReason.NotRebounding));
+        }
+
+        [Test]
+        public void ValidateRebound_AcceptsReboundingAttacker()
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.requiresRopeRebound = true;
+
+            var result = ContextualMoveValidator.ValidateRope(
+                move, false, false, true, true, 100f);
+
+            Assert.That(result.IsValid, Is.True);
+        }
     }
 }

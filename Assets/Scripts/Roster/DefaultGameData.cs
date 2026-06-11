@@ -91,6 +91,13 @@ namespace LoCoFight
             m.range = 1.3f;
         }
 
+        static void ConfigureRopeStaggerMove(MoveData m)
+        {
+            m.requiresTargetRopeStaggered = true;
+            m.requiresOpponentNearRopes = true;
+            m.range = 1.3f;
+        }
+
         /// Grapple timing helper: split a single duration into phases.
         static MoveData Grapple(DefaultGameDataSet set, string id, string name, MoveCategory cat,
             float dmg, float stam, float duration, float stun, float momentum,
@@ -167,6 +174,22 @@ namespace LoCoFight
             ConfigureCornerMove(cornerBulldog);
             db.cornerStrikes.Add(cornerForearm);
             db.cornerGrapples.Add(cornerBulldog);
+
+            var ropeChops = Move(set, "rope-chop-combination", "Rope Chop Combination", MoveCategory.RopeStaggerAttack, 8, 9, 0.30f, 0.15f, 0.50f, 0.6f, 8, tags: new[] { MoveTag.Clean, MoveTag.Rope });
+            ropeChops.tier = MoveTier.Medium;
+            ConfigureRopeStaggerMove(ropeChops);
+            var ropeSnapmare = Move(set, "rope-snapmare", "Rope Snapmare", MoveCategory.RopeStaggerAttack, 9, 10, 0.30f, 0.30f, 0.30f, 0f, 9, downed: 1.25f, tags: new[] { MoveTag.Clean, MoveTag.Rope });
+            ropeSnapmare.tier = MoveTier.Medium;
+            ConfigureRopeStaggerMove(ropeSnapmare);
+            db.ropeStaggerAttacks.Add(ropeChops);
+            db.ropeStaggerAttacks.Add(ropeSnapmare);
+
+            var reboundLariat = Move(set, "rebound-lariat", "Rebound Lariat", MoveCategory.RopeReboundAttack, 14, 15, 0.20f, 0.20f, 0.65f, 0f, 13, downed: 1.6f, tags: new[] { MoveTag.Clean, MoveTag.Running, MoveTag.Rope });
+            reboundLariat.tier = MoveTier.Heavy;
+            reboundLariat.minimumStamina = 15f;
+            reboundLariat.requiresRopeRebound = true;
+            reboundLariat.range = 1.5f;
+            db.ropeReboundAttacks.Add(reboundLariat);
 
             var armLock = Move(set, "ground-arm-lock", "Ground Arm Lock", MoveCategory.Submission, 0, 15, 0.3f, 0.2f, 0.3f, 0f, 4, tags: new[] { MoveTag.Clean });
             armLock.submissionPressurePerSecond = 12f;
