@@ -46,6 +46,12 @@ namespace LoCoFight
             if (transition == 0) return;
             IsSpecialReady = transition > 0;
             OnSpecialReadyChanged?.Invoke(IsSpecialReady);
+
+            // Presentation follows the resolved transition: the persistent
+            // accent tracks readiness; the one-shot event fires only when
+            // readiness is gained.
+            if (_core != null && _core.Anim != null) _core.Anim.SetSpecialReady(IsSpecialReady);
+            if (IsSpecialReady) FeelSystem.Notify(CombatPresentationEvent.SpecialReady);
         }
 
         public float RecentDamage { get; private set; } // decays; weakens kickouts

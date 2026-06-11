@@ -27,6 +27,13 @@ namespace LoCoFight
         Coroutine _flash;
         Color _baseColor;
         bool _baseColorCached;
+        bool _specialReadyAccent;
+
+        /// Resting torso color: the authored base, shifted while the
+        /// persistent SPECIAL-ready accent is on. Flashes restore to this.
+        Color CurrentBaseColor => _specialReadyAccent
+            ? Color.Lerp(_baseColor, new Color(1f, 0.65f, 0.1f), 0.55f)
+            : _baseColor;
 
         string _state = "Idle";
         float _speed;     // normalized movement speed, fed by WrestlerMotor
@@ -104,7 +111,24 @@ namespace LoCoFight
         public void SetMovementSpeed(float speed) => _speed = Mathf.Clamp01(speed);
 
         public void TriggerHitReact() { Flash(Color.red); StartAction(ActionKind.HitRecoil, 0.35f); }
-        public void TriggerReversal() => Flash(Color.cyan);
+
+        /// Basic: quick cyan flash plus a short redirect arm. Strong: a
+        /// brighter flash and a bigger counter-throw silhouette. Purely
+        /// visual; the gameplay root and meters are owned elsewhere.
+        public void TriggerReversal(bool strong, string presentationId)
+        {
+            if (strong)
+            {
+                Flash(new Color(0.55f, 1f, 1f));
+                StartAction(ActionKind.SnapThrow, 0.5f);
+            }
+            else
+            {
+                Flash(Color.cyan);
+                StartAction(ActionKind.Chop, 0.3f);
+            }
+        }
+
         public void TriggerDodge() => Flash(Color.white);
         // State poses (Downed, GettingUp, RopeStaggered, Cornered, aerial
         // states) cover these — PlayState already received the new state.
@@ -117,6 +141,39 @@ namespace LoCoFight
         public void TriggerAerialLaunch() { }
         public void TriggerAerialLanding(bool hit) => Flash(hit ? Color.green : Color.magenta);
         public void TriggerSpecial(string specialId) => Flash(new Color(1f, 0.6f, 0f));
+
+        /// Persistent emissive-style accent while momentum is full: the torso
+        /// tint shifts toward the SPECIAL color and stays until readiness is
+        /// spent. No state change, no meters touched.
+        public void SetSpecialReady(bool ready)
+        {
+            _specialReadyAccent = ready;
+            if (_flash == null && _view != null && _view.torsoRenderer != null)
+                _view.torsoRenderer.material.color = CurrentBaseColor;
+        }
+
+        // Submission presentation reuses the state base poses
+        // (SubmissionApplying/SubmissionDefending) plus one-shot accents.
+        public void TriggerSubmissionApply(bool attacker)
+        {
+            if (attacker) StartAction(ActionKind.GrappleReach, 0.5f);
+            else { Flash(Color.red); StartAction(ActionKind.HitRecoil, 0.4f); }
+        }
+
+        public void TriggerSubmissionStruggle() =>
+            StartAction(ActionKind.HitRecoil, 0.22f);
+
+        public void TriggerSubmissionRelease(bool ropeBreak, bool escaped)
+        {
+            Flash(ropeBreak ? Color.white : Color.cyan);
+            StartAction(ActionKind.HitRecoil, 0.3f);
+        }
+
+        public void TriggerSubmissionTapOut()
+        {
+            Flash(Color.magenta);
+            StartAction(ActionKind.HitRecoil, 0.5f);
+        }
 
         void StartAction(ActionKind kind, float duration)
         {
@@ -749,7 +806,7 @@ namespace LoCoFight
         {
             _view.torsoRenderer.material.color = color;
             yield return new WaitForSeconds(0.12f);
-            if (_view.torsoRenderer != null) _view.torsoRenderer.material.color = _baseColor;
+            if (_view.torsoRenderer != null) _view.torsoRenderer.material.color = CurrentBaseColor;
             _flash = null;
         }
     }

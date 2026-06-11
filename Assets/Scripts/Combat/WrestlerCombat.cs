@@ -863,7 +863,6 @@ namespace LoCoFight
 
             ReversalCooldownUntil = Time.time + ReversalSystem.HumanReversalCooldown;
             _core.States.Set(WrestlerState.Reversing, 0.45f);
-            _core.Anim.TriggerReversal();
 
             if (special)
             {
@@ -890,6 +889,14 @@ namespace LoCoFight
 
             LastReversalOutcome = grappleEscape || special ? ReversalOutcome.Basic : outcome;
             LastReversalRead = submittedDirection;
+
+            // Presentation only after the outcome is fully resolved (stamina
+            // spent, attacker interrupted, momentum applied).
+            bool strong = LastReversalOutcome == ReversalOutcome.Strong;
+            _core.Anim?.TriggerReversal(strong, LastReversalPresentationId);
+            FeelSystem.Notify(strong
+                ? CombatPresentationEvent.StrongReversal
+                : CombatPresentationEvent.BasicReversal);
 
             NotifyReversalSuccess();
             MatchHUD.TryShowMessage(

@@ -78,6 +78,9 @@ namespace LoCoFight
             attacker.Motor.SetScriptedControl(true);
             defender.Motor.SetScriptedControl(true);
 
+            attacker.Anim?.TriggerSubmissionApply(attacker: true);
+            defender.Anim?.TriggerSubmissionApply(attacker: false);
+
             MatchManager.Instance.SetState(MatchState.SubmissionInProgress);
             MatchHUD.TryShowMessage($"{attacker.DisplayName} locks in {label}!");
             Debug.Log($"[Submission] {label} started by {attacker.DisplayName}");
@@ -106,6 +109,7 @@ namespace LoCoFight
                 defender.Stats.StaminaPercent,
                 defender.Buffs.SubmissionEscapeMult,
                 _escapePenalty);
+            defender.Anim?.TriggerSubmissionStruggle();
         }
 
         void Update()
@@ -139,7 +143,7 @@ namespace LoCoFight
                     Debug.Log($"[Submission] {Defender.DisplayName} taps out to {HoldLabel}");
                     // Cleanup first so AnnounceWin never inherits stale
                     // submission ownership or scripted control.
-                    Release(null, ropeBreak: false, tapOut: true);
+                    Release(null, SubmissionEndKind.TapOut);
                     MatchManager.Instance.AnnounceWin(winner, WinCondition.Submission);
                 }
                 else
@@ -153,7 +157,7 @@ namespace LoCoFight
             {
                 Debug.Log($"[Submission] {Defender.DisplayName} escapes {HoldLabel}");
                 Defender.Stats.AddMomentum(6f);
-                Release("Submission escaped!", ropeBreak: false);
+                Release("Submission escaped!", SubmissionEndKind.Escape);
             }
         }
 
@@ -207,15 +211,19 @@ namespace LoCoFight
             Escape += SubmissionEscapeRules.CrawlEscapeRate(quality, ropeBreaksActive) * dt;
         }
 
+        enum SubmissionEndKind { Cancelled, Escape, RopeBreak, TapOut }
+
         public void Release(string message, bool ropeBreak) =>
-            Release(message, ropeBreak, tapOut: false);
+            Release(message, ropeBreak ? SubmissionEndKind.RopeBreak : SubmissionEndKind.Cancelled);
 
         /// The single cleanup path: escape, rope break, tap-out, cancel,
         /// reset, and match end all come through here exactly once.
-        void Release(string message, bool ropeBreak, bool tapOut)
+        void Release(string message, SubmissionEndKind kind)
         {
             var attacker = Attacker;
             var defender = Defender;
+            bool ropeBreak = kind == SubmissionEndKind.RopeBreak;
+            bool tapOut = kind == SubmissionEndKind.TapOut;
 
             Active = false;
             _crawlIntent = Vector3.zero;
@@ -239,11 +247,29 @@ namespace LoCoFight
 
             Attacker = null;
             Defender = null;
+
+            // Exactly one semantic presentation outcome per exit, emitted
+            // after the gameplay cleanup is complete. Cancellation (reset,
+            // match end) is silent — the canceling flow owns its own message.
+            if (tapOut)
+            {
+                defender?.Anim?.TriggerSubmissionTapOut();
+                FeelSystem.Notify(CombatPresentationEvent.TapOut);
+            }
+            else if (kind != SubmissionEndKind.Cancelled)
+            {
+                bool escaped = kind == SubmissionEndKind.Escape;
+                attacker?.Anim?.TriggerSubmissionRelease(ropeBreak, escaped);
+                defender?.Anim?.TriggerSubmissionRelease(ropeBreak, escaped);
+                FeelSystem.Notify(ropeBreak
+                    ? CombatPresentationEvent.RopeBreak
+                    : CombatPresentationEvent.SubmissionEscape);
+            }
         }
 
         public void CancelIfActive()
         {
-            if (Active) Release(null, false);
+            if (Active) Release(null, SubmissionEndKind.Cancelled);
         }
     }
 }

@@ -37,19 +37,32 @@ namespace LoCoFight
                 Time.timeScale = 1f;
         }
 
-        /// A move connected. Heavier tiers freeze the frame longer; downing
-        /// impacts also punch the camera.
+        /// Semantic entry point: a resolved combat outcome wants feedback.
+        /// Values come from the pure CombatPresentationRules hierarchy; a
+        /// downing hit always punches the camera at knockdown strength.
+        public static void Notify(CombatPresentationEvent evt, bool downsDefender = false)
+        {
+            LastImpactDebug = $"{evt} downs={downsDefender} @{Time.unscaledTime:0.0}";
+            if (!Enabled) return;
+            PresentationFeelSettings settings = CombatPresentationRules.For(evt);
+            FeelSystem fs = EnsureInstance();
+            if (settings.HitStopSeconds > 0f) fs.HitStop(settings.HitStopSeconds);
+            float camera = downsDefender
+                ? Mathf.Max(settings.CameraStrength, 0.35f)
+                : settings.CameraStrength;
+            if (camera > 0f) fs.PunchCamera(camera);
+        }
+
+        /// Compatibility adapter for the tier-based impact appliers: maps the
+        /// move tier onto the semantic impact events.
         public static void NotifyImpact(MoveTier tier, bool downsDefender)
         {
-            LastImpactDebug = $"{tier} downs={downsDefender} @{Time.unscaledTime:0.0}";
-            if (!Enabled) return;
-            float stop = tier == MoveTier.Light ? 0.03f
-                : tier == MoveTier.Medium ? 0.05f
-                : 0.08f; // Heavy and Special
-            FeelSystem fs = EnsureInstance();
-            fs.HitStop(stop);
-            if (downsDefender || tier == MoveTier.Heavy || tier == MoveTier.Special)
-                fs.PunchCamera(downsDefender ? 0.35f : 0.2f);
+            CombatPresentationEvent evt =
+                tier == MoveTier.Special ? CombatPresentationEvent.SpecialImpact
+                : tier == MoveTier.Heavy ? CombatPresentationEvent.HeavyImpact
+                : tier == MoveTier.Medium ? CombatPresentationEvent.MediumImpact
+                : CombatPresentationEvent.LightImpact;
+            Notify(evt, downsDefender);
         }
 
         void HitStop(float duration)

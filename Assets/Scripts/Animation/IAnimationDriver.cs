@@ -8,7 +8,9 @@ namespace LoCoFight
         void PlayState(string stateName);
         void SetMovementSpeed(float speed);
         void TriggerHitReact();
-        void TriggerReversal();
+        /// Resolved reversal outcome; presentationId is the authored hook
+        /// from MoveData (audio/VFX selection for a future driver).
+        void TriggerReversal(bool strong, string presentationId);
         void TriggerDodge();
         void TriggerDowned();
         void TriggerGetUp();
@@ -17,5 +19,12 @@ namespace LoCoFight
         void TriggerAerialLaunch();
         void TriggerAerialLanding(bool hit);
         void TriggerSpecial(string specialId);
+        /// Persistent full-momentum accent; on/off follows the readiness
+        /// transitions, never per frame.
+        void SetSpecialReady(bool ready);
+        void TriggerSubmissionApply(bool attacker);
+        void TriggerSubmissionStruggle();
+        void TriggerSubmissionRelease(bool ropeBreak, bool escaped);
+        void TriggerSubmissionTapOut();
     }
 }
