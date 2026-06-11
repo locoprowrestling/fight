@@ -18,7 +18,8 @@ Default match: **Zeak Gallent (player) vs JT Staten (CPU)**. Press **F2** in Pla
 
 Two context-sensitive core buttons carry the fight; the HUD's bottom-center
 prompt always shows what each will do right now. Tap = quick action, hold past
-~0.22 s = strong action.
+~0.18 s = strong action. Contextual attacks fire on press; the HUD confirms
+what fired and explains dead presses.
 
 | Action | Key |
 |---|---|

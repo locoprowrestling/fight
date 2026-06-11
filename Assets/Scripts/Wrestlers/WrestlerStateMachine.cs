@@ -110,12 +110,12 @@ namespace LoCoFight
             d[WrestlerState.RollingAway] = P(strikable: false, timeout: 0.5f, exit: WrestlerState.GettingUp);
             d[WrestlerState.GettingUp] = P(timeout: 0.7f);
             d[WrestlerState.RopeContact] = P(move: true, rotate: true, attack: true, grapple: true, reverse: true, dodge: true, grabbable: true, rope: true);
-            d[WrestlerState.RopeStaggered] = P(grabbable: true, reverse: true, timeout: 0.9f);
+            d[WrestlerState.RopeStaggered] = P(grabbable: true, reverse: true, timeout: 1.8f);
             d[WrestlerState.RopeReboundRun] = P(rope: true, strikable: true, timeout: 1.5f, exit: WrestlerState.RopeReboundReturn);
             d[WrestlerState.RopeReboundReturn] = P(move: true, rotate: true, attack: true, rope: true, strikable: true, timeout: 1.2f);
             d[WrestlerState.RopeTrapSetup] = P(timeout: 1.2f);
             d[WrestlerState.RopeTrapLocked] = P(strikable: false, interrupt: false);
-            d[WrestlerState.Cornered] = P(grabbable: true, reverse: true, timeout: 1.0f);
+            d[WrestlerState.Cornered] = P(grabbable: true, reverse: true, timeout: 2.0f);
             d[WrestlerState.TurnbuckleClimb] = P(climb: true, strikable: true, timeout: 2f);
             d[WrestlerState.AerialSetup] = P(strikable: true, timeout: 2f);
             d[WrestlerState.AerialAirborne] = P(strikable: false, interrupt: false);

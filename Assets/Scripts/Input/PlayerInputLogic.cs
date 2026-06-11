@@ -6,7 +6,7 @@ namespace LoCoFight
     {
         /// Single tunable feel constant: presses shorter than this are taps,
         /// crossing it while held commits the hold action.
-        public const float HoldThreshold = 0.22f;
+        public const float HoldThreshold = 0.18f;
 
         public static Vector3 CalculateRollTarget(
             Vector3 wrestlerPosition,

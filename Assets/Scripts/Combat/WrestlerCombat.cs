@@ -56,8 +56,17 @@ namespace LoCoFight
                 validation, fallback);
 
             if (!validation.IsValid)
+            {
                 Debug.Log($"[Move] {_core.DisplayName} rejected {family}: " +
                           $"{validation.Reason} ({validation.DebugMessage})");
+                // Tell the player why their press did nothing (filtered to
+                // actionable reasons; precedence-chain noise stays silent).
+                if (_core.IsPlayer)
+                {
+                    string toast = ControlPromptLogic.RejectionText(validation.Reason);
+                    if (toast.Length > 0) MatchHUD.TryShowActionFeedback(toast, warning: true);
+                }
+            }
         }
 
         void Update()
@@ -142,6 +151,8 @@ namespace LoCoFight
             CurrentMove = move;
             MoveElapsed = 0f;
             LastMoveName = move.displayName;
+            // Confirm on the HUD which move actually fired.
+            if (_core.IsPlayer) MatchHUD.TryShowActionFeedback(move.displayName, warning: false);
         }
 
         void EndMove()
@@ -199,7 +210,9 @@ namespace LoCoFight
 
             if (ring != null && ring.NearestCornerZone(predicted) is CornerZone corner && corner.Contains(predicted))
             {
-                defender.States.Set(WrestlerState.Cornered, 1.0f);
+                // Human-reaction-scale window (was 1.0 s — gone before the
+                // player could read the corner prompt and press).
+                defender.States.Set(WrestlerState.Cornered, 2.0f);
                 defender.Anim.TriggerCornered();
                 return;
             }
@@ -217,7 +230,8 @@ namespace LoCoFight
 
         public void ApplyRopeStagger(WrestlerCore defender)
         {
-            float duration = 0.9f;
+            // Long enough for a human to read the prompt and act on it.
+            float duration = 1.6f;
             if (defender.Stats.StaminaPercent < 0.3f) duration += 0.35f;
             if (_core.Traits != null) duration += _core.Traits.OpponentRopeStaggerBonus;
             defender.States.Set(WrestlerState.RopeStaggered, duration);

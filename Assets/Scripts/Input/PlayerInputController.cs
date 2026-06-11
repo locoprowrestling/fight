@@ -132,12 +132,29 @@ namespace LoCoFight
         void HandleCombat(PlayerInputFrame frame)
         {
             bool inLock = _core.Combat.InGrappleLockAsAttacker;
+            CombatContext context = _core.Combat.CurrentContext;
+            bool downedNear = _core.Opponent != null &&
+                              _core.Opponent.States.IsDowned &&
+                              _core.DistanceToOpponent() <= DownedControlRange;
 
-            // Strike button: tap = light family, hold = heavy strike.
+            // Strike button: tap = light family, hold = heavy strike. In
+            // contexts with no heavy variant (ground/corner/rope/rebound) the
+            // attack fires on PRESS — no tap-release latency where the
+            // contextual prompts matter most.
             PressKind strikeKind = _strikeTracker.Update(
                 frame.LightPressed, frame.StrikeHeld, frame.StrikeReleased,
                 Time.deltaTime, PlayerInputLogic.HoldThreshold);
-            if (strikeKind == PressKind.Tap)
+            bool strikeInstantContext =
+                context == CombatContext.GroundUpper || context == CombatContext.GroundLower ||
+                context == CombatContext.Corner || context == CombatContext.RopeStagger ||
+                context == CombatContext.RopeRebound;
+            bool strikeRequested = strikeInstantContext
+                ? frame.LightPressed
+                : strikeKind == PressKind.Tap;
+            if (frame.LightPressed && strikeInstantContext)
+                _strikeTracker.Reset(); // the press is consumed; no later tap/hold
+
+            if (strikeRequested)
             {
                 if (_core.DistanceToOpponent() <= WrestlerCombat.StrikeRange + 0.5f || _core.Motor.IsRunning)
                     // Context precedence: ground, corner, rope stagger,
@@ -158,7 +175,8 @@ namespace LoCoFight
             // Control button: in a lock, tap = quick / hold = power grapple
             // (held direction picks the bucket); beside a downed opponent,
             // tap = pin / hold = submission (unbuffered — they only fire when
-            // valid right now); otherwise tap = grapple attempt.
+            // valid right now). Outside both, hold has no meaning, so the
+            // grapple attempt fires on PRESS.
             PressKind controlKind = _controlTracker.Update(
                 frame.ControlPressed, frame.ControlHeld, frame.ControlReleased,
                 Time.deltaTime, PlayerInputLogic.HoldThreshold);
@@ -170,24 +188,19 @@ namespace LoCoFight
                 else if (controlKind == PressKind.HoldCommitted)
                     _core.Combat.TryPowerGrappleFromLock(direction);
             }
-            else if (controlKind != PressKind.None)
+            else if (downedNear)
             {
-                bool downedNear = _core.Opponent != null &&
-                                  _core.Opponent.States.IsDowned &&
-                                  _core.DistanceToOpponent() <= DownedControlRange;
                 if (controlKind == PressKind.Tap)
-                {
-                    if (downedNear)
-                        _core.Combat.TryPin();
-                    else
-                        _buffer.Buffer(PlayerAction.Grapple,
-                            () => _core.Combat.TryCornerGrapple() ||
-                                  _core.Combat.TryGrappleAttempt());
-                }
-                else if (downedNear)
-                {
+                    _core.Combat.TryPin();
+                else if (controlKind == PressKind.HoldCommitted)
                     _core.Combat.TrySubmission();
-                }
+            }
+            else if (frame.ControlPressed)
+            {
+                _controlTracker.Reset(); // consumed on press
+                _buffer.Buffer(PlayerAction.Grapple,
+                    () => _core.Combat.TryCornerGrapple() ||
+                          _core.Combat.TryGrappleAttempt());
             }
 
             if (frame.ReversalPressed)

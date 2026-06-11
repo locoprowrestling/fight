@@ -14,9 +14,11 @@ namespace LoCoFight
         GameObject _controlsPanel;
         string _lastPrompt = "";
         bool _promptStateValid;
-        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady;
+        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady, _pInRange;
         CombatContext _pContext;
         PlayerInputDevice _pDevice;
+        Text _actionFeedback;
+        float _feedbackClearAt;
         MeterBar _pHealth, _pStamina, _pMomentum, _cHealth, _cStamina, _cMomentum, _submission;
         RosterPortraitView _pPortrait, _cPortrait;
         float _messageClearAt;
@@ -47,6 +49,21 @@ namespace LoCoFight
         /// Last rendered contextual prompt line, for the F1 overlay.
         public static string CurrentPromptText =>
             Instance != null ? Instance._lastPrompt : "";
+
+        /// Small bottom-center feedback: the move that just fired, or why a
+        /// press did nothing. Suppressed while the submission UI owns the
+        /// space.
+        public static void TryShowActionFeedback(string text, bool warning)
+        {
+            if (Instance == null || Instance._actionFeedback == null) return;
+            var subs = SubmissionSystem.Instance;
+            if (subs != null && subs.Active) return;
+            Instance._actionFeedback.text = text;
+            Instance._actionFeedback.color = warning
+                ? new Color(1f, 0.55f, 0.25f)
+                : new Color(0.6f, 1f, 0.6f);
+            Instance._feedbackClearAt = Time.unscaledTime + 1.1f;
+        }
 
         public static void TryShowHandshakePrompt(float duration)
         {
@@ -131,6 +148,10 @@ namespace LoCoFight
             _alert = MakeText("PromptAlert", new Vector2(0, 66), 760, 24, TextAnchor.LowerCenter, 17,
                 false, centered: true, bottom: true);
             AddOutline(_alert);
+            // What just happened / why nothing happened (auto-clears).
+            _actionFeedback = MakeText("ActionFeedback", new Vector2(0, 92), 760, 24, TextAnchor.LowerCenter, 16,
+                false, centered: true, bottom: true);
+            AddOutline(_actionFeedback);
 
             // One-line hint (bottom-left); the full scheme lives on the
             // hold-Tab panel instead of a cramped two-line dump.
@@ -241,6 +262,8 @@ namespace LoCoFight
         {
             if (_message != null && _message.text.Length > 0 && Time.unscaledTime > _messageClearAt)
                 _message.text = "";
+            if (_actionFeedback != null && _actionFeedback.text.Length > 0 && Time.unscaledTime > _feedbackClearAt)
+                _actionFeedback.text = "";
 
             if (_player != null)
             {
@@ -273,6 +296,8 @@ namespace LoCoFight
                 var mm = MatchManager.Instance;
                 bool fighting = mm != null && mm.IsCombatAllowed && !subActive;
                 CombatContext context = fighting ? _player.Combat.CurrentContext : CombatContext.Standing;
+                bool inRange = fighting &&
+                               _player.DistanceToOpponent() <= ControlPromptLogic.PromptRange;
                 bool downedNear = fighting && _cpu != null && _cpu.States.IsDowned &&
                                   _player.DistanceToOpponent() <= PlayerInputController.DownedControlRange;
                 bool reversalOpen = fighting && _cpu != null &&
@@ -282,7 +307,8 @@ namespace LoCoFight
 
                 bool changed = !_promptStateValid || fighting != _pFighting || context != _pContext ||
                                downedNear != _pDownedNear || reversalOpen != _pReversalOpen ||
-                               specialReady != _pSpecialReady || _inputDevice != _pDevice;
+                               specialReady != _pSpecialReady || inRange != _pInRange ||
+                               _inputDevice != _pDevice;
                 if (changed)
                 {
                     _promptStateValid = true;
@@ -291,11 +317,12 @@ namespace LoCoFight
                     _pDownedNear = downedNear;
                     _pReversalOpen = reversalOpen;
                     _pSpecialReady = specialReady;
+                    _pInRange = inRange;
                     _pDevice = _inputDevice;
 
                     _lastPrompt = fighting
-                        ? ControlPromptLogic.StrikePrompt(context, _inputDevice) + "      " +
-                          ControlPromptLogic.ControlPrompt(context, downedNear, _inputDevice)
+                        ? ControlPromptLogic.StrikePrompt(context, inRange, _inputDevice) + "      " +
+                          ControlPromptLogic.ControlPrompt(context, downedNear, inRange, _inputDevice)
                         : "";
                     _prompts.text = _lastPrompt;
 

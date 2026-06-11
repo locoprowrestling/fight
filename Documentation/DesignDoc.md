@@ -88,9 +88,14 @@ debug message), recorded in a `CombatContextSnapshot` shown in the F1 overlay.
 light or contextual attack, hold heavy) and Grapple/Control (K/A — grapple
 attempt; in a lock tap quick / hold power; beside a downed opponent tap pin /
 hold submission), with Special (L/Y), Dodge (;/B), and Reversal (Space/RB).
-Tap fires on release before `PlayerInputLogic.HoldThreshold` (0.22 s); hold
+Tap fires on release before `PlayerInputLogic.HoldThreshold` (0.18 s); hold
 commits the moment the threshold is crossed; one press resolves at most one
-action (`PressTracker`). All directional input uses one frame: the stick maps
+action (`PressTracker`). In contexts with no hold variant (ground, corner,
+rope, rebound for Strike; outside locks and downed proximity for
+Grapple/Control) the action fires on press, with zero tap latency. A
+~0.35 s input buffer carries presses across recovery frames, and the HUD
+confirms each started move and explains rejected presses
+(`MatchHUD.TryShowActionFeedback`, `ControlPromptLogic.RejectionText`). All directional input uses one frame: the stick maps
 through the camera into the world (like locomotion) and is then classified
 against the attacker's facing, so pushing toward the opponent on screen is
 always Forward. A bottom-center HUD prompt (`ControlPromptLogic`,

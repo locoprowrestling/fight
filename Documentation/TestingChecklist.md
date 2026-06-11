@@ -20,7 +20,10 @@
 - [ ] U, I, and O do nothing.
 
 ## Strikes & grapples
-- [ ] Tapping J at close range fires a light strike; holding J past the threshold (~0.22 s) fires a heavy strike; one press never fires both; whiffs at distance do nothing.
+- [ ] Tapping J at close range fires a light strike; holding J past the threshold (~0.18 s) fires a heavy strike; one press never fires both; whiffs at distance do nothing.
+- [ ] In ground/corner/rope/rebound contexts, J fires the contextual attack the instant you PRESS (no release latency); K likewise grapples on press when you are neither in a lock nor beside a downed opponent.
+- [ ] A green popup names every move you start ("Elbow Drop"); an orange popup explains dead presses ("Too far away", "Not enough stamina", "Wrong side of the body"); contextual prompts append "— move closer" when you are out of range and the button correctly does nothing.
+- [ ] Presses during your own recovery come out as the next action (≈0.35 s buffer) instead of vanishing; Cornered (~2 s) and RopeStaggered (~1.8 s) windows are long enough to read the prompt and act.
 - [ ] K at close range enters a grapple lock; in the lock, tapping K = quick grapple and holding K = power grapple; power grapples knock down.
 - [ ] In a lock, holding a movement direction changes the selected grapple (F1 shows dir/family/fallback): quick (tap K) — neutral Knee Lift, forward Snapmare, backward Headlock Takedown, lateral Snap Arm Drag; power (hold K) — neutral Body Slam, forward Vertical Drop, backward Backbreaker, lateral Shoulder Throw. Pushing toward the opponent on screen is always forward, for any camera angle.
 - [ ] A direction with no assigned move falls back to neutral (F1 fallback=True); lift failures and lock timeouts behave exactly as before; the CPU also uses directional grapples.

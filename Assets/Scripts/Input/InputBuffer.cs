@@ -7,7 +7,9 @@ namespace LoCoFight
     /// keep retrying it until the buffer window expires.
     public class InputBuffer
     {
-        public const float DefaultWindow = 0.15f;
+        // Fighting-game-style buffer: presses during recovery come out as the
+        // next action instead of silently dying.
+        public const float DefaultWindow = 0.35f;
 
         class Entry
         {
