@@ -13,6 +13,9 @@ namespace LoCoFight
         Rope,
         Corner,
         Spin,
-        Charge
+        Charge,
+        Ground,
+        GroundUpper,
+        GroundLower
     }
 }

@@ -43,6 +43,17 @@ namespace LoCoFight
         public bool failIfTargetTooHeavy = true;
         public MoveData fallbackMoveIfLiftFails;
 
+        [Header("Pacing")]
+        public MoveTier tier = MoveTier.Light;
+        [Tooltip("Stamina the attacker must HAVE to attempt the move (only staminaCost is spent).")]
+        public float minimumStamina = 0f;
+
+        [Header("Context")]
+        public bool requiresTargetDowned = false;
+        public GroundTargetZone requiredGroundZone = GroundTargetZone.None;
+        public bool requiresTargetCornered = false;
+        public bool requiresTargetRopeStaggered = false;
+
         [Header("Conditional damage")]
         [Tooltip("Big Boot style: also knocks down when target health is below this percent (0 = never).")]
         public float downsBelowHealthPercent = 0f;

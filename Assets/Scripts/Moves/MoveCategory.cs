@@ -11,6 +11,11 @@ namespace LoCoFight
         Submission,
         Pin,
         RopeReboundAttack,
-        CornerAttack
+        CornerAttack,
+        GroundUpperAttack,
+        GroundLowerAttack,
+        CornerStrike,
+        CornerGrapple,
+        RopeStaggerAttack
     }
 }
