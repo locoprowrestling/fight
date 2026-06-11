@@ -37,3 +37,8 @@ MemoryCaptures/
 
 .DS_Store
 crashlytics-build.properties
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
