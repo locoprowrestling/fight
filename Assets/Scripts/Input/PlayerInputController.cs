@@ -13,7 +13,15 @@ namespace LoCoFight
         readonly PressTracker _strikeTracker = new PressTracker();
         readonly PressTracker _controlTracker = new PressTracker();
 
-        const float DownedControlRange = 1.2f; // matches TryPin/TrySubmission reach
+        public const float DownedControlRange = 1.2f; // matches TryPin/TrySubmission reach
+
+        public string DebugStrikePhase => DescribePress(_strikeTracker);
+        public string DebugControlPhase => DescribePress(_controlTracker);
+
+        static string DescribePress(PressTracker tracker) =>
+            tracker.IsDown
+                ? $"down {tracker.HeldDuration:0.00}s committed={tracker.Committed}"
+                : "up";
         Camera _camera;
         PlayerInputDevice _lastDevice = PlayerInputDevice.Keyboard;
 

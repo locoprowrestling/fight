@@ -25,6 +25,11 @@ namespace LoCoFight
             var ai = mm.Cpu.GetComponent<CPUWrestlerAI>();
             if (ai != null) GUILayout.Label($"AI state: {ai.CurrentState}");
 
+            var pic = mm.Player.GetComponent<PlayerInputController>();
+            if (pic != null)
+                GUILayout.Label($"Press: strike {pic.DebugStrikePhase} | control {pic.DebugControlPhase}");
+            GUILayout.Label($"Prompts: {MatchHUD.CurrentPromptText}");
+
             var pins = PinSystem.Instance;
             if (pins != null && pins.Active) GUILayout.Label($"Pin: count {pins.CurrentCount}  elapsed {pins.Elapsed:0.0}");
             var subs = SubmissionSystem.Instance;

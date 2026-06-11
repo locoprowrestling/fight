@@ -10,7 +10,9 @@ namespace LoCoFight
         public static MatchHUD Instance { get; private set; }
 
         WrestlerCore _player, _cpu;
-        Text _playerName, _cpuName, _message, _count, _stateLabel, _winner, _controls, _submissionLabel;
+        Text _playerName, _cpuName, _message, _count, _stateLabel, _winner, _controls, _submissionLabel, _prompts;
+        float _nextPromptRefresh;
+        string _lastPrompt = "";
         MeterBar _pHealth, _pStamina, _pMomentum, _cHealth, _cStamina, _cMomentum, _submission;
         RosterPortraitView _pPortrait, _cPortrait;
         float _messageClearAt;
@@ -38,6 +40,10 @@ namespace LoCoFight
         {
             if (Instance != null) Instance.SetInputDevice(device);
         }
+        /// Last rendered contextual prompt line, for the F1 overlay.
+        public static string CurrentPromptText =>
+            Instance != null ? Instance._lastPrompt : "";
+
         public static void TryShowHandshakePrompt(float duration)
         {
             if (Instance == null) return;
@@ -112,6 +118,11 @@ namespace LoCoFight
             _submission.gameObject.SetActive(false);
             _submissionLabel.gameObject.SetActive(false);
 
+            // Contextual button prompts (bottom-center, above the controls hint).
+            _prompts = MakeText("ControlPrompts", new Vector2(0, 36), 720, 22, TextAnchor.LowerCenter, 15,
+                false, centered: true, bottom: true);
+            _prompts.color = new Color(1f, 1f, 1f, 0.9f);
+
             // Controls hint (bottom-left).
             _controls = MakeText("Controls", new Vector2(12, 12), 640, 60, TextAnchor.LowerLeft, 12, false, bottom: true);
             SetInputDevice(PlayerInputDevice.Keyboard);
@@ -179,6 +190,28 @@ namespace LoCoFight
                 _cHealth.SetValue(_cpu.Stats.HealthPercent);
                 _cStamina.SetValue(_cpu.Stats.StaminaPercent);
                 _cMomentum.SetValue(_cpu.Stats.MomentumPercent);
+            }
+
+            // Contextual prompts: low-rate poll, string set only on change.
+            if (_prompts != null && _player != null && Time.unscaledTime >= _nextPromptRefresh)
+            {
+                _nextPromptRefresh = Time.unscaledTime + 0.2f;
+                var mm = MatchManager.Instance;
+                bool fighting = mm != null && mm.IsCombatAllowed;
+                string text = "";
+                if (fighting)
+                {
+                    CombatContext context = _player.Combat.CurrentContext;
+                    bool downedNear = _cpu != null && _cpu.States.IsDowned &&
+                                      _player.DistanceToOpponent() <= PlayerInputController.DownedControlRange;
+                    text = ControlPromptLogic.StrikePrompt(context, _inputDevice) + "    " +
+                           ControlPromptLogic.ControlPrompt(context, downedNear, _inputDevice);
+                }
+                if (text != _lastPrompt)
+                {
+                    _lastPrompt = text;
+                    _prompts.text = text;
+                }
             }
 
             var subs = SubmissionSystem.Instance;
