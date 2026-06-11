@@ -16,18 +16,18 @@ Default match: **Zeak Gallent (player) vs JT Staten (CPU)**. Press **F2** in Pla
 
 ## Controls
 
-Two context-sensitive core buttons carry the fight; the HUD's bottom-center
-prompt always shows what each will do right now. Tap = quick action, hold past
-~0.18 s = strong action. Contextual attacks fire on press; the HUD confirms
-what fired and explains dead presses.
+Two context-sensitive core buttons carry the fight, AKI-style: one press =
+one move, direction is the only modifier. Everything fires on press; the
+HUD's bottom-center prompt always shows what each button will do, confirms
+what fired, and explains dead presses.
 
 | Action | Key |
 |---|---|
 | Move | W / A / S / D |
 | Run | Left Shift |
-| **Strike** — tap: light / contextual attack (ground, corner, rope, rebound, running); hold: heavy strike | J |
-| **Grapple / Control** — tap: grapple attempt (corner grapple when valid) · in lock: tap quick / hold power grapple · beside a downed opponent: tap pin / hold submission | K |
-| Directional grapple from lock | hold a movement direction (toward opponent on screen = forward) + tap/hold K |
+| **Strike** — neutral: light · +held direction: heavy · contextual attack (ground, corner, rope, rebound, running) when one applies; always fires on press | J |
+| **Tie-up / Control** — press: tie-up (release before the lock = quick set, keep held = STRONG set) · in lock: K + direction fires the armed set's move instantly · beside a downed opponent: tap pin / hold submission | K |
+| Directional grapple from lock | hold a movement direction (toward opponent on screen = forward) + press K |
 | Special | L |
 | Dodge / escape / kickout mash | ; (Left Alt also works) |
 | Reversal / block / kickout mash | Space |
@@ -46,8 +46,8 @@ what fired and explains dead presses.
 |---|---|
 | Move | Left stick |
 | Run | Left bumper |
-| Strike (tap light / hold heavy) | X |
-| Grapple / Control (tap/hold, contextual) | A |
+| Strike (neutral light / +direction heavy) | X |
+| Tie-up / Control (hold through lock-up = strong set) | A |
 | Special | Y |
 | Dodge | B |
 | Reversal | Right bumper |

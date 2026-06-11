@@ -30,7 +30,7 @@ namespace LoCoFight
                 case CombatContext.Corner: label = "Corner Strike"; break;
                 case CombatContext.RopeStagger: label = "Rope Attack"; break;
                 case CombatContext.RopeRebound: label = "Rebound Attack"; break;
-                default: label = "Strike (hold: Heavy)"; rangeMatters = false; break;
+                default: label = "Strike (+direction: Heavy)"; rangeMatters = false; break;
             }
             string suffix = rangeMatters && !inRange ? MoveCloser : "";
             return $"[{StrikeGlyph(device)}] {label}{suffix}";
@@ -40,13 +40,16 @@ namespace LoCoFight
             CombatContext context,
             bool opponentDownedInRange,
             bool inRange,
+            bool strongLock,
             PlayerInputDevice device)
         {
             string label;
             bool rangeMatters = true;
             if (context == CombatContext.GrappleLock)
             {
-                label = "Quick Grapple (hold: Power)";
+                label = strongLock
+                    ? "+direction: POWER Grapple"
+                    : "+direction: Quick Grapple";
                 rangeMatters = false;
             }
             else if (context == CombatContext.GroundUpper || context == CombatContext.GroundLower ||
@@ -61,7 +64,7 @@ namespace LoCoFight
             }
             else
             {
-                label = "Grapple";
+                label = "Tie-up (keep held: STRONG)";
                 rangeMatters = false;
             }
             string suffix = rangeMatters && !inRange ? MoveCloser : "";

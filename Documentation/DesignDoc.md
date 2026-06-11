@@ -84,17 +84,19 @@ Every contextual request goes through `ContextualMoveValidator` before any
 stamina is spent and returns a structured result (validity, rejection reason,
 debug message), recorded in a `CombatContextSnapshot` shown in the F1 overlay.
 
-**Controls** are two tap/hold core buttons plus defense: Strike (J/X — tap
-light or contextual attack, hold heavy) and Grapple/Control (K/A — grapple
-attempt; in a lock tap quick / hold power; beside a downed opponent tap pin /
-hold submission), with Special (L/Y), Dodge (;/B), and Reversal (Space/RB).
-Tap fires on release before `PlayerInputLogic.HoldThreshold` (0.18 s); hold
-commits the moment the threshold is crossed; one press resolves at most one
-action (`PressTracker`). In contexts with no hold variant (ground, corner,
-rope, rebound for Strike; outside locks and downed proximity for
-Grapple/Control) the action fires on press, with zero tap latency. A
-~0.35 s input buffer carries presses across recovery frames, and the HUD
-confirms each started move and explains rejected presses
+**Controls** follow the AKI grammar — one press = one move, direction is the
+only modifier; nothing in the offense waits for a button release. Strike
+(J/X) fires on press: neutral = light, held direction = heavy, contextual
+families by precedence. Tie-up/Control (K/A) locks up on press; the
+initiating press picks the set — released before the wrestlers lock = quick,
+still held as the lock forms (~0.28 s sample) = STRONG/power — and inside the
+lock, K + held direction fires the armed set's move instantly. The lock
+lasts 2.5 s so the attacker never races a clock. Beside a downed opponent
+K keeps tap = pin / hold = submission (`PressTracker`,
+`PlayerInputLogic.HoldThreshold` 0.18 s — the only remaining tap/hold).
+Special (L/Y), Dodge (;/B), Reversal (Space/RB). A ~0.35 s input buffer
+carries presses across recovery frames, and the HUD names the armed lock
+strength, confirms each started move, and explains rejected presses
 (`MatchHUD.TryShowActionFeedback`, `ControlPromptLogic.RejectionText`). All directional input uses one frame: the stick maps
 through the camera into the world (like locomotion) and is then classified
 against the attacker's facing, so pushing toward the opponent on screen is

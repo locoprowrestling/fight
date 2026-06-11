@@ -589,8 +589,10 @@ namespace LoCoFight
             attacker.Motor.FaceOpponent();
             defender.Motor.FaceOpponent();
 
-            attacker.States.Set(WrestlerState.GrappleLock, 1.8f);
-            defender.States.Set(WrestlerState.GrappleLock, 1.8f);
+            // Long enough that the attacker is never racing a clock through
+            // the tie-up-strength sample and the follow-up press.
+            attacker.States.Set(WrestlerState.GrappleLock, 2.5f);
+            defender.States.Set(WrestlerState.GrappleLock, 2.5f);
             // Both wrestlers reach into the collar-and-elbow tie-up.
             attacker.Anim.PlayMove("", "grapple");
             defender.Anim.PlayMove("", "grapple");

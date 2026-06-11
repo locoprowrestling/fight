@@ -20,15 +20,15 @@
 - [ ] U, I, and O do nothing.
 
 ## Strikes & grapples
-- [ ] Tapping J at close range fires a light strike; holding J past the threshold (~0.18 s) fires a heavy strike; one press never fires both; whiffs at distance do nothing.
-- [ ] In ground/corner/rope/rebound contexts, J fires the contextual attack the instant you PRESS (no release latency); K likewise grapples on press when you are neither in a lock nor beside a downed opponent.
+- [ ] J fires on PRESS, always: neutral J = light strike, J with a movement direction held = heavy strike; one press never fires two actions; whiffs at distance do nothing.
+- [ ] In ground/corner/rope/rebound contexts, J fires the contextual attack on press; K ties up on press when you are neither in a lock nor beside a downed opponent.
 - [ ] A green popup names every move you start ("Elbow Drop"); an orange popup explains dead presses ("Too far away", "Not enough stamina", "Wrong side of the body"); contextual prompts append "— move closer" when you are out of range and the button correctly does nothing.
 - [ ] Presses during your own recovery come out as the next action (≈0.35 s buffer) instead of vanishing; Cornered (~2 s) and RopeStaggered (~1.8 s) windows are long enough to read the prompt and act.
-- [ ] K at close range enters a grapple lock; in the lock, tapping K = quick grapple and holding K = power grapple; power grapples knock down.
-- [ ] In a lock, holding a movement direction changes the selected grapple (F1 shows dir/family/fallback): quick (tap K) — neutral Knee Lift, forward Snapmare, backward Headlock Takedown, lateral Snap Arm Drag; power (hold K) — neutral Body Slam, forward Vertical Drop, backward Backbreaker, lateral Shoulder Throw. Pushing toward the opponent on screen is always forward, for any camera angle.
+- [ ] K at close range ties up on press. Release K before the wrestlers lock = QUICK set; keep K held through the lock-up = STRONG set (the lock prompt names the armed set). In the lock, pressing K (+ held direction) fires the armed set's move instantly; power grapples knock down.
+- [ ] In a lock, holding a movement direction changes the selected grapple (F1 shows dir/family/fallback): quick set — neutral Knee Lift, forward Snapmare, backward Headlock Takedown, lateral Snap Arm Drag; STRONG set — neutral Body Slam, forward Vertical Drop, backward Backbreaker, lateral Shoulder Throw. Pushing toward the opponent on screen is always forward, for any camera angle.
 - [ ] A direction with no assigned move falls back to neutral (F1 fallback=True); lift failures and lock timeouts behave exactly as before; the CPU also uses directional grapples.
-- [ ] A single K press in a lock resolves exactly one follow-up (tap = quick, hold = power) and spends stamina once; releasing after the hold commits fires nothing extra.
-- [ ] When the CPU initiates a lockup, it follows up with a grapple move within ~2 s **while you stand completely passive** (don't press anything — the historical loop only reproduced then); the match never falls into an endless lockup → release → lockup loop, and any CPU lock release logs a reason to the console.
+- [ ] A single K press in a lock fires exactly one follow-up from the armed set and spends stamina once; the initiating press never double-fires a lock move; the lock lasts ~2.5 s, never racing you.
+- [ ] When the CPU initiates a lockup, it follows up with a grapple move within ~2.5 s **while you stand completely passive** (don't press anything — the historical loop only reproduced then); the match never falls into an endless lockup → release → lockup loop, and any CPU lock release logs a reason to the console.
 - [ ] Select Erza vs Johnny Crash: every lift-based power grapple fails with "Too heavy to lift!", stuns Erza, and gives Johnny momentum.
 
 ## Ground offense (F1 overlay shows context/zone/rejection)

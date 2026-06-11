@@ -27,7 +27,7 @@ namespace LoCoFight
 
             var pic = mm.Player.GetComponent<PlayerInputController>();
             if (pic != null)
-                GUILayout.Label($"Press: strike {pic.DebugStrikePhase} | control {pic.DebugControlPhase}");
+                GUILayout.Label($"Press: control {pic.DebugControlPhase} | powerLock={pic.PowerLockArmed}");
             GUILayout.Label($"Prompts: {MatchHUD.CurrentPromptText}");
 
             var pins = PinSystem.Instance;

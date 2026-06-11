@@ -14,7 +14,8 @@ namespace LoCoFight
         GameObject _controlsPanel;
         string _lastPrompt = "";
         bool _promptStateValid;
-        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady, _pInRange;
+        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady, _pInRange, _pStrongLock;
+        PlayerInputController _playerInput;
         CombatContext _pContext;
         PlayerInputDevice _pDevice;
         Text _actionFeedback;
@@ -173,7 +174,7 @@ namespace LoCoFight
             _controlsPanel.transform.SetParent(transform, false);
             var rt = (RectTransform)_controlsPanel.transform;
             rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.sizeDelta = new Vector2(640f, 310f);
+            rt.sizeDelta = new Vector2(680f, 360f);
             _controlsPanel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.85f);
 
             var textGo = new GameObject("PanelText", typeof(RectTransform), typeof(Text));
@@ -195,15 +196,19 @@ namespace LoCoFight
         {
             return device == PlayerInputDevice.Controller
                 ? "MOVE        left stick   (LB: run)\n" +
-                  "STRIKE      X    tap: light / contextual attack — hold: heavy\n" +
-                  "GRAPPLE     A    tap: grab (pin near downed) — hold: power (submission near downed)\n" +
+                  "STRIKE      X    fires on press — neutral: light, +direction: heavy\n" +
+                  "TIE-UP      A    press: lock up — KEEP HELD through the lock-up for the strong set\n" +
+                  "            in lock: A + direction = grapple move (instant)\n" +
+                  "            near a downed opponent: tap = pin, hold = submission\n" +
                   "SPECIAL     Y    needs full momentum\n" +
                   "DODGE       B\n" +
                   "REVERSE     RB   also mash to kick out / escape\n" +
                   "PAUSE       Menu (also resets after a finish)"
                 : "MOVE        W A S D   (Shift: run)\n" +
-                  "STRIKE      J    tap: light / contextual attack — hold: heavy\n" +
-                  "GRAPPLE     K    tap: grab (pin near downed) — hold: power (submission near downed)\n" +
+                  "STRIKE      J    fires on press — neutral: light, +direction: heavy\n" +
+                  "TIE-UP      K    press: lock up — KEEP HELD through the lock-up for the strong set\n" +
+                  "            in lock: K + direction = grapple move (instant)\n" +
+                  "            near a downed opponent: tap = pin, hold = submission\n" +
                   "SPECIAL     L    needs full momentum\n" +
                   "DODGE       ;    (or Alt)\n" +
                   "REVERSE     Space   also mash to kick out / escape\n" +
@@ -236,6 +241,7 @@ namespace LoCoFight
         {
             _player = player;
             _cpu = cpu;
+            _playerInput = player.GetComponent<PlayerInputController>();
             _playerName.text = player.DisplayName;
             _cpuName.text = cpu.DisplayName;
             _pPortrait.Show(player.Entry != null ? player.Entry.portraitSprite : null, new Color(0.2f, 0.5f, 1f));
@@ -304,11 +310,12 @@ namespace LoCoFight
                                     (_cpu.Combat.IsReversalWindowOpenFor(_player) ||
                                      (_cpu.Specials != null && _cpu.Specials.ReversalWindowOpen));
                 bool specialReady = fighting && _player.Stats.HasFullMomentum;
+                bool strongLock = fighting && _playerInput != null && _playerInput.PowerLockArmed;
 
                 bool changed = !_promptStateValid || fighting != _pFighting || context != _pContext ||
                                downedNear != _pDownedNear || reversalOpen != _pReversalOpen ||
                                specialReady != _pSpecialReady || inRange != _pInRange ||
-                               _inputDevice != _pDevice;
+                               strongLock != _pStrongLock || _inputDevice != _pDevice;
                 if (changed)
                 {
                     _promptStateValid = true;
@@ -318,11 +325,12 @@ namespace LoCoFight
                     _pReversalOpen = reversalOpen;
                     _pSpecialReady = specialReady;
                     _pInRange = inRange;
+                    _pStrongLock = strongLock;
                     _pDevice = _inputDevice;
 
                     _lastPrompt = fighting
                         ? ControlPromptLogic.StrikePrompt(context, inRange, _inputDevice) + "      " +
-                          ControlPromptLogic.ControlPrompt(context, downedNear, inRange, _inputDevice)
+                          ControlPromptLogic.ControlPrompt(context, downedNear, inRange, strongLock, _inputDevice)
                         : "";
                     _prompts.text = _lastPrompt;
 

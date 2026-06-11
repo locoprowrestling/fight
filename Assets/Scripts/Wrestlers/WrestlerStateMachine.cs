@@ -97,7 +97,7 @@ namespace LoCoFight
             d[WrestlerState.StrikeActive] = P(grabbable: false);
             d[WrestlerState.StrikeRecovery] = P(grabbable: true, timeout: 1.5f);
             d[WrestlerState.GrappleAttempt] = P(rotate: true, timeout: 0.6f);
-            d[WrestlerState.GrappleLock] = P(reverse: true, timeout: 1.8f);
+            d[WrestlerState.GrappleLock] = P(reverse: true, timeout: 2.5f);
             d[WrestlerState.GrappleMoveStartup] = P();
             d[WrestlerState.GrappleMoveActive] = P(strikable: false);
             d[WrestlerState.GrappleMoveRecovery] = P(grabbable: true, timeout: 1.5f);

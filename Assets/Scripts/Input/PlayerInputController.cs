@@ -10,18 +10,31 @@ namespace LoCoFight
         WrestlerCore _core;
         readonly InputBuffer _buffer = new InputBuffer();
         readonly LegacyPlayerInputSource _input = new LegacyPlayerInputSource();
-        readonly PressTracker _strikeTracker = new PressTracker();
         readonly PressTracker _controlTracker = new PressTracker();
+
+        // Tie-up strength, resolved once per lock from the initiating press.
+        bool _powerLock;
+        bool _lockStrengthResolved;
+        float _lockInitiatedAt;
+        const float LockStrengthHoldTime = 0.28f;
 
         public const float DownedControlRange = 1.2f; // matches TryPin/TrySubmission reach
 
-        public string DebugStrikePhase => DescribePress(_strikeTracker);
-        public string DebugControlPhase => DescribePress(_controlTracker);
+        /// True when the current lock is armed with the power (strong) set.
+        public bool PowerLockArmed =>
+            _lockStrengthResolved && _powerLock && _core != null &&
+            _core.Combat.InGrappleLockAsAttacker;
 
-        static string DescribePress(PressTracker tracker) =>
-            tracker.IsDown
-                ? $"down {tracker.HeldDuration:0.00}s committed={tracker.Committed}"
+        public string DebugControlPhase =>
+            _controlTracker.IsDown
+                ? $"down {_controlTracker.HeldDuration:0.00}s committed={_controlTracker.Committed}"
                 : "up";
+
+        void ResolveLockStrength(bool power)
+        {
+            _powerLock = power;
+            _lockStrengthResolved = true;
+        }
         Camera _camera;
         PlayerInputDevice _lastDevice = PlayerInputDevice.Keyboard;
 
@@ -132,64 +145,58 @@ namespace LoCoFight
         void HandleCombat(PlayerInputFrame frame)
         {
             bool inLock = _core.Combat.InGrappleLockAsAttacker;
-            CombatContext context = _core.Combat.CurrentContext;
             bool downedNear = _core.Opponent != null &&
                               _core.Opponent.States.IsDowned &&
                               _core.DistanceToOpponent() <= DownedControlRange;
 
-            // Strike button: tap = light family, hold = heavy strike. In
-            // contexts with no heavy variant (ground/corner/rope/rebound) the
-            // attack fires on PRESS — no tap-release latency where the
-            // contextual prompts matter most.
-            PressKind strikeKind = _strikeTracker.Update(
-                frame.LightPressed, frame.StrikeHeld, frame.StrikeReleased,
-                Time.deltaTime, PlayerInputLogic.HoldThreshold);
-            bool strikeInstantContext =
-                context == CombatContext.GroundUpper || context == CombatContext.GroundLower ||
-                context == CombatContext.Corner || context == CombatContext.RopeStagger ||
-                context == CombatContext.RopeRebound;
-            bool strikeRequested = strikeInstantContext
-                ? frame.LightPressed
-                : strikeKind == PressKind.Tap;
-            if (frame.LightPressed && strikeInstantContext)
-                _strikeTracker.Reset(); // the press is consumed; no later tap/hold
-
-            if (strikeRequested)
+            // AKI grammar: one press = one move; direction is the only
+            // modifier. Strikes fire the instant J is pressed — neutral =
+            // light, held direction = heavy — with the contextual families
+            // keeping their precedence.
+            if (frame.LightPressed &&
+                (_core.DistanceToOpponent() <= WrestlerCombat.StrikeRange + 0.5f || _core.Motor.IsRunning))
             {
-                if (_core.DistanceToOpponent() <= WrestlerCombat.StrikeRange + 0.5f || _core.Motor.IsRunning)
-                    // Context precedence: ground, corner, rope stagger,
-                    // rebound, ordinary running, standing light.
-                    _buffer.Buffer(PlayerAction.Light,
-                        () => _core.Combat.TryGroundAttack() ||
-                              _core.Combat.TryCornerStrike() ||
-                              _core.Combat.TryRopeStaggerAttack() ||
-                              _core.Combat.TryRopeReboundAttack() ||
-                              _core.Combat.TryRunningAttack() ||
-                              _core.Combat.TryLightStrike());
-            }
-            else if (strikeKind == PressKind.HoldCommitted && !inLock)
-            {
-                _buffer.Buffer(PlayerAction.Heavy, () => _core.Combat.TryHeavyStrike());
+                bool directional = PlayerInputLogic.ApplyDeadZone(
+                    frame.Move, GrappleDirectionDeadZone) != Vector2.zero;
+                _buffer.Buffer(PlayerAction.Light,
+                    () => _core.Combat.TryGroundAttack() ||
+                          _core.Combat.TryCornerStrike() ||
+                          _core.Combat.TryRopeStaggerAttack() ||
+                          _core.Combat.TryRopeReboundAttack() ||
+                          _core.Combat.TryRunningAttack() ||
+                          (directional ? _core.Combat.TryHeavyStrike()
+                                       : _core.Combat.TryLightStrike()));
             }
 
-            // Control button: in a lock, tap = quick / hold = power grapple
-            // (held direction picks the bucket); beside a downed opponent,
-            // tap = pin / hold = submission (unbuffered — they only fire when
-            // valid right now). Outside both, hold has no meaning, so the
-            // grapple attempt fires on PRESS.
-            PressKind controlKind = _controlTracker.Update(
-                frame.ControlPressed, frame.ControlHeld, frame.ControlReleased,
-                Time.deltaTime, PlayerInputLogic.HoldThreshold);
+            // Grapple button. Tie-up starts on press; the press that started
+            // it decides the strength: released before the wrestlers lock =
+            // QUICK set, still held as the lock forms = STRONG (power) set.
+            // Inside the lock, K + held direction fires the armed set's move
+            // instantly on press — no second timing decision.
             if (inLock)
             {
-                MoveDirection direction = ResolveGrappleDirection(frame);
-                if (controlKind == PressKind.Tap)
-                    _core.Combat.TryQuickGrappleFromLock(direction);
-                else if (controlKind == PressKind.HoldCommitted)
-                    _core.Combat.TryPowerGrappleFromLock(direction);
+                if (!_lockStrengthResolved)
+                {
+                    if (!frame.ControlHeld)
+                        ResolveLockStrength(power: false);
+                    else if (Time.time - _lockInitiatedAt >= LockStrengthHoldTime)
+                        ResolveLockStrength(power: true);
+                }
+                if (frame.ControlPressed)
+                {
+                    if (!_lockStrengthResolved) ResolveLockStrength(power: false);
+                    MoveDirection direction = ResolveGrappleDirection(frame);
+                    if (_powerLock) _core.Combat.TryPowerGrappleFromLock(direction);
+                    else _core.Combat.TryQuickGrappleFromLock(direction);
+                }
             }
             else if (downedNear)
             {
+                // Pin/submission keep tap/hold: deliberate, low-frequency
+                // actions where a beat of deliberation reads correctly.
+                PressKind controlKind = _controlTracker.Update(
+                    frame.ControlPressed, frame.ControlHeld, frame.ControlReleased,
+                    Time.deltaTime, PlayerInputLogic.HoldThreshold);
                 if (controlKind == PressKind.Tap)
                     _core.Combat.TryPin();
                 else if (controlKind == PressKind.HoldCommitted)
@@ -198,6 +205,9 @@ namespace LoCoFight
             else if (frame.ControlPressed)
             {
                 _controlTracker.Reset(); // consumed on press
+                _lockStrengthResolved = false;
+                _powerLock = false;
+                _lockInitiatedAt = Time.time;
                 _buffer.Buffer(PlayerAction.Grapple,
                     () => _core.Combat.TryCornerGrapple() ||
                           _core.Combat.TryGrappleAttempt());
@@ -225,8 +235,9 @@ namespace LoCoFight
         void StopGameplayInput()
         {
             _buffer.Clear();
-            _strikeTracker.Reset();
             _controlTracker.Reset();
+            _lockStrengthResolved = false;
+            _powerLock = false;
             if (_core != null) _core.Motor.SetMoveInput(Vector3.zero, false);
         }
     }
