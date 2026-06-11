@@ -2,11 +2,16 @@ using UnityEngine;
 
 namespace LoCoFight
 {
+    /// Debug pacing for manual testing (F3 cycles): Full = normal AI,
+    /// NoOffense = defends/escapes but never initiates, Dummy = stands there.
+    public enum CpuBehaviorMode { Full, NoOffense, Dummy }
+
     /// Finite-state CPU controller. Consumes the exact same WrestlerCombat API
     /// as the human player.
     public class CPUWrestlerAI : MonoBehaviour
     {
         public AIState CurrentState { get; private set; } = AIState.IdleThink;
+        public CpuBehaviorMode BehaviorMode { get; private set; } = CpuBehaviorMode.Full;
 
         WrestlerCore _core;
         AIDifficultyData _difficulty;
@@ -35,6 +40,9 @@ namespace LoCoFight
             var mm = MatchManager.Instance;
             if (mm == null) return;
 
+            // Debug-only pacing toggle, same convention as F1/F2.
+            if (Input.GetKeyDown(KeyCode.F3)) CycleBehaviorMode();
+
             if (mm.State == MatchState.Finished)
             {
                 CurrentState = _core.States.Current == WrestlerState.Victory ? AIState.Victory : AIState.Defeat;
@@ -47,7 +55,22 @@ namespace LoCoFight
                 return;
             }
 
+            if (BehaviorMode == CpuBehaviorMode.Dummy)
+            {
+                _core.Motor.SetMoveInput(Vector3.zero, false);
+                return;
+            }
+
             ReactDefensively();
+
+            if (BehaviorMode == CpuBehaviorMode.NoOffense)
+            {
+                // Defensive reactions above stay live; never initiate offense.
+                if (_core.Combat.InGrappleLockAsAttacker) _core.Combat.ReleaseGrapple();
+                CurrentState = AIState.IdleThink;
+                _core.Motor.SetMoveInput(Vector3.zero, false);
+                return;
+            }
 
             if (Time.time >= _nextDecisionAt)
             {
@@ -56,6 +79,16 @@ namespace LoCoFight
             }
 
             Act();
+        }
+
+        void CycleBehaviorMode()
+        {
+            BehaviorMode = BehaviorMode == CpuBehaviorMode.Full ? CpuBehaviorMode.NoOffense
+                : BehaviorMode == CpuBehaviorMode.NoOffense ? CpuBehaviorMode.Dummy
+                : CpuBehaviorMode.Full;
+            CurrentState = AIState.IdleThink;
+            MatchHUD.TryShowMessage($"CPU behavior: {BehaviorMode}");
+            Debug.Log($"[AI] {_core.DisplayName} behavior mode: {BehaviorMode}");
         }
 
         // ---------------- Defense (reaction-time gated) ----------------
@@ -215,6 +248,15 @@ namespace LoCoFight
                 else if (Opp.States.Current == WrestlerState.RopeStaggered || Opp.States.Current == WrestlerState.Cornered)
                 {
                     CurrentState = roll < 0.5f ? AIState.AttemptHeavyStrike : AIState.AttemptGrapple;
+                }
+                // Breather gate: against a neutral opponent only this fraction
+                // of close-range decisions attack; the rest circle or back off
+                // so the match has readable pauses. Contextual windows above
+                // (staggered/cornered/downed) are exempt — exploiting those
+                // is correct urgency.
+                else if (Random.value > _difficulty.aggression)
+                {
+                    CurrentState = Random.value < 0.3f ? AIState.BackOff : AIState.Circle;
                 }
                 else if (roll < _difficulty.strikePreference * 0.6f && _memory.CanUse("light", 0.6f))
                     CurrentState = AIState.AttemptLightStrike;

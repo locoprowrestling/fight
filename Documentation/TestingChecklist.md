@@ -70,6 +70,8 @@
 
 ## CPU
 - [ ] The CPU approaches, circles, strikes, grapples, herds you to ropes/corners, reverses sometimes, pins when you're hurt, and sets up its own special at full momentum. It never stands still for long and doesn't spam one move.
+- [ ] Against a neutral (non-staggered, non-cornered, standing) opponent the CPU visibly pauses between attacks — circling or backing off — rather than attacking on every decision; it stays relentless when you're staggered, cornered, or downed.
+- [ ] F3 cycles CPU behavior Full → NoOffense (defends/escapes but never initiates) → Dummy (stands still) → Full, with a HUD message and the mode shown in F1; NoOffense and Dummy make contextual-move testing practical.
 - [ ] The CPU uses every contextual family: ground attacks on a downed player, corner offense on a cornered player, rope-stagger attacks at the ropes, rebound attacks mid-rebound, and directional grapple follow-ups from locks.
 
 ## Reset

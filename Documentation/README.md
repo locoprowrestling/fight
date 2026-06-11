@@ -35,6 +35,7 @@ prompt always shows what each will do right now. Tap = quick action, hold past
 | Reset match (after finish) | R |
 | Debug overlay | F1 |
 | Debug roster select | F2 |
+| Debug CPU behavior (Full → NoOffense → Dummy) | F3 |
 | Pause | Escape |
 
 ### Controller
