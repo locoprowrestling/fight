@@ -33,6 +33,7 @@ prompt always shows what each will do right now. Tap = quick action, hold past
 | Taunt / handshake accept | T |
 | Roll away while downed | A or D + Space |
 | Reset match (after finish) | R |
+| Full controls panel (hold) | Tab (View on controller) |
 | Debug overlay | F1 |
 | Debug roster select | F2 |
 | Debug CPU behavior (Full → NoOffense → Dummy) | F3 |

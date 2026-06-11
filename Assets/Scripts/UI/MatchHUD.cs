@@ -10,9 +10,13 @@ namespace LoCoFight
         public static MatchHUD Instance { get; private set; }
 
         WrestlerCore _player, _cpu;
-        Text _playerName, _cpuName, _message, _count, _stateLabel, _winner, _controls, _submissionLabel, _prompts;
-        float _nextPromptRefresh;
+        Text _playerName, _cpuName, _message, _count, _stateLabel, _winner, _controls, _submissionLabel, _prompts, _alert, _panelText;
+        GameObject _controlsPanel;
         string _lastPrompt = "";
+        bool _promptStateValid;
+        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady;
+        CombatContext _pContext;
+        PlayerInputDevice _pDevice;
         MeterBar _pHealth, _pStamina, _pMomentum, _cHealth, _cStamina, _cMomentum, _submission;
         RosterPortraitView _pPortrait, _cPortrait;
         float _messageClearAt;
@@ -118,14 +122,72 @@ namespace LoCoFight
             _submission.gameObject.SetActive(false);
             _submissionLabel.gameObject.SetActive(false);
 
-            // Contextual button prompts (bottom-center, above the controls hint).
-            _prompts = MakeText("ControlPrompts", new Vector2(0, 36), 720, 22, TextAnchor.LowerCenter, 15,
+            // Contextual button prompts (bottom-center) with an alert line
+            // above them for reversal windows / ready specials. Both hide
+            // while the submission meter occupies this part of the screen.
+            _prompts = MakeText("ControlPrompts", new Vector2(0, 38), 760, 26, TextAnchor.LowerCenter, 17,
                 false, centered: true, bottom: true);
-            _prompts.color = new Color(1f, 1f, 1f, 0.9f);
+            AddOutline(_prompts);
+            _alert = MakeText("PromptAlert", new Vector2(0, 66), 760, 24, TextAnchor.LowerCenter, 17,
+                false, centered: true, bottom: true);
+            AddOutline(_alert);
 
-            // Controls hint (bottom-left).
-            _controls = MakeText("Controls", new Vector2(12, 12), 640, 60, TextAnchor.LowerLeft, 12, false, bottom: true);
+            // One-line hint (bottom-left); the full scheme lives on the
+            // hold-Tab panel instead of a cramped two-line dump.
+            _controls = MakeText("Controls", new Vector2(12, 12), 480, 20, TextAnchor.LowerLeft, 12, false, bottom: true);
+            BuildControlsPanel();
             SetInputDevice(PlayerInputDevice.Keyboard);
+        }
+
+        static void AddOutline(Text text)
+        {
+            var outline = text.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.9f);
+            outline.effectDistance = new Vector2(1.2f, -1.2f);
+        }
+
+        void BuildControlsPanel()
+        {
+            _controlsPanel = new GameObject("ControlsPanel", typeof(RectTransform), typeof(Image));
+            _controlsPanel.transform.SetParent(transform, false);
+            var rt = (RectTransform)_controlsPanel.transform;
+            rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.sizeDelta = new Vector2(640f, 310f);
+            _controlsPanel.GetComponent<Image>().color = new Color(0f, 0f, 0f, 0.85f);
+
+            var textGo = new GameObject("PanelText", typeof(RectTransform), typeof(Text));
+            textGo.transform.SetParent(_controlsPanel.transform, false);
+            var trt = (RectTransform)textGo.transform;
+            trt.anchorMin = Vector2.zero;
+            trt.anchorMax = Vector2.one;
+            trt.offsetMin = new Vector2(26f, 16f);
+            trt.offsetMax = new Vector2(-26f, -16f);
+            _panelText = textGo.GetComponent<Text>();
+            _panelText.font = GetFont();
+            _panelText.fontSize = 16;
+            _panelText.alignment = TextAnchor.MiddleLeft;
+            _panelText.color = Color.white;
+            _controlsPanel.SetActive(false);
+        }
+
+        static string PanelTextFor(PlayerInputDevice device)
+        {
+            return device == PlayerInputDevice.Controller
+                ? "MOVE        left stick   (LB: run)\n" +
+                  "STRIKE      X    tap: light / contextual attack — hold: heavy\n" +
+                  "GRAPPLE     A    tap: grab (pin near downed) — hold: power (submission near downed)\n" +
+                  "SPECIAL     Y    needs full momentum\n" +
+                  "DODGE       B\n" +
+                  "REVERSE     RB   also mash to kick out / escape\n" +
+                  "PAUSE       Menu (also resets after a finish)"
+                : "MOVE        W A S D   (Shift: run)\n" +
+                  "STRIKE      J    tap: light / contextual attack — hold: heavy\n" +
+                  "GRAPPLE     K    tap: grab (pin near downed) — hold: power (submission near downed)\n" +
+                  "SPECIAL     L    needs full momentum\n" +
+                  "DODGE       ;    (or Alt)\n" +
+                  "REVERSE     Space   also mash to kick out / escape\n" +
+                  "TAUNT       T    handshake: T accept / J cheap shot / K refuse\n" +
+                  "MISC        F1 debug — F2 roster — F3 CPU mode — Esc pause — R reset";
         }
 
         Text MakeText(string name, Vector2 pos, float w, float h, TextAnchor anchor, int size,
@@ -170,8 +232,9 @@ namespace LoCoFight
             _inputDevice = device;
             if (_controls == null) return;
             _controls.text = device == PlayerInputDevice.Controller
-                ? "Left stick move | LB run | X strike (hold: heavy) | A grapple/pin (hold: power/submission)\nRB reversal | B dodge | Y special | mash buttons/stick to escape | Menu pause/reset"
-                : "WASD move | Shift run | J strike (hold: heavy) | K grapple/pin (hold: power/submission)\nSpace reversal | ; dodge | L special | mash Space when pinned | F1 debug | R reset";
+                ? "Hold View: controls   |   Menu: pause"
+                : "Hold Tab: controls   |   F1: debug   |   Esc: pause";
+            if (_panelText != null) _panelText.text = PanelTextFor(device);
         }
 
         void Update()
@@ -192,30 +255,66 @@ namespace LoCoFight
                 _cMomentum.SetValue(_cpu.Stats.MomentumPercent);
             }
 
-            // Contextual prompts: low-rate poll, string set only on change.
-            if (_prompts != null && _player != null && Time.unscaledTime >= _nextPromptRefresh)
-            {
-                _nextPromptRefresh = Time.unscaledTime + 0.2f;
-                var mm = MatchManager.Instance;
-                bool fighting = mm != null && mm.IsCombatAllowed;
-                string text = "";
-                if (fighting)
-                {
-                    CombatContext context = _player.Combat.CurrentContext;
-                    bool downedNear = _cpu != null && _cpu.States.IsDowned &&
-                                      _player.DistanceToOpponent() <= PlayerInputController.DownedControlRange;
-                    text = ControlPromptLogic.StrikePrompt(context, _inputDevice) + "    " +
-                           ControlPromptLogic.ControlPrompt(context, downedNear, _inputDevice);
-                }
-                if (text != _lastPrompt)
-                {
-                    _lastPrompt = text;
-                    _prompts.text = text;
-                }
-            }
-
             var subs = SubmissionSystem.Instance;
             bool subActive = subs != null && subs.Active;
+
+            // Hold Tab (View on pad) for the full controls panel. Read here
+            // directly, same debug-view convention as F1/F3.
+            bool showPanel = Input.GetKey(KeyCode.Tab) || Input.GetKey(KeyCode.JoystickButton6);
+            if (_controlsPanel != null && _controlsPanel.activeSelf != showPanel)
+                _controlsPanel.SetActive(showPanel);
+
+            // Contextual prompts + alert line: per-frame state checks (a
+            // 0.2 s poll visibly lagged short-lived contexts), strings only
+            // rebuilt on change. Hidden while the submission meter owns this
+            // screen space.
+            if (_prompts != null && _player != null)
+            {
+                var mm = MatchManager.Instance;
+                bool fighting = mm != null && mm.IsCombatAllowed && !subActive;
+                CombatContext context = fighting ? _player.Combat.CurrentContext : CombatContext.Standing;
+                bool downedNear = fighting && _cpu != null && _cpu.States.IsDowned &&
+                                  _player.DistanceToOpponent() <= PlayerInputController.DownedControlRange;
+                bool reversalOpen = fighting && _cpu != null &&
+                                    (_cpu.Combat.IsReversalWindowOpenFor(_player) ||
+                                     (_cpu.Specials != null && _cpu.Specials.ReversalWindowOpen));
+                bool specialReady = fighting && _player.Stats.HasFullMomentum;
+
+                bool changed = !_promptStateValid || fighting != _pFighting || context != _pContext ||
+                               downedNear != _pDownedNear || reversalOpen != _pReversalOpen ||
+                               specialReady != _pSpecialReady || _inputDevice != _pDevice;
+                if (changed)
+                {
+                    _promptStateValid = true;
+                    _pFighting = fighting;
+                    _pContext = context;
+                    _pDownedNear = downedNear;
+                    _pReversalOpen = reversalOpen;
+                    _pSpecialReady = specialReady;
+                    _pDevice = _inputDevice;
+
+                    _lastPrompt = fighting
+                        ? ControlPromptLogic.StrikePrompt(context, _inputDevice) + "      " +
+                          ControlPromptLogic.ControlPrompt(context, downedNear, _inputDevice)
+                        : "";
+                    _prompts.text = _lastPrompt;
+
+                    if (reversalOpen)
+                    {
+                        _alert.text = _inputDevice == PlayerInputDevice.Controller ? "[RB] REVERSE!" : "[Space] REVERSE!";
+                        _alert.color = Color.cyan;
+                    }
+                    else if (specialReady)
+                    {
+                        _alert.text = _inputDevice == PlayerInputDevice.Controller ? "[Y] Special ready" : "[L] Special ready";
+                        _alert.color = new Color(1f, 0.7f, 0.15f);
+                    }
+                    else
+                    {
+                        _alert.text = "";
+                    }
+                }
+            }
             if (_submission.gameObject.activeSelf != subActive)
             {
                 _submission.gameObject.SetActive(subActive);
