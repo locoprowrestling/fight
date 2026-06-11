@@ -43,14 +43,33 @@ flashes.
 To integrate real animation:
 
 1. Write `AnimatorAnimationDriver : MonoBehaviour, IAnimationDriver` that maps
-   each interface call to Animator parameters/states.
+   each interface call to centralized Animator parameters and states.
    `MoveData.animationStateName` and `SpecialAbilityData.animationStateName`
-   already carry the target state names; `placeholderPoseName` becomes unused.
+   carry target state names; `placeholderPoseName` becomes unused. Resolve move
+   and special identifiers through a validated mapping rather than hard-coded
+   moveset slots.
 2. Add it to the wrestler prefab and assign it in `WrestlerCore.Create` instead
    of `PlaceholderAnimationDriver`.
 3. Move timing stays in data (`startupTime` / `activeTime` / `recoveryTime`), so
    animations should be authored or speed-scaled to those durations — gameplay
    never reads animation length.
+4. Map `TriggerReversal`, `SetSpecialReady`, and the submission trigger methods
+   to paired attacker/defender states, overlays, or triggers. Route presentation
+   identifiers to audio, VFX, and camera effects only.
+5. Keep `Animator.applyRootMotion` disabled on the gameplay root. Gameplay
+   systems continue to own snapping, scripted movement, separation, collision,
+   and state transitions.
+6. Validate required parameters and every non-empty move/special state name in
+   editor tooling before Play mode or a build.
+
+The complete semantic rows, paired-clip requirements, marker rules, and
+authority boundaries are defined in
+[AnimationContract.md](AnimationContract.md).
+
+`examplecode/` is informational reference material, not production source. Its
+parameter-facade and builder patterns may inform the future driver, but its
+gameplay decisions, animation-event timing, and root-motion assumptions must
+not be copied into `Assets/`.
 
 ## Arena
 

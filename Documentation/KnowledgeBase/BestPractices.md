@@ -312,6 +312,11 @@ margins).
 _Why:_ players cannot distinguish "illegal right now" from "broken," and
 neither can QA without evidence.
 
+**Animation follows the semantic combat contract.** Gameplay systems and
+`MoveData` own timing, outcomes, and authoritative roots; animation drivers
+only map resolved events to paired clips, parameters, and presentation markers
+([AnimationContract.md](../AnimationContract.md)).
+
 ## Verification
 
 There is no CLI build or test suite. Three layers, cheapest first:
