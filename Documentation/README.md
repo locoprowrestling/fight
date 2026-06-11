@@ -16,21 +16,20 @@ Default match: **Zeak Gallent (player) vs JT Staten (CPU)**. Press **F2** in Pla
 
 ## Controls
 
+Two context-sensitive core buttons carry the fight; the HUD's bottom-center
+prompt always shows what each will do right now. Tap = quick action, hold past
+~0.22 s = strong action.
+
 | Action | Key |
 |---|---|
 | Move | W / A / S / D |
 | Run | Left Shift |
-| Light strike (contextual: ground / corner / rope attack when one applies) | J |
-| Heavy strike | K |
-| Grapple / quick grapple from lock | L |
-| Power grapple from lock | K (or hold L + K) |
-| Directional grapple from lock | hold a movement direction + L or K |
-| Corner grapple (opponent cornered) | L |
+| **Strike** — tap: light / contextual attack (ground, corner, rope, rebound, running); hold: heavy strike | J |
+| **Grapple / Control** — tap: grapple attempt (corner grapple when valid) · in lock: tap quick / hold power grapple · beside a downed opponent: tap pin / hold submission | K |
+| Directional grapple from lock | hold a movement direction (toward opponent on screen = forward) + tap/hold K |
+| Special | L |
+| Dodge / escape / kickout mash | ; (Left Alt also works) |
 | Reversal / block / kickout mash | Space |
-| Dodge / escape / kickout mash | Left Alt |
-| Special | U |
-| Pin attempt | I |
-| Submission attempt | O |
 | Taunt / handshake accept | T |
 | Roll away while downed | A or D + Space |
 | Reset match (after finish) | R |
@@ -44,11 +43,11 @@ Default match: **Zeak Gallent (player) vs JT Staten (CPU)**. Press **F2** in Pla
 |---|---|
 | Move | Left stick |
 | Run | Left bumper |
-| Light / heavy strike | X / Y |
-| Grapple / dodge | A / B |
+| Strike (tap light / hold heavy) | X |
+| Grapple / Control (tap/hold, contextual) | A |
+| Special | Y |
+| Dodge | B |
 | Reversal | Right bumper |
-| Special | Right stick click |
-| Pin / submission | View / left stick click |
 | Pause / reset after finish | Menu |
 
 Controller bindings use Unity's legacy joystick button numbering and can vary by

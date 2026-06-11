@@ -84,6 +84,19 @@ Every contextual request goes through `ContextualMoveValidator` before any
 stamina is spent and returns a structured result (validity, rejection reason,
 debug message), recorded in a `CombatContextSnapshot` shown in the F1 overlay.
 
+**Controls** are two tap/hold core buttons plus defense: Strike (J/X — tap
+light or contextual attack, hold heavy) and Grapple/Control (K/A — grapple
+attempt; in a lock tap quick / hold power; beside a downed opponent tap pin /
+hold submission), with Special (L/Y), Dodge (;/B), and Reversal (Space/RB).
+Tap fires on release before `PlayerInputLogic.HoldThreshold` (0.22 s); hold
+commits the moment the threshold is crossed; one press resolves at most one
+action (`PressTracker`). All directional input uses one frame: the stick maps
+through the camera into the world (like locomotion) and is then classified
+against the attacker's facing, so pushing toward the opponent on screen is
+always Forward. A bottom-center HUD prompt (`ControlPromptLogic`,
+presentation-only) always names what both buttons will do in the current
+context, with device-aware glyphs.
+
 **Move tiers** (`MoveTier`) regulate pacing without a match-phase system:
 
 | Tier | Cost | Recovery | Intended use |

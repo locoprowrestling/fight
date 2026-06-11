@@ -94,6 +94,27 @@ resources.
 *Why:* invalid attempts must be free and explainable, and player/CPU must hit
 the identical rejection path.
 
+**One physical press resolves at most one action.** Tap/hold buttons go
+through `PressTracker` (tap on release before
+`PlayerInputLogic.HoldThreshold`, hold committed at the crossing, nothing on
+release after a hold), and pause / match end / reset call `Reset()` on every
+tracker plus `InputBuffer.Clear()` so nothing fires on resume.
+*Why:* double-fired or resumed presses read as phantom inputs and are nearly
+impossible to QA after the fact.
+
+**One direction frame.** Directional input is camera-mapped to a world vector
+first (exactly like locomotion) and only then classified against a wrestler's
+facing (`PlayerInputLogic.ResolveMoveDirection`). Never interpret raw stick
+axes against a wrestler's local axes directly.
+*Why:* with a moving camera, "up" on the stick is only meaningful on screen;
+mixing frames makes identical inputs do different things in different systems.
+
+**HUD prompts are presentation-only.** `ControlPromptLogic` maps the resolved
+combat context to labels; nothing may read prompt strings back into gameplay,
+and a wrong prompt is a bug in the mapping, never in combat.
+*Why:* the prompt exists to make context-sensitive controls legible; letting
+it gate behavior would create a second, contradictory authority.
+
 **Record every contextual request for F1.** Use the `RecordContext` funnel in
 `WrestlerCombat` so the overlay shows context, zone, direction, family,
 candidate count, selection, tier, validation result, and fallback use; log
