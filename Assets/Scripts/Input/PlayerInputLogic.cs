@@ -4,6 +4,10 @@ namespace LoCoFight
 {
     public static class PlayerInputLogic
     {
+        /// Single tunable feel constant: presses shorter than this are taps,
+        /// crossing it while held commits the hold action.
+        public const float HoldThreshold = 0.22f;
+
         public static PlayerAction ResolveLockAction(bool heavyPressed, bool grapplePressed)
         {
             if (heavyPressed) return PlayerAction.Heavy;
