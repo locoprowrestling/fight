@@ -138,10 +138,10 @@ namespace LoCoFight
             snapmare.placeholderPoseName = "snap";
             kneeLift.placeholderPoseName = "stomp"; // knee drive reads as the chambered leg
 
-            var bodySlam = Grapple(set, "body-slam", "Body Slam", MoveCategory.PowerGrapple, 15, 18, 1.35f, 0f, 13, downed: 2.0f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
-            var verticalDrop = Grapple(set, "vertical-drop", "Vertical Drop", MoveCategory.PowerGrapple, 18, 22, 1.60f, 0f, 15, downed: 2.25f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
-            var backbreaker = Grapple(set, "backbreaker", "Backbreaker", MoveCategory.PowerGrapple, 16, 20, 1.45f, 0f, 14, downed: 1.75f, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift });
-            var shoulderThrow = Grapple(set, "shoulder-throw", "Shoulder Throw", MoveCategory.PowerGrapple, 14, 17, 1.20f, 0f, 12, downed: 1.8f, tags: new[] { MoveTag.Clean });
+            var bodySlam = Grapple(set, "body-slam", "Body Slam", MoveCategory.PowerGrapple, 15, 18, 1.70f, 0f, 13, downed: 2.0f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
+            var verticalDrop = Grapple(set, "vertical-drop", "Vertical Drop", MoveCategory.PowerGrapple, 18, 22, 1.90f, 0f, 15, downed: 2.25f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
+            var backbreaker = Grapple(set, "backbreaker", "Backbreaker", MoveCategory.PowerGrapple, 16, 20, 1.70f, 0f, 14, downed: 1.75f, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift });
+            var shoulderThrow = Grapple(set, "shoulder-throw", "Shoulder Throw", MoveCategory.PowerGrapple, 14, 17, 1.55f, 0f, 12, downed: 1.8f, tags: new[] { MoveTag.Clean });
             db.powerGrapples.Add(bodySlam);
             db.powerGrapples.Add(verticalDrop);
             db.powerGrapples.Add(backbreaker);
