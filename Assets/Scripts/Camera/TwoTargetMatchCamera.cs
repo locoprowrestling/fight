@@ -14,7 +14,7 @@ namespace LoCoFight
         public float maxDistance = 12.5f;
         public float height = 4f;
         public float aerialHeightBoost = 1.2f;
-        public float lookAtHeightOffset = 1.2f;
+        public float lookAtHeightOffset = 1.5f; // tracks mid-torso of the 1.25x-scaled rigs
         public float smoothTime = 0.15f;
         [Tooltip("Fixed diagonal view direction from outside the ring.")]
         public Vector3 viewDirection = new Vector3(0.45f, 0f, -1f);

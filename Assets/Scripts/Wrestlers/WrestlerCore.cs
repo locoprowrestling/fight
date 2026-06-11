@@ -35,8 +35,8 @@ namespace LoCoFight
             // touch wider for the heavier classes. Visual limbs never collide;
             // this capsule is the only physics volume on a wrestler.
             var cc = go.AddComponent<CharacterController>();
-            cc.height = WrestlerView.RigHeight * WrestlerView.HeightFor(weight);
-            cc.radius = 0.35f * Mathf.Lerp(1f, WrestlerView.BulkFor(weight), 0.5f);
+            cc.height = WrestlerView.RigHeight * WrestlerView.HeightFor(weight) * WrestlerView.GlobalScale;
+            cc.radius = 0.35f * WrestlerView.GlobalScale * Mathf.Lerp(1f, WrestlerView.BulkFor(weight), 0.5f);
             cc.center = new Vector3(0f, cc.height * 0.5f, 0f);
 
             var core = go.AddComponent<WrestlerCore>();

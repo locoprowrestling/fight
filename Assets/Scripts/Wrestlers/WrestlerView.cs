@@ -35,6 +35,12 @@ namespace LoCoFight
         /// Standing height of the rig in local units, before weight-class scale.
         public const float RigHeight = 1.78f;
 
+        /// Global wrestler scale relative to the ring. At 1.25 the top rope
+        /// (1.8 above the mat) sits at shoulder/upper-chest height instead of
+        /// head height. Uniform only — applied to the visual root and the
+        /// CharacterController, never per-axis.
+        public const float GlobalScale = 1.25f;
+
         /// Widths (x/z) of torso and limbs scale with weight class.
         public static float BulkFor(WeightClass weight) => weight switch
         {
@@ -64,7 +70,7 @@ namespace LoCoFight
 
             visualRoot = new GameObject("VisualRoot").transform;
             visualRoot.SetParent(transform, false);
-            visualRoot.localScale = Vector3.one * HeightFor(weight);
+            visualRoot.localScale = Vector3.one * (HeightFor(weight) * GlobalScale);
 
             // Trunk chain: pelvis → spine → neck. Pelvis sits at hip height so
             // bending it folds the whole upper body like a waist.
