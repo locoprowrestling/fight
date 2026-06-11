@@ -60,3 +60,15 @@ dotnet "$ROSLYN" @$RSP
 ```
 
 Gotcha that motivated the response file: passing a multi-line file list as a shell variable mangles it into one giant "filename" (CS1504).
+
+### Editor + test variant
+
+To also type-check `Assets/Scripts/Editor/` (asset builder, validators, NUnit edit-mode tests), extend the same response file with the netfx mscorlib shim and the nunit package DLL, and compile **all** of `Assets/Scripts`:
+
+```bash
+echo "-r:$UNITY/NetStandard/compat/2.1.0/shims/netfx/mscorlib.dll" >> $RSP
+echo "-r:$(ls -d Library/PackageCache/com.unity.ext.nunit@*/net40/unity-custom/nunit.framework.dll | tail -1)" >> $RSP
+find Assets/Scripts -name "*.cs" >> $RSP
+```
+
+Two gotchas: do **not** also reference `$UNITY/Managed/UnityEditor.dll` — the `Managed/UnityEngine/*.dll` glob already pulls in `UnityEditor.CoreModule` and the duplicate types collide (CS0433); and the net40 nunit DLL needs that mscorlib shim or every `[Test]` attribute fails with CS0012.
