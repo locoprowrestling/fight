@@ -59,52 +59,63 @@ namespace LoCoFight.EditorTests
             Assert.That(result, Is.False);
         }
 
-        [Test]
-        public void ResolveMoveDirection_UsesFacingRelativeForward()
+        static string ResolveDirection(Vector2 move, Vector3 camForward, Vector3 attackerForward)
         {
-            var result = Invoke(
-                "ResolveMoveDirection",
-                new Vector2(0f, 1f),
-                Vector3.forward,
-                Vector3.right,
-                0.2f);
-            Assert.That(result.ToString(), Is.EqualTo("Forward"));
+            Vector3 camRight = Vector3.Cross(Vector3.up, camForward);
+            return Invoke("ResolveMoveDirection", move, camForward, camRight, attackerForward, 0.2f).ToString();
+        }
+
+        [Test]
+        public void ResolveMoveDirection_TowardOpponentIsForwardForEveryCameraYaw()
+        {
+            // The attacker faces +z (toward the opponent). Whatever the camera
+            // yaw, pushing the stick so the on-screen motion points at the
+            // opponent must resolve Forward.
+            foreach (Vector3 camForward in new[]
+                     { Vector3.forward, Vector3.back, Vector3.left, Vector3.right })
+            {
+                Vector3 camRight = Vector3.Cross(Vector3.up, camForward);
+                // Stick input whose camera-mapped world vector is +z:
+                var stick = new Vector2(
+                    Vector3.Dot(Vector3.forward, camRight),
+                    Vector3.Dot(Vector3.forward, camForward));
+                Assert.That(ResolveDirection(stick, camForward, Vector3.forward),
+                    Is.EqualTo("Forward"), $"camera {camForward}");
+            }
         }
 
         [Test]
         public void ResolveMoveDirection_UsesNeutralInsideDeadZone()
         {
-            var result = Invoke(
-                "ResolveMoveDirection",
-                new Vector2(0.05f, 0.05f),
-                Vector3.forward,
-                Vector3.right,
-                0.2f);
-            Assert.That(result.ToString(), Is.EqualTo("Neutral"));
+            Assert.That(
+                ResolveDirection(new Vector2(0.05f, 0.05f), Vector3.forward, Vector3.forward),
+                Is.EqualTo("Neutral"));
         }
 
         [Test]
         public void ResolveMoveDirection_UsesLateralAxis()
         {
-            var result = Invoke(
-                "ResolveMoveDirection",
-                new Vector2(-1f, 0f),
-                Vector3.forward,
-                Vector3.right,
-                0.2f);
-            Assert.That(result.ToString(), Is.EqualTo("Left"));
+            Assert.That(
+                ResolveDirection(new Vector2(-1f, 0f), Vector3.forward, Vector3.forward),
+                Is.EqualTo("Left"));
         }
 
         [Test]
-        public void ResolveMoveDirection_BackwardInputResolvesBackward()
+        public void ResolveMoveDirection_AwayFromFacingResolvesBackward()
         {
-            var result = Invoke(
-                "ResolveMoveDirection",
-                new Vector2(0f, -1f),
-                Vector3.forward,
-                Vector3.right,
-                0.2f);
-            Assert.That(result.ToString(), Is.EqualTo("Backward"));
+            Assert.That(
+                ResolveDirection(new Vector2(0f, -1f), Vector3.forward, Vector3.forward),
+                Is.EqualTo("Backward"));
+        }
+
+        [Test]
+        public void ResolveMoveDirection_CameraBehindAttackerFlipsScreenInput()
+        {
+            // Camera looking -z while the attacker faces +z: pushing stick-up
+            // moves away from the opponent on screen → Backward.
+            Assert.That(
+                ResolveDirection(new Vector2(0f, 1f), Vector3.back, Vector3.forward),
+                Is.EqualTo("Backward"));
         }
     }
 }

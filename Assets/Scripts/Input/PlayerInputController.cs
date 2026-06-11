@@ -137,11 +137,7 @@ namespace LoCoFight
 
             if (inLock)
             {
-                MoveDirection direction = PlayerInputLogic.ResolveMoveDirection(
-                    frame.Move,
-                    _core.transform.forward,
-                    _core.transform.right,
-                    GrappleDirectionDeadZone);
+                MoveDirection direction = ResolveGrappleDirection(frame);
                 switch (PlayerInputLogic.ResolveLockAction(frame.HeavyPressed, frame.GrapplePressed))
                 {
                     case PlayerAction.Heavy:
@@ -178,6 +174,15 @@ namespace LoCoFight
 
             if (frame.SubmissionPressed)
                 _core.Combat.TrySubmission();
+        }
+
+        MoveDirection ResolveGrappleDirection(PlayerInputFrame frame)
+        {
+            if (_camera == null) _camera = Camera.main;
+            Vector3 camForward = _camera != null ? _camera.transform.forward : Vector3.forward;
+            Vector3 camRight = _camera != null ? _camera.transform.right : Vector3.right;
+            return PlayerInputLogic.ResolveMoveDirection(
+                frame.Move, camForward, camRight, _core.transform.forward, GrappleDirectionDeadZone);
         }
 
         void StopGameplayInput()

@@ -39,24 +39,29 @@ namespace LoCoFight
             return !paused && state == MatchState.Active;
         }
 
-        /// Convert held movement into a facing-relative grapple direction.
-        /// Input inside the dead zone is Neutral; otherwise the dominant axis
-        /// (forward vs lateral, relative to the attacker's facing) wins.
+        /// One direction frame: held movement is mapped through the camera
+        /// into a world vector (exactly like locomotion), then classified
+        /// against the attacker's facing — so pushing toward the opponent on
+        /// screen is always Forward, for any camera yaw. Input inside the
+        /// dead zone is Neutral.
         public static MoveDirection ResolveMoveDirection(
             Vector2 moveInput,
-            Vector3 facingForward,
-            Vector3 facingRight,
+            Vector3 cameraForward,
+            Vector3 cameraRight,
+            Vector3 attackerForward,
             float deadZone)
         {
             Vector2 filtered = ApplyDeadZone(moveInput, deadZone);
             if (filtered == Vector2.zero) return MoveDirection.Neutral;
 
-            Vector3 world = MathUtil.Flat(facingRight) * filtered.x +
-                            MathUtil.Flat(facingForward) * filtered.y;
+            Vector3 world = MathUtil.Flat(cameraRight).normalized * filtered.x +
+                            MathUtil.Flat(cameraForward).normalized * filtered.y;
             if (world.sqrMagnitude < 0.0001f) return MoveDirection.Neutral;
 
-            float forward = Vector3.Dot(world.normalized, MathUtil.Flat(facingForward).normalized);
-            float right = Vector3.Dot(world.normalized, MathUtil.Flat(facingRight).normalized);
+            Vector3 facing = MathUtil.Flat(attackerForward).normalized;
+            Vector3 facingRight = Vector3.Cross(Vector3.up, facing);
+            float forward = Vector3.Dot(world.normalized, facing);
+            float right = Vector3.Dot(world.normalized, facingRight);
 
             if (Mathf.Abs(forward) >= Mathf.Abs(right))
                 return forward >= 0f ? MoveDirection.Forward : MoveDirection.Backward;
