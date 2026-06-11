@@ -49,6 +49,11 @@ namespace LoCoFight
                 _core.Motor.SetMoveInput(Vector3.zero, false);
                 return;
             }
+            // Submission defense runs outside the combat-allowed gate (the
+            // match state is SubmissionInProgress, not Active) and applies in
+            // every behavior mode — escaping holds is defense, not offense.
+            if (DefendSubmission()) return;
+
             if (!mm.IsCombatAllowed)
             {
                 _core.Motor.SetMoveInput(Vector3.zero, false);
@@ -151,6 +156,40 @@ namespace LoCoFight
                     RollAway();
                 }
             }
+        }
+
+        float _nextSubmissionEffortAt;
+
+        /// While the CPU defends a submission it crawls toward the nearest
+        /// rope and mashes on a difficulty-gated cadence, through the same
+        /// SubmissionSystem APIs the player uses. Reversal accuracy never
+        /// feeds submission escape.
+        bool DefendSubmission()
+        {
+            var subs = SubmissionSystem.Instance;
+            if (subs == null || !subs.Active || subs.Defender != _core) return false;
+
+            CurrentState = AIState.Recover;
+
+            // Crawl toward the nearest rope: with rope breaks active it earns
+            // a release; with them disabled the same intent still converts to
+            // reduced escape effort, so the input is never dead.
+            var ring = RingInteractionSystem.Instance;
+            if (ring != null && ring.Bounds != null)
+            {
+                var info = ring.GetNearestRopeContactInfo(_core);
+                Vector3 toRope = MathUtil.Flat(info.contactPoint - transform.position);
+                if (toRope.sqrMagnitude > 0.0001f)
+                    subs.SetDefenderCrawlIntent(_core, toRope.normalized);
+            }
+
+            if (Time.time >= _nextSubmissionEffortAt)
+            {
+                subs.AddEscapeEffort(_core);
+                float cadenceBonus = 1f + (_difficulty != null ? _difficulty.submissionEscapeBonus : 0f);
+                _nextSubmissionEffortAt = Time.time + Mathf.Max(0.08f, 0.22f / cadenceBonus);
+            }
+            return true;
         }
 
         void RollAway()

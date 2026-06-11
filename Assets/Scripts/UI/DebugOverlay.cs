@@ -34,7 +34,9 @@ namespace LoCoFight
             var pins = PinSystem.Instance;
             if (pins != null && pins.Active) GUILayout.Label($"Pin: count {pins.CurrentCount}  elapsed {pins.Elapsed:0.0}");
             var subs = SubmissionSystem.Instance;
-            if (subs != null && subs.Active) GUILayout.Label($"Submission: {subs.HoldLabel} pressure {subs.Pressure:0} escape {subs.Escape:0}");
+            if (subs != null && subs.Active)
+                GUILayout.Label($"Submission: {subs.HoldLabel} pressure {subs.Pressure:0} " +
+                                $"escape {subs.Escape:0} rope {subs.LastRopeDistance:0.0} crawl {subs.LastCrawlRate:0.00}");
             var refSys = RefereeCountSystem.Instance;
             if (refSys != null && refSys.Counting) GUILayout.Label($"Referee count: {refSys.CurrentCount}");
             GUILayout.EndArea();

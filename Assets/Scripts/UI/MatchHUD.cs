@@ -397,7 +397,9 @@ namespace LoCoFight
             if (subActive)
             {
                 _submission.SetValue(subs.Pressure / SubmissionSystem.SubmitThreshold);
-                _submissionLabel.text = $"{subs.HoldLabel}  (escape {subs.Escape:0}%)";
+                _submissionLabel.text = subs.Defender != null && subs.Defender.IsPlayer
+                    ? $"{subs.HoldLabel}  — mash to escape, crawl to ropes  (escape {subs.Escape:0}%)"
+                    : $"{subs.HoldLabel}  (escape {subs.Escape:0}%)";
             }
         }
     }

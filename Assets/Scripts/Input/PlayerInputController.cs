@@ -75,6 +75,11 @@ namespace LoCoFight
             }
 
             HandlePinAndSubmissionMash(frame);
+            // Submission defense replaces locomotion while the hold is
+            // active: movement becomes crawl intent, mash stays escape
+            // effort. Runs before the CanProcessGameplay gate because the
+            // match state is SubmissionInProgress, not Active.
+            if (HandleSubmissionDefense(frame)) return;
             if (!PlayerInputLogic.CanProcessGameplay(mm.IsPaused, mm.State))
             {
                 StopGameplayInput();
@@ -84,6 +89,34 @@ namespace LoCoFight
             HandleMovement(frame);
             HandleCombat(frame);
             _buffer.Tick();
+        }
+
+        bool _wasDefendingSubmission;
+
+        bool HandleSubmissionDefense(PlayerInputFrame frame)
+        {
+            var subs = SubmissionSystem.Instance;
+            bool defending = subs != null && subs.Active && subs.Defender == _core;
+            if (!defending)
+            {
+                if (_wasDefendingSubmission && subs != null)
+                    subs.ClearDefenderCrawlIntent(_core);
+                _wasDefendingSubmission = false;
+                return false;
+            }
+
+            _wasDefendingSubmission = true;
+            Vector3 intent = new Vector3(frame.Move.x, 0f, frame.Move.y);
+            if (_camera == null) _camera = Camera.main;
+            if (_camera != null && intent.sqrMagnitude > 0.01f)
+            {
+                Vector3 fwd = MathUtil.Flat(_camera.transform.forward).normalized;
+                Vector3 right = MathUtil.Flat(_camera.transform.right).normalized;
+                intent = fwd * intent.z + right * intent.x;
+            }
+            subs.SetDefenderCrawlIntent(_core, intent);
+            _core.Motor.SetMoveInput(Vector3.zero, false);
+            return true;
         }
 
         void HandleSystemInput(PlayerInputFrame frame)
@@ -106,7 +139,7 @@ namespace LoCoFight
             if (PinSystem.Instance != null && PinSystem.Instance.Active && PinSystem.Instance.Defender == _core)
                 PinSystem.Instance.AddPlayerKickoutEffort();
             if (SubmissionSystem.Instance != null && SubmissionSystem.Instance.Active && SubmissionSystem.Instance.Defender == _core)
-                SubmissionSystem.Instance.AddPlayerEscapeEffort();
+                SubmissionSystem.Instance.AddEscapeEffort(_core);
 
             // Mash to rise: every press while downed shaves recovery time.
             if (_core.States.Current == WrestlerState.Downed)
@@ -248,6 +281,8 @@ namespace LoCoFight
             _lockStrengthResolved = false;
             _powerLock = false;
             if (_core != null) _core.Motor.SetMoveInput(Vector3.zero, false);
+            if (_core != null && SubmissionSystem.Instance != null)
+                SubmissionSystem.Instance.ClearDefenderCrawlIntent(_core);
         }
     }
 }
