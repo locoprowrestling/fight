@@ -90,7 +90,9 @@ namespace LoCoFight
             }
 
             CurrentSpeedNormalized = speed > 0f && _core.Stats.Data != null ? speed / _core.Stats.Data.runSpeed : 0f;
-            _core.Anim.SetMovementSpeed(CurrentSpeedNormalized);
+            // Anim is Bind()-wired and dies on a mid-play domain reload
+            // (script recompile while playing); skip presentation that frame.
+            _core.Anim?.SetMovementSpeed(CurrentSpeedNormalized);
 
             ApplyGravityAndMove(motion);
         }
