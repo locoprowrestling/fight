@@ -64,6 +64,9 @@ namespace LoCoFight
                 GUILayout.Label($"Effects: {effects}");
             }
             GUILayout.Label($"ReversalWindow open vs opp: {w.Combat.IsReversalWindowOpenFor(w.Opponent ?? w)}");
+            GUILayout.Label($"Reversal: read={w.Combat.LastReversalRead} " +
+                            $"outcome={w.Combat.LastReversalOutcome} " +
+                            $"presentation={w.Combat.LastReversalPresentationId}");
             var snapshot = w.Combat.LastContextSnapshot;
             GUILayout.Label(
                 $"Context: {w.Combat.CurrentContext} zone={snapshot.GroundZone} " +

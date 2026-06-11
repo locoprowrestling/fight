@@ -218,7 +218,12 @@ namespace LoCoFight
             }
 
             if (frame.ReversalPressed)
-                _core.Combat.TryReversal();
+            {
+                // Held movement supplies the optional directional read,
+                // through the same camera-relative pipeline as grapples.
+                MoveDirection read = ResolveGrappleDirection(frame);
+                _core.Combat.TryReversal(read, read != MoveDirection.Neutral);
+            }
 
             if (frame.DodgePressed)
                 _core.Dodge.TryDodge();

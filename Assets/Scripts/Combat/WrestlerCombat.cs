@@ -799,7 +799,17 @@ namespace LoCoFight
                    MoveElapsed <= CurrentMove.reversalWindowEnd + leniency;
         }
 
-        public bool TryReversal()
+        public ReversalOutcome LastReversalOutcome { get; private set; } = ReversalOutcome.Basic;
+        public MoveDirection LastReversalRead { get; private set; } = MoveDirection.Neutral;
+        public string LastReversalPresentationId { get; private set; } = "-";
+
+        /// One button plus an optional camera-relative direction. A correct
+        /// directional read against the attacker's authored counter direction
+        /// upgrades the result to Strong; neutral or wrong reads stay Basic.
+        /// Grapple-lock escapes and special reversals remain basic.
+        public bool TryReversal(
+            MoveDirection submittedDirection = MoveDirection.Neutral,
+            bool hasDirectionalInput = false)
         {
             if (!MatchActive || Opp == null) return false;
             if (Time.time < ReversalCooldownUntil) return false;
@@ -810,24 +820,44 @@ namespace LoCoFight
             {
                 float window = ReversalSystem.GrappleLockEscapeWindow + ReversalSystem.LeniencyFor(_core);
                 if (Time.time - GrappleLockStartTime <= window)
-                    return DoReversal(ReversalSystem.GrappleReversalCost, grappleEscape: true);
+                    return DoReversal(ReversalSystem.GrappleReversalCost,
+                        ReversalOutcome.Basic, submittedDirection, grappleEscape: true);
                 return false;
             }
 
             // Special reversal.
             if (Opp.Specials != null && Opp.Specials.ReversalWindowOpen)
-                return DoReversal(ReversalSystem.SpecialReversalCost, special: true);
+                return DoReversal(ReversalSystem.SpecialReversalCost,
+                    ReversalOutcome.Basic, submittedDirection, special: true);
 
-            // Normal move reversal.
+            // Normal move reversal: resolve the directional read against the
+            // attacker's current move before any stamina is touched.
             if (Opp.Combat.IsReversalWindowOpenFor(_core))
-                return DoReversal(ReversalSystem.CostFor(Opp.Combat.CurrentMove.category));
+            {
+                MoveData attackerMove = Opp.Combat.CurrentMove;
+                ReversalOutcome read = ReversalReadResolver.Resolve(
+                    attackerMove != null
+                        ? attackerMove.preferredCounterDirection
+                        : ReversalReadDirection.Neutral,
+                    submittedDirection,
+                    hasDirectionalInput,
+                    attackerMove != null && attackerMove.allowsStrongDirectionalCounter);
+                return DoReversal(
+                    ReversalSystem.CostFor(attackerMove.category), read, submittedDirection);
+            }
 
             ReversalCooldownUntil = Time.time + ReversalSystem.HumanReversalCooldown;
             return false;
         }
 
-        bool DoReversal(float baseCost, bool grappleEscape = false, bool special = false)
+        bool DoReversal(
+            float baseCost,
+            ReversalOutcome outcome,
+            MoveDirection submittedDirection,
+            bool grappleEscape = false,
+            bool special = false)
         {
+            // Validation is complete; stamina is spent exactly once here.
             float cost = ReversalSystem.StaminaCostFor(_core, baseCost);
             if (!_core.Stats.SpendStamina(cost)) return false;
 
@@ -837,25 +867,48 @@ namespace LoCoFight
 
             if (special)
             {
+                LastReversalPresentationId = ReversalSystem.DefaultBasicPresentationId;
                 Opp.Specials.OnReversed(_core);
             }
             else if (grappleEscape)
             {
+                LastReversalPresentationId = ReversalSystem.DefaultBasicPresentationId;
                 ReleaseGrapple();
                 Opp.States.Set(WrestlerState.Stunned, 0.8f);
                 _core.Stats.AddMomentum(8f);
             }
             else
             {
-                float momentum = Opp.Combat.CurrentMove != null ? Opp.Combat.CurrentMove.momentumGainOnReversal : 8f;
-                Opp.Combat.InterruptByReversal(_core);
-                _core.Stats.AddMomentum(momentum);
+                var attacker = Opp;
+                ReversalOutcomeData data =
+                    ReversalSystem.ResolveOutcome(attacker.Combat.CurrentMove, outcome);
+                attacker.Combat.InterruptByReversal(_core, data.Stagger);
+                _core.Stats.AddMomentum(data.Momentum);
+                SeparateAfterReversal(attacker, data.Separation);
+                LastReversalPresentationId = data.PresentationId;
             }
 
+            LastReversalOutcome = grappleEscape || special ? ReversalOutcome.Basic : outcome;
+            LastReversalRead = submittedDirection;
+
             NotifyReversalSuccess();
-            MatchHUD.TryShowMessage("Reversal!");
-            Debug.Log($"[Reversal] {_core.DisplayName} reverses!");
+            MatchHUD.TryShowMessage(
+                LastReversalOutcome == ReversalOutcome.Strong ? "STRONG REVERSAL!" : "Reversal!");
+            Debug.Log($"[Reversal] {_core.DisplayName} reverses! " +
+                      $"read={submittedDirection} outcome={LastReversalOutcome}");
             return true;
+        }
+
+        /// Pushes both wrestlers apart through the motor's bounded knockback
+        /// (never a teleport), splitting the authored separation between them.
+        void SeparateAfterReversal(WrestlerCore attacker, float distance)
+        {
+            if (attacker == null || distance <= 0f) return;
+            Vector3 away = MathUtil.FlatDirection(
+                attacker.transform.position,
+                _core.transform.position);
+            _core.Motor.ApplyKnockback(away, distance * 0.5f);
+            attacker.Motor.ApplyKnockback(-away, distance * 0.5f);
         }
 
         public void NotifyReversalSuccess()
@@ -867,10 +920,13 @@ namespace LoCoFight
             OnReversedOpponent?.Invoke();
         }
 
-        public void InterruptByReversal(WrestlerCore reverser)
+        public void InterruptByReversal(WrestlerCore reverser) =>
+            InterruptByReversal(reverser, 1.0f);
+
+        public void InterruptByReversal(WrestlerCore reverser, float staggerDuration)
         {
             InterruptMove();
-            _core.States.Set(WrestlerState.Stunned, 1.0f);
+            _core.States.Set(WrestlerState.Stunned, Mathf.Max(0.2f, staggerDuration));
         }
 
         public void InterruptMove()

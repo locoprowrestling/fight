@@ -97,7 +97,9 @@ namespace LoCoFight
         {
             if (Time.time < _reversalCooldownUntil) return;
 
-            // Reverse incoming strikes/grapples/specials.
+            // Reverse incoming strikes/grapples/specials. Difficulty alone
+            // decides whether the reversal happens; the directional read
+            // below only shapes how strong a successful one is.
             bool windowOpen = Opp.Combat.IsReversalWindowOpenFor(_core) ||
                               (Opp.Specials != null && Opp.Specials.ReversalWindowOpen);
             if (windowOpen && _core.States.Profile.canReverse)
@@ -106,7 +108,16 @@ namespace LoCoFight
                 if (Random.value < _difficulty.reversalAccuracy)
                 {
                     CurrentState = AIState.DefensiveReversal;
-                    _core.Combat.TryReversal();
+                    MoveData incoming = Opp.Combat.CurrentMove;
+                    MoveDirection read = ChooseReversalRead(
+                        incoming != null
+                            ? incoming.preferredCounterDirection
+                            : ReversalReadDirection.Neutral,
+                        _core.Stats.Data != null
+                            ? _core.Stats.Data.aiPersonality
+                            : AIPersonality.Balanced,
+                        Random.value);
+                    _core.Combat.TryReversal(read, read != MoveDirection.Neutral);
                 }
                 return;
             }
@@ -449,6 +460,41 @@ namespace LoCoFight
                 default:
                     _core.Motor.SetMoveInput(Vector3.zero, false);
                     break;
+            }
+        }
+
+        /// Picks the CPU's directional read for a reversal it has already won
+        /// on the difficulty accuracy roll. Personality biases how often the
+        /// CPU commits to the move's authored counter direction (a stronger
+        /// but riskier-looking read) versus the safe neutral read; it never
+        /// touches reversalAccuracy itself. Pure for deterministic tests.
+        public static MoveDirection ChooseReversalRead(
+            ReversalReadDirection preferred,
+            AIPersonality personality,
+            float roll)
+        {
+            if (preferred == ReversalReadDirection.Neutral)
+                return MoveDirection.Neutral;
+
+            float commit = personality switch
+            {
+                AIPersonality.Technician => 0.7f,
+                AIPersonality.Showman => 0.55f,
+                AIPersonality.Trickster => 0.55f,
+                AIPersonality.Evasive => 0.45f,
+                AIPersonality.Brawler => 0.3f,
+                AIPersonality.Powerhouse => 0.35f,
+                _ => 0.45f,
+            };
+            if (roll >= commit) return MoveDirection.Neutral;
+
+            switch (preferred)
+            {
+                case ReversalReadDirection.Toward: return MoveDirection.Forward;
+                case ReversalReadDirection.Away: return MoveDirection.Backward;
+                case ReversalReadDirection.Left: return MoveDirection.Left;
+                case ReversalReadDirection.Right: return MoveDirection.Right;
+                default: return MoveDirection.Neutral;
             }
         }
 
