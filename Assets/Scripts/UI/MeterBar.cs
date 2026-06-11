@@ -8,9 +8,21 @@ namespace LoCoFight
     {
         public Image fill;
 
+        Color _baseColor;
+
         public void SetValue(float normalized)
         {
             if (fill != null) fill.fillAmount = Mathf.Clamp01(normalized);
+        }
+
+        /// Persistent ready treatment (e.g. full-momentum SPECIAL): swaps the
+        /// fill to a hot accent color and back without touching the value.
+        public void SetReady(bool ready)
+        {
+            if (fill == null) return;
+            fill.color = ready
+                ? new Color(1f, 0.65f, 0.1f)
+                : _baseColor;
         }
 
         public static MeterBar Create(Transform parent, string name, Vector2 anchoredPos, Vector2 size, Color color)
@@ -39,6 +51,7 @@ namespace LoCoFight
 
             var bar = root.AddComponent<MeterBar>();
             bar.fill = img;
+            bar._baseColor = color;
             return bar;
         }
 

@@ -89,7 +89,11 @@ namespace LoCoFight
         }
 
         void Awake() => Instance = this;
-        void OnDestroy() { if (Instance == this) Instance = null; }
+        void OnDestroy()
+        {
+            UnsubscribeReadiness();
+            if (Instance == this) Instance = null;
+        }
 
         static Font GetFont()
         {
@@ -239,6 +243,7 @@ namespace LoCoFight
 
         public void BindWrestlers(WrestlerCore player, WrestlerCore cpu)
         {
+            UnsubscribeReadiness();
             _player = player;
             _cpu = cpu;
             _playerInput = player.GetComponent<PlayerInputController>();
@@ -246,6 +251,30 @@ namespace LoCoFight
             _cpuName.text = cpu.DisplayName;
             _pPortrait.Show(player.Entry != null ? player.Entry.portraitSprite : null, new Color(0.2f, 0.5f, 1f));
             _cPortrait.Show(cpu.Entry != null ? cpu.Entry.portraitSprite : null, new Color(1f, 0.3f, 0.2f));
+
+            // Event-driven SPECIAL readiness: the bar treatment persists while
+            // ready; the announcement fires once per transition, not per frame.
+            _player.Stats.OnSpecialReadyChanged += HandlePlayerSpecialReady;
+            _cpu.Stats.OnSpecialReadyChanged += HandleCpuSpecialReady;
+            HandlePlayerSpecialReady(_player.Stats.IsSpecialReady);
+            HandleCpuSpecialReady(_cpu.Stats.IsSpecialReady);
+        }
+
+        void UnsubscribeReadiness()
+        {
+            if (_player != null) _player.Stats.OnSpecialReadyChanged -= HandlePlayerSpecialReady;
+            if (_cpu != null) _cpu.Stats.OnSpecialReadyChanged -= HandleCpuSpecialReady;
+        }
+
+        void HandlePlayerSpecialReady(bool ready)
+        {
+            if (_pMomentum != null) _pMomentum.SetReady(ready);
+            if (ready) ShowMessage("SPECIAL READY");
+        }
+
+        void HandleCpuSpecialReady(bool ready)
+        {
+            if (_cMomentum != null) _cMomentum.SetReady(ready);
         }
 
         public void ShowMessage(string text, float duration = 2f)

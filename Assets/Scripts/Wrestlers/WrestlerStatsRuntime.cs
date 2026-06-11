@@ -18,7 +18,35 @@ namespace LoCoFight
         public float HealthPercent => MaxHealth <= 0f ? 0f : Health / MaxHealth;
         public float StaminaPercent => MaxStamina <= 0f ? 0f : Stamina / MaxStamina;
         public float MomentumPercent => MaxMomentum <= 0f ? 0f : Momentum / MaxMomentum;
-        public bool HasFullMomentum => Momentum >= MaxMomentum - 0.01f;
+        public bool HasFullMomentum => IsSpecialReady;
+
+        /// Persistent SPECIAL readiness: true while momentum sits at full.
+        /// The event fires exactly once per transition in either direction.
+        public bool IsSpecialReady { get; private set; }
+        public event System.Action<bool> OnSpecialReadyChanged;
+
+        // Mirrors the runtime threshold (Momentum >= MaxMomentum - 0.01f) as a
+        // percent so the transition rule stays testable without an instance.
+        const float FullMomentumPercentTolerance = 0.0001f;
+
+        /// Pure transition rule: 1 = became ready, 0 = unchanged, -1 = left
+        /// readiness.
+        public static int ResolveReadinessTransition(bool wasReady, float momentumPercent)
+        {
+            bool ready = momentumPercent >= 1f - FullMomentumPercentTolerance;
+            if (ready == wasReady) return 0;
+            return ready ? 1 : -1;
+        }
+
+        void UpdateSpecialReadiness()
+        {
+            int transition = ResolveReadinessTransition(
+                IsSpecialReady,
+                MaxMomentum <= 0f ? 0f : (Momentum + 0.01f) / MaxMomentum);
+            if (transition == 0) return;
+            IsSpecialReady = transition > 0;
+            OnSpecialReadyChanged?.Invoke(IsSpecialReady);
+        }
 
         public float RecentDamage { get; private set; } // decays; weakens kickouts
 
@@ -40,6 +68,7 @@ namespace LoCoFight
             Stamina = MaxStamina;
             Momentum = 0f;
             RecentDamage = 0f;
+            UpdateSpecialReadiness();
         }
 
         void Update()
@@ -61,7 +90,10 @@ namespace LoCoFight
             }
 
             if (Data != null && Data.momentumDecayPerSecond > 0f)
+            {
                 Momentum = Mathf.Max(0f, Momentum - Data.momentumDecayPerSecond * dt);
+                UpdateSpecialReadiness();
+            }
 
             RecentDamage = Mathf.Max(0f, RecentDamage - 8f * dt);
         }
@@ -90,9 +122,19 @@ namespace LoCoFight
         {
             if (amount > 0f && _core != null) amount *= _core.Buffs.MomentumGainMult;
             Momentum = Mathf.Clamp(Momentum + amount, 0f, MaxMomentum);
+            UpdateSpecialReadiness();
         }
 
-        public void SpendAllMomentum() => Momentum = 0f;
-        public void SpendMomentum(float amount) => Momentum = Mathf.Max(0f, Momentum - amount);
+        public void SpendAllMomentum()
+        {
+            Momentum = 0f;
+            UpdateSpecialReadiness();
+        }
+
+        public void SpendMomentum(float amount)
+        {
+            Momentum = Mathf.Max(0f, Momentum - amount);
+            UpdateSpecialReadiness();
+        }
     }
 }

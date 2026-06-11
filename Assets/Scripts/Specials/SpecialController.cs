@@ -59,23 +59,36 @@ namespace LoCoFight
             return SpecialRequirementValidator.Validate(_core, _core.Opponent, Data, out reason);
         }
 
+        /// Exact order: validate everything, then spend every resource once,
+        /// then begin execution. Nothing is spent or refunded after this
+        /// point (animation callbacks never touch resources).
         public bool TryActivate()
         {
-            if (!IsCurrentlyValid(out string reason))
-            {
-                LastValidationReason = reason;
-                Debug.Log($"[Special] {_core.DisplayName} special failed validation: {reason}");
-                if (_core.IsPlayer) MatchHUD.TryShowMessage(reason, 1.2f);
-                return false;
-            }
+            if (!IsCurrentlyValid(out string reason)) return Reject(reason);
+            SpendActivationResources();
+            BeginExecution();
+            return true;
+        }
 
-            // Spend resources.
+        bool Reject(string reason)
+        {
+            LastValidationReason = reason;
+            Debug.Log($"[Special] {_core.DisplayName} special failed validation: {reason}");
+            if (_core.IsPlayer) MatchHUD.TryShowMessage(reason, 1.2f);
+            return false;
+        }
+
+        void SpendActivationResources()
+        {
             if (Data.spendsAllMomentum) _core.Stats.SpendAllMomentum();
             else _core.Stats.SpendMomentum(Data.momentumCost);
             _core.Stats.DrainStamina(Data.staminaCost);
             _cooldownUntil = Time.time + Data.cooldown;
             _usedOnce = true;
+        }
 
+        void BeginExecution()
+        {
             _ctx = new SpecialContext { Self = _core, Target = _core.Opponent, Data = Data, Controller = this };
             IsExecuting = true;
             EscapePhase = SpecialEscapePhase.Startup;
@@ -86,7 +99,6 @@ namespace LoCoFight
             Debug.Log($"[Special] {_core.DisplayName} starts {Data.displayName}");
 
             _routine = StartCoroutine(RunThenCleanup(Dispatch(_ctx)));
-            return true;
         }
 
         IEnumerator Dispatch(SpecialContext ctx)

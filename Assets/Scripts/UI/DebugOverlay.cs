@@ -46,7 +46,8 @@ namespace LoCoFight
             var info = ring != null ? ring.GetNearestRopeContactInfo(w) : default;
             GUILayout.Label($"--- {label}: {w.DisplayName} ---");
             GUILayout.Label($"State: {w.States.Current} ({w.States.TimeInState:0.0}s)  Move: {w.Combat.LastMoveName}");
-            GUILayout.Label($"HP {w.Stats.Health:0}/{w.Stats.MaxHealth:0}  STA {w.Stats.Stamina:0}  MOM {w.Stats.Momentum:0}");
+            GUILayout.Label($"HP {w.Stats.Health:0}/{w.Stats.MaxHealth:0}  STA {w.Stats.Stamina:0}  " +
+                            $"MOM {w.Stats.Momentum:0}  specialReady={w.Stats.IsSpecialReady}");
             if (ring != null)
             {
                 GUILayout.Label($"Rope: {info.ropeSide} d={info.distanceToRope:0.00}  corner d={info.distanceToCorner:0.00} " +
