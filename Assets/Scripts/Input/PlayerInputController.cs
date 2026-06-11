@@ -10,6 +10,7 @@ namespace LoCoFight
         WrestlerCore _core;
         readonly InputBuffer _buffer = new InputBuffer();
         readonly LegacyPlayerInputSource _input = new LegacyPlayerInputSource();
+        readonly PressTracker _strikeTracker = new PressTracker();
         Camera _camera;
         PlayerInputDevice _lastDevice = PlayerInputDevice.Keyboard;
 
@@ -121,7 +122,11 @@ namespace LoCoFight
         {
             bool inLock = _core.Combat.InGrappleLockAsAttacker;
 
-            if (frame.LightPressed)
+            // Strike button: tap = light family, hold = heavy strike.
+            PressKind strikeKind = _strikeTracker.Update(
+                frame.LightPressed, frame.StrikeHeld, frame.StrikeReleased,
+                Time.deltaTime, PlayerInputLogic.HoldThreshold);
+            if (strikeKind == PressKind.Tap)
             {
                 if (_core.DistanceToOpponent() <= WrestlerCombat.StrikeRange + 0.5f || _core.Motor.IsRunning)
                     // Context precedence: ground, corner, rope stagger,
@@ -133,6 +138,10 @@ namespace LoCoFight
                               _core.Combat.TryRopeReboundAttack() ||
                               _core.Combat.TryRunningAttack() ||
                               _core.Combat.TryLightStrike());
+            }
+            else if (strikeKind == PressKind.HoldCommitted && !inLock)
+            {
+                _buffer.Buffer(PlayerAction.Heavy, () => _core.Combat.TryHeavyStrike());
             }
 
             if (inLock)
@@ -147,10 +156,6 @@ namespace LoCoFight
                         _core.Combat.TryQuickGrappleFromLock(direction);
                         break;
                 }
-            }
-            else if (frame.HeavyPressed)
-            {
-                _buffer.Buffer(PlayerAction.Heavy, () => _core.Combat.TryHeavyStrike());
             }
             else if (frame.GrapplePressed)
             {
@@ -188,6 +193,7 @@ namespace LoCoFight
         void StopGameplayInput()
         {
             _buffer.Clear();
+            _strikeTracker.Reset();
             if (_core != null) _core.Motor.SetMoveInput(Vector3.zero, false);
         }
     }
