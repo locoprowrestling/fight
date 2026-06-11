@@ -1,0 +1,72 @@
+using System.Collections.Generic;
+
+namespace LoCoFight
+{
+    /// Editor-only structural validation for authored move data. Lives in the
+    /// LoCoFight namespace (not EditorTools) so the asset builder and tests
+    /// share the same type without adapters. Errors block asset generation;
+    /// see ValidateWarnings (added with pacing rules) for advisory checks.
+    public static class MoveDataValidator
+    {
+        public static List<string> Validate(MoveData move, MoveDatabase database)
+        {
+            var errors = new List<string>();
+            if (move == null)
+            {
+                errors.Add("Move reference is null.");
+                return errors;
+            }
+
+            string id = string.IsNullOrWhiteSpace(move.moveId)
+                ? move.name
+                : move.moveId;
+            if (string.IsNullOrWhiteSpace(move.moveId))
+                errors.Add($"{id}: moveId is required.");
+            if (move.reversalWindowStart < 0f)
+                errors.Add($"{id}: reversal window start cannot be negative.");
+            if (move.reversalWindowEnd < move.reversalWindowStart)
+                errors.Add($"{id}: reversal window end precedes its start.");
+            if (move.reversalWindowEnd > move.TotalDuration)
+                errors.Add($"{id}: reversal window exceeds total move duration.");
+            if (move.HasTag(MoveTag.Lift) && !move.requiresLift)
+                errors.Add($"{id}: Lift tag requires lift validation.");
+            if (move.requiredGroundZone != GroundTargetZone.None &&
+                !move.requiresTargetDowned)
+                errors.Add($"{id}: ground zone requires a downed target.");
+            if (move.requiresTargetCornered &&
+                move.category != MoveCategory.CornerStrike &&
+                move.category != MoveCategory.CornerGrapple)
+                errors.Add($"{id}: corner requirement is assigned to a non-corner move.");
+            if (move.requiresTargetRopeStaggered &&
+                move.category != MoveCategory.RopeStaggerAttack)
+                errors.Add($"{id}: rope-stagger requirement is assigned to another family.");
+            return errors;
+        }
+
+        public static List<string> ValidateDirectionalSet(
+            string label,
+            DirectionalMoveSet set)
+        {
+            var errors = new List<string>();
+            bool hasDirectional =
+                set.forward.Count > 0 ||
+                set.backward.Count > 0 ||
+                set.lateral.Count > 0;
+            if (hasDirectional && set.neutral.Count == 0)
+                errors.Add($"{label}: directional set requires a neutral fallback.");
+            return errors;
+        }
+
+        public static List<string> ValidateAll(DefaultGameDataSet set)
+        {
+            var errors = new List<string>();
+            foreach (MoveData move in set.moves)
+                errors.AddRange(Validate(move, set.moveDatabase));
+            errors.AddRange(ValidateDirectionalSet(
+                "Quick grapples", set.moveDatabase.directionalQuickGrapples));
+            errors.AddRange(ValidateDirectionalSet(
+                "Power grapples", set.moveDatabase.directionalPowerGrapples));
+            return errors;
+        }
+    }
+}

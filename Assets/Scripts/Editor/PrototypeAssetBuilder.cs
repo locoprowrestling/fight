@@ -17,6 +17,15 @@ namespace LoCoFight.EditorTools
         {
             var set = DefaultGameData.CreateAll();
 
+            // Structural validation gates generation so broken data never
+            // shadows working assets under Resources/LoCoData.
+            var errors = MoveDataValidator.ValidateAll(set);
+            if (errors.Count > 0)
+            {
+                foreach (string error in errors) Debug.LogError($"[MoveData] {error}");
+                return;
+            }
+
             EnsureFolder(Root);
             EnsureFolder($"{Root}/Moves");
             EnsureFolder($"{Root}/Specials");

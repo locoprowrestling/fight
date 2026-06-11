@@ -62,6 +62,12 @@ namespace LoCoFight
             m.requiresRunning = cat == MoveCategory.RunningStrike || cat == MoveCategory.RunningGrapple;
             m.reversalWindowStart = 0.05f;
             m.reversalWindowEnd = Mathf.Max(0.15f, startup);
+            m.tier = cat == MoveCategory.PowerGrapple
+                ? MoveTier.Heavy
+                : cat == MoveCategory.HeavyStrike
+                    ? MoveTier.Medium
+                    : MoveTier.Light;
+            m.minimumStamina = cat == MoveCategory.PowerGrapple ? stam : 0f;
             m.range = cat == MoveCategory.LightStrike || cat == MoveCategory.HeavyStrike ? 1.35f : 1.25f;
             m.tags.AddRange(tags);
             m.placeholderPoseName = cat == MoveCategory.QuickGrapple || cat == MoveCategory.PowerGrapple ? "grapple" : "strike";
@@ -92,15 +98,31 @@ namespace LoCoFight
             boot.downedDuration = 1.5f;
             db.heavyStrikes.Add(boot);
 
-            db.quickGrapples.Add(Grapple(set, "snap-arm-drag", "Snap Arm Drag", MoveCategory.QuickGrapple, 8, 8, 0.90f, 0.50f, 8, tags: new[] { MoveTag.Clean }));
-            db.quickGrapples.Add(Grapple(set, "headlock-takedown", "Side Headlock Takedown", MoveCategory.QuickGrapple, 10, 10, 1.10f, 0f, 9, downed: 1.25f, tags: new[] { MoveTag.Clean }));
-            db.quickGrapples.Add(Grapple(set, "knee-lift", "Knee Lift", MoveCategory.QuickGrapple, 9, 8, 0.80f, 0.75f, 8, tags: new[] { MoveTag.Clean }));
-            db.quickGrapples.Add(Grapple(set, "snapmare", "Snapmare", MoveCategory.QuickGrapple, 7, 7, 0.85f, 0f, 7, downed: 1.0f, tags: new[] { MoveTag.Clean }));
+            var armDrag = Grapple(set, "snap-arm-drag", "Snap Arm Drag", MoveCategory.QuickGrapple, 8, 8, 0.90f, 0.50f, 8, tags: new[] { MoveTag.Clean });
+            var headlock = Grapple(set, "headlock-takedown", "Side Headlock Takedown", MoveCategory.QuickGrapple, 10, 10, 1.10f, 0f, 9, downed: 1.25f, tags: new[] { MoveTag.Clean });
+            var kneeLift = Grapple(set, "knee-lift", "Knee Lift", MoveCategory.QuickGrapple, 9, 8, 0.80f, 0.75f, 8, tags: new[] { MoveTag.Clean });
+            var snapmare = Grapple(set, "snapmare", "Snapmare", MoveCategory.QuickGrapple, 7, 7, 0.85f, 0f, 7, downed: 1.0f, tags: new[] { MoveTag.Clean });
+            db.quickGrapples.Add(armDrag);
+            db.quickGrapples.Add(headlock);
+            db.quickGrapples.Add(kneeLift);
+            db.quickGrapples.Add(snapmare);
+            db.directionalQuickGrapples.neutral.Add(armDrag);
+            db.directionalQuickGrapples.neutral.Add(headlock);
+            db.directionalQuickGrapples.neutral.Add(kneeLift);
+            db.directionalQuickGrapples.neutral.Add(snapmare);
 
-            db.powerGrapples.Add(Grapple(set, "body-slam", "Body Slam", MoveCategory.PowerGrapple, 15, 18, 1.35f, 0f, 13, downed: 2.0f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major }));
-            db.powerGrapples.Add(Grapple(set, "vertical-drop", "Vertical Drop", MoveCategory.PowerGrapple, 18, 22, 1.60f, 0f, 15, downed: 2.25f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major }));
-            db.powerGrapples.Add(Grapple(set, "backbreaker", "Backbreaker", MoveCategory.PowerGrapple, 16, 20, 1.45f, 0f, 14, downed: 1.75f, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift }));
-            db.powerGrapples.Add(Grapple(set, "shoulder-throw", "Shoulder Throw", MoveCategory.PowerGrapple, 14, 17, 1.20f, 0f, 12, downed: 1.8f, tags: new[] { MoveTag.Clean }));
+            var bodySlam = Grapple(set, "body-slam", "Body Slam", MoveCategory.PowerGrapple, 15, 18, 1.35f, 0f, 13, downed: 2.0f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
+            var verticalDrop = Grapple(set, "vertical-drop", "Vertical Drop", MoveCategory.PowerGrapple, 18, 22, 1.60f, 0f, 15, downed: 2.25f, canPin: true, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift, MoveTag.Major });
+            var backbreaker = Grapple(set, "backbreaker", "Backbreaker", MoveCategory.PowerGrapple, 16, 20, 1.45f, 0f, 14, downed: 1.75f, lift: true, tags: new[] { MoveTag.Clean, MoveTag.Lift });
+            var shoulderThrow = Grapple(set, "shoulder-throw", "Shoulder Throw", MoveCategory.PowerGrapple, 14, 17, 1.20f, 0f, 12, downed: 1.8f, tags: new[] { MoveTag.Clean });
+            db.powerGrapples.Add(bodySlam);
+            db.powerGrapples.Add(verticalDrop);
+            db.powerGrapples.Add(backbreaker);
+            db.powerGrapples.Add(shoulderThrow);
+            db.directionalPowerGrapples.neutral.Add(bodySlam);
+            db.directionalPowerGrapples.neutral.Add(verticalDrop);
+            db.directionalPowerGrapples.neutral.Add(backbreaker);
+            db.directionalPowerGrapples.neutral.Add(shoulderThrow);
 
             db.runningAttacks.Add(Move(set, "running-clothesline", "Running Clothesline", MoveCategory.RunningStrike, 13, 15, 0.25f, 0.20f, 0.70f, 0f, 12, downed: 1.5f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
             db.runningAttacks.Add(Grapple(set, "running-tackle", "Running Tackle", MoveCategory.RunningGrapple, 12, 16, 1.0f, 0f, 11, downed: 1.6f, tags: new[] { MoveTag.Clean, MoveTag.Running }));
