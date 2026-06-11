@@ -186,6 +186,44 @@ One-shot gestures (a punch, a reach) are `ActionKind` overlays in
 `ApplyAction()`, not states — they ride on top of whatever pose is active and
 expire on their own.
 
+## New move silhouette (placeholder overlay)
+
+Every move family should be visually identifiable. Three pieces, all in
+[PlaceholderAnimationDriver.cs](../../Assets/Scripts/Animation/PlaceholderAnimationDriver.cs)
+plus one data line:
+
+```csharp
+// 1. ActionKind enum: add the overlay kind.
+enum ActionKind { ..., OverheadSlam, SnapThrow, Chop, Lariat, Stomp, MatBounce }
+
+// 2. PlayMove(): map the pose name to the overlay (duration / speed).
+case "slam":
+    StartAction(ActionKind.OverheadSlam, 1.0f / Mathf.Max(0.5f, speed));
+    break;
+
+// 3. ApplyAction(): the pose math. 'w' is the ramp-hold-ease envelope,
+//    't' is normalized time; use SmoothStep sub-phases for wind-up vs delivery.
+case ActionKind.OverheadSlam:
+{
+    float lift = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.4f));
+    float slam = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 0.5f) / 0.25f));
+    // ... joint targets via Vector3.Lerp(p.x, target, w) — see existing cases.
+    break;
+}
+```
+
+```csharp
+// 4. DefaultGameData: name the pose on the move, then REGENERATE ASSETS.
+bodySlam.placeholderPoseName = "slam";
+```
+
+Rules: overlays never move the gameplay root (visual `lift`/`shift` only — see
+`MatBounce`); joint sign conventions are in [Examples.md](Examples.md);
+durations are presentation-only and must not be load-bearing for combat
+timing. Impact weight (hit-stop / camera punch) comes from
+`FeelSystem.NotifyImpact(tier, downs)` in the combat hit applier, not from the
+animation.
+
 ## New AI behavior
 
 1. Add the `AIState` value and the decision in `Decide()` in

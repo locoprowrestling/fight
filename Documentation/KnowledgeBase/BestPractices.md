@@ -43,6 +43,17 @@ attacker's follow-up (AI falls back quick↔power and force-releases on failure)
 and the stale-role safety net in `WrestlerCombat.Update()`. _Why:_ any one of
 these missing turns a dropped edge case into a soft-lock.
 
+**An escape must change the situation, not rewind it.** A successful escape
+(kickout, reversal, wake-up) has to reposition the loser, protect the winner's
+recovery, or both — kicking out of a pin shoves the attacker away with extra
+recovery; `GettingUp` is unstrikable/ungrabbable; mashing while downed shortens
+the timer. Audit any escape by asking "what stops the attacker from
+immediately re-applying the same hold?" — if the answer is "nothing," it is a
+loop, and the player will find it as pin → kickout → can't stand → pin.
+_Why:_ symmetric escapes that return both wrestlers to the pre-escape position
+make losing states inescapable in practice even when every individual rule is
+fair.
+
 ## Control symmetry
 
 **New combat actions go through
@@ -51,6 +62,23 @@ these missing turns a dropped edge case into a soft-lock.
 API. Never implement an action inside the input controller or the AI directly.
 _Why:_ otherwise one side can do things the other can't, and balance/QA
 assumptions break.
+
+**Input grammar: one press = one move; direction is the only modifier.** The
+AKI lesson (see `research/aki_wrestling_games_development_modding_research_ingestion_pack.md`):
+build depth through state-rich contextual resolution, never through input
+complexity. No tap-vs-hold timing tests on hot-path actions; binary choices
+resolve at *initiation* (hold K through the lock-up = strong tie-up), not as a
+second decision under a timer. Tap/hold is acceptable only for deliberate,
+low-frequency actions (pin vs submission).
+_Why:_ every timing test on a frequent action adds latency, a failure mode,
+and a thing to teach; context already knows which move the player means.
+
+**Make sure every action is reachable from the states players actually occupy.**
+The chase is where grapples happen, and `Running` had `grapple: false` — a
+thousand K presses died silently. When adding or gating an action, list the
+states a player realistically initiates it from and test from each.
+_Why:_ a capability gate that excludes the dominant approach state turns a
+core verb into a coin-flip.
 
 ## Combat architecture
 
@@ -173,6 +201,32 @@ owns selection-facing data such as portrait and view prefab, while
 alter combat data solely to create a different portrait or future attire. _Why:_
 visual variants should not fork wrestler balance or behavior.
 
+**Getting hit interrupts the victim's in-flight action.** `ApplyHit` (and the
+contextual hit appliers) must cancel the defender's running move coroutine when
+`StateProfile.canBeInterrupted` allows it; armored states (specials, airborne)
+opt out via the flag. Exchanges are decided by whose active frame lands first.
+_Why:_ without this, a struck wrestler's attack executes straight through the
+hitstun — hits visibly "don't register" and hitstun/stagger data is dead
+weight.
+
+**A flag without a consumer is a lie.** `canBeInterrupted` existed on every
+state profile for the project's whole life with zero readers — the design said
+hits interrupt, the code never did. When adding any capability/permission
+flag, add (or point to) its consumer in the same change; when auditing a
+behavior bug, grep the relevant flag for readers before trusting it.
+_Why:_ unconsumed flags make the data model claim guarantees the runtime
+doesn't provide, and they pass every review that doesn't grep.
+
+**Scaling actors means scaling every distance constant that touches them.**
+`WrestlerView.GlobalScale` drives the rig and CharacterController; grapple/
+strike/pin/submission ranges, contextual move ranges, tie-up snap distance,
+knockback, and camera look-at height are all body-relative and must move with
+it (capsules collide at the sum of radii — range minus that sum is the real
+usable margin). The 1.25× scale-up silently cut grapple margin ~40% and made
+tie-ups nearly unlandable.
+_Why:_ distance constants encode body size invisibly; scaling one side turns
+tuned mechanics into broken ones with no error anywhere.
+
 ## Presentation isolation
 
 **Only [WrestlerView.cs](../../Assets/Scripts/Wrestlers/WrestlerView.cs) and
@@ -192,6 +246,15 @@ distance checks are flat transform-to-transform (`HitboxProbe`).
 **Scale the visual root uniformly only.** Weight-class bulk is applied per-mesh
 (x/z), never as a non-uniform `visualRoot.localScale`. _Why:_ non-uniform scale
 on a parent shears rotated child joints — bent elbows/knees visibly distort.
+
+**Feel effects extend, defer, and switch off.** `FeelSystem` (hit-stop, camera
+punch) is presentation-only and self-bootstrapping: hit-stop *extends* the
+current freeze rather than stacking (rapid lights never become slow motion),
+always yields to the pause system's ownership of `Time.timeScale`, and the
+whole system is toggleable with zero gameplay diff. Defender reactions (mat
+bounce) are pose overlays — the gameplay root never moves.
+_Why:_ global effects like timescale are shared state; an impact system that
+fights pause or accumulates becomes a gameplay bug wearing a polish costume.
 
 ## Single authorities
 
@@ -216,6 +279,12 @@ on a parent shears rotated child joints — bent elbows/knees visibly distort.
 - Editor-only code goes under `Assets/Scripts/Editor/`; menu items under
   **Tools > LoCo Fight Game/**.
 
+- Set **Preferences > General > Script Changes While Playing** to
+  "Recompile After Finished Playing" on every dev machine. This project wires
+  subsystems at runtime via `Bind()` with non-serialized (often interface)
+  references; a mid-play domain reload nulls all of it and every hot `Update`
+  throws. With an agent committing code during playtests this fires constantly.
+
 ## Logging
 
 Use the established bracketed tags so the console reads as a match transcript:
@@ -231,6 +300,17 @@ decision: active state, timer/progress, selected action or move, eligibility,
 and rejection reason where available. _Why:_ combat timing, rope eligibility, AI
 intent, reversal windows, pins, and submissions cannot be diagnosed reliably
 from animation alone.
+
+**Every failed player action says why, on screen.** Contextual rejections
+surface through `MatchHUD.TryShowActionFeedback` (via
+`ControlPromptLogic.RejectionText`), and plain `Try*` failures the chain can't
+explain (grapple out of range, ungrabbable opponent, lost tie-up) toast
+directly. A player-triggered `return false` with no log and no HUD line is a
+bug factory — three separate "controls are broken" reports in this project
+were silent-failure paths (running grapple gate, stamina lock release, range
+margins).
+_Why:_ players cannot distinguish "illegal right now" from "broken," and
+neither can QA without evidence.
 
 ## Verification
 

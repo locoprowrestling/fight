@@ -2,6 +2,86 @@
 
 Short, real, dated. Newest first within each section.
 
+## Postmortem: the punch that didn't stop anything
+
+_2026-06-11 — fixed in
+[WrestlerCombat.cs](../../Assets/Scripts/Combat/WrestlerCombat.cs)_
+
+**Symptom:** "I hit a move and the CPU immediately starts pummeling me as if I
+hadn't just hit them." Hits applied damage and set `Stunned`, but the CPU's
+offense never paused.
+
+**Root cause:** getting hit never interrupted the victim's in-flight move. The
+attack *coroutine* kept executing — it set `StrikeActive` on its next phase,
+stomping the fresh `Stunned` state, and landed its hit anyway. The
+`canBeInterrupted` flag existed on every state profile and had **zero
+consumers** for the project's entire life.
+
+**Fix:** `ApplyHit` and the contextual hit appliers call
+`defender.Combat.InterruptMove()` when the profile allows; armored states opt
+out via the flag. Hitstun durations were then raised so the existing stagger
+pose actually plays.
+
+**Diagnosis clue worth remembering:** the state machine and the coroutines are
+two parallel sources of truth — `States.Current` can say `Stunned` while a
+coroutine is mid-flight and about to overwrite it. When behavior contradicts
+the visible state, look for a running coroutine.
+
+**Prevention:** "Getting hit interrupts" and "a flag without a consumer is a
+lie" in [BestPractices.md](BestPractices.md#combat-architecture).
+
+## Postmortem: a thousand failed grapples
+
+_2026-06-11 — fixed in
+[WrestlerStateMachine.cs](../../Assets/Scripts/Wrestlers/WrestlerStateMachine.cs) /
+[WrestlerCombat.cs](../../Assets/Scripts/Combat/WrestlerCombat.cs)_
+
+**Symptom:** grapple attempts felt like they never connected; the player
+reported "1000 failed times."
+
+**Root causes (three, stacked):**
+
+1. `Running` had `grapple: false` — every K pressed while chasing (the
+   dominant approach state) silently died, and the 0.35 s buffer expired
+   before the player stopped running.
+2. The 1.25× `GlobalScale` body change shipped without scaling distance
+   constants: capsules now met at ~0.88 apart while `GrappleRange` stayed
+   1.25, leaving ~0.37 of usable margin against a circling target.
+3. Every failure path returned `false` with no feedback, so 1 + 2 read as
+   "the button is broken" — including legitimately *lost tie-ups* (the
+   simultaneous-grapple resolver making the player the defender).
+
+**Fix:** grapple legal from `Running`; all combat ranges scaled with the
+bodies; every failure toasts a reason ("Too far away" / "Can't grab them right
+now" / "Out-wrestled in the tie-up!").
+
+**Prevention:** "actions reachable from the states players occupy," "scaling
+actors means scaling every distance constant," and "every failed player action
+says why" in [BestPractices.md](BestPractices.md).
+
+## Postmortem: the pin-spam loop
+
+_2026-06-11 — fixed in
+[PinSystem.cs](../../Assets/Scripts/Combat/PinSystem.cs) /
+[WrestlerStateMachine.cs](../../Assets/Scripts/Wrestlers/WrestlerStateMachine.cs)_
+
+**Symptom:** CPU pins → player kicks out → player "can't stand up" → CPU pins
+again, indefinitely.
+
+**Root cause:** a kickout set the defender `Downed` for another 0.9 s and the
+attacker into only 0.6 s of recovery — the pinner always acted first. Then
+`GettingUp` (0.7 s, no move/reverse/dodge) was freely strikable, so at low
+health any heavy re-downed the riser on the spot. Every rule was individually
+defensible; together the escape returned the loser to the losing state.
+
+**Fix:** the kickout shoves the attacker away (1.4 m + 1.0 s recovery) while
+the defender rises from a short 0.45 s downed state; `GettingUp` grants
+strike/grab immunity; mashing while downed shaves the timer (with
+`ExtendTimeout` clamped so it can't fall through to the profile default).
+
+**Prevention:** "an escape must change the situation, not rewind it" in
+[BestPractices.md](BestPractices.md#states).
+
 ## Postmortem: the endless lockup loop
 
 _2026-06-10 — fixed in
@@ -28,6 +108,15 @@ frozen" report into a readable timing signature.
 **Prevention:** the "role-specific before capability gates" and "three things
 every locking state needs" rules in [BestPractices.md](BestPractices.md#states),
 plus a regression line in [TestingChecklist.md](../TestingChecklist.md).
+
+**Sequel (2026-06-11):** the loop returned with a different mechanism — after a
+successful `TryGrappleAttempt`, `Act()` stayed in `AttemptGrapple` and called
+`Rethink()` every frame, permanently deferring `Decide()` so the fix above
+never ran. It only reproduced with a *passive* player (any attack trips a
+defensive reaction that unfreezes the FSM), which is why active-play QA passed.
+Rule: `Rethink()` is for successful or state-changing actions only; a failed
+`Try*` must transition out — see "A failed AI attempt must yield control back
+to Decide" in [BestPractices.md](BestPractices.md).
 
 ## Worked example: the articulated humanoid rig
 
