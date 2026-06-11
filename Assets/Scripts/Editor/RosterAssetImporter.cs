@@ -64,9 +64,14 @@ namespace LoCoFight.EditorTools
             {
                 string assetPath = $"{PortraitFolder}/{file}";
                 var importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
-                if (importer != null && importer.textureType != TextureImporterType.Sprite)
+                if (importer != null &&
+                    (importer.textureType != TextureImporterType.Sprite ||
+                     importer.spriteImportMode != SpriteImportMode.Single))
                 {
                     importer.textureType = TextureImporterType.Sprite;
+                    // Single mode is required: in Multiple mode with no slices,
+                    // the texture has no Sprite sub-assets to load.
+                    importer.spriteImportMode = SpriteImportMode.Single;
                     importer.SaveAndReimport();
                 }
             }

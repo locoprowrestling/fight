@@ -11,18 +11,18 @@ namespace LoCoFight
 
         class Entry
         {
-            public string Id;
+            public PlayerAction Action;
             public System.Func<bool> Attempt;
             public float Expires;
         }
 
         readonly List<Entry> _entries = new List<Entry>();
 
-        public void Buffer(string id, System.Func<bool> attempt, float window = DefaultWindow)
+        public void Buffer(PlayerAction action, System.Func<bool> attempt, float window = DefaultWindow)
         {
             if (attempt()) return; // executed immediately, no buffering needed
-            _entries.RemoveAll(e => e.Id == id);
-            _entries.Add(new Entry { Id = id, Attempt = attempt, Expires = Time.time + window });
+            _entries.RemoveAll(e => e.Action == action);
+            _entries.Add(new Entry { Action = action, Attempt = attempt, Expires = Time.time + window });
         }
 
         public void Tick()

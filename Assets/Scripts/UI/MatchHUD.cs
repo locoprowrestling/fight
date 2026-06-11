@@ -15,6 +15,7 @@ namespace LoCoFight
         RosterPortraitView _pPortrait, _cPortrait;
         float _messageClearAt;
         static Font _font;
+        PlayerInputDevice _inputDevice = PlayerInputDevice.Keyboard;
 
         // ---- Static helpers safe to call from anywhere (no-ops if HUD missing) ----
         public static void TryShowMessage(string text, float duration = 2f)
@@ -32,6 +33,18 @@ namespace LoCoFight
         public static void TryShowWinner(string text)
         {
             if (Instance != null && Instance._winner != null) Instance._winner.text = text;
+        }
+        public static void TrySetInputDevice(PlayerInputDevice device)
+        {
+            if (Instance != null) Instance.SetInputDevice(device);
+        }
+        public static void TryShowHandshakePrompt(float duration)
+        {
+            if (Instance == null) return;
+            string text = Instance._inputDevice == PlayerInputDevice.Controller
+                ? "A: shake  X: cheap shot  B: refuse"
+                : "T: shake  J: cheap shot  L: refuse";
+            Instance.ShowMessage(text, duration);
         }
 
         public static MatchHUD CreateHud()
@@ -101,7 +114,7 @@ namespace LoCoFight
 
             // Controls hint (bottom-left).
             _controls = MakeText("Controls", new Vector2(12, 12), 640, 60, TextAnchor.LowerLeft, 12, false, bottom: true);
-            _controls.text = "WASD move | Shift run | J light | K heavy | L grapple | Space reversal | Alt dodge\nU special | I pin | O submission | mash Space when pinned | F1 debug | R reset";
+            SetInputDevice(PlayerInputDevice.Keyboard);
         }
 
         Text MakeText(string name, Vector2 pos, float w, float h, TextAnchor anchor, int size,
@@ -139,6 +152,15 @@ namespace LoCoFight
         {
             _message.text = text;
             _messageClearAt = Time.unscaledTime + duration;
+        }
+
+        void SetInputDevice(PlayerInputDevice device)
+        {
+            _inputDevice = device;
+            if (_controls == null) return;
+            _controls.text = device == PlayerInputDevice.Controller
+                ? "Left stick move | LB run | X light | Y heavy | A grapple | RB reversal | B dodge\nR3 special | View pin | L3 submission | mash buttons/stick to escape | Menu pause/reset"
+                : "WASD move | Shift run | J light | K heavy | L grapple | Space reversal | Alt dodge\nU special | I pin | O submission | mash Space when pinned | F1 debug | R reset";
         }
 
         void Update()

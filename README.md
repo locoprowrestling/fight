@@ -10,5 +10,7 @@ A playable 3D wrestling prototype for LoCo Pro Wrestling, built in Unity with ze
 - Roster & portrait import: [Documentation/Roster.md](Documentation/Roster.md)
 - Replacing placeholder art later: [Documentation/FutureAssetIntegration.md](Documentation/FutureAssetIntegration.md)
 - Manual QA: [Documentation/TestingChecklist.md](Documentation/TestingChecklist.md)
+- Engineering notes (best practices, templates, postmortems): [Documentation/KnowledgeBase/](Documentation/KnowledgeBase/README.md)
+- Research input for evaluated best practices (not itself an implementation guide or roadmap): [research/](research/)
 
-Quick version: open this folder in Unity 2022.3 LTS+, run **Tools > LoCo Fight Game > Setup Everything (Assets + Scene)**, open `Assets/Scenes/PrototypeMatch.unity`, press Play. Default match is Zeak Gallent vs JT Staten.
+Quick version: open this folder in Unity 6 (6000.x), run **Tools > LoCo Fight Game > Setup Everything (Assets + Scene)**, open `Assets/Scenes/PrototypeMatch.unity`, press Play. Default match is Zeak Gallent vs JT Staten.

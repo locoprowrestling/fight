@@ -17,7 +17,7 @@ namespace LoCoFight
         void Awake()
         {
             // 1. Arena + ring interaction queries.
-            var arena = FindObjectOfType<ArenaRig>();
+            var arena = FindAnyObjectByType<ArenaRig>();
             if (arena == null) arena = ArenaRig.BuildPrimitiveArena();
 
             var ringGo = new GameObject("RingInteractionSystem");
@@ -66,7 +66,7 @@ namespace LoCoFight
             var rig = cam.GetComponent<TwoTargetMatchCamera>();
             if (rig == null) rig = cam.gameObject.AddComponent<TwoTargetMatchCamera>();
 
-            if (FindObjectOfType<Light>() == null)
+            if (FindAnyObjectByType<Light>() == null)
             {
                 var lightGo = new GameObject("Directional Light");
                 var light = lightGo.AddComponent<Light>();

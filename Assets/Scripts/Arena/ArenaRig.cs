@@ -29,6 +29,8 @@ namespace LoCoFight
         const float PostHeight = 2.1f;
 
         static Shader _cachedShader;
+        static readonly Dictionary<Color32, Material> MaterialCache =
+            new Dictionary<Color32, Material>();
 
         public static Material MakeMaterial(Color color)
         {
@@ -38,9 +40,15 @@ namespace LoCoFight
                 if (_cachedShader == null) _cachedShader = Shader.Find("Universal Render Pipeline/Lit");
                 if (_cachedShader == null) _cachedShader = Shader.Find("Diffuse");
             }
+
+            Color32 key = color;
+            if (MaterialCache.TryGetValue(key, out var cached) && cached != null)
+                return cached;
+
             var m = new Material(_cachedShader);
             if (m.HasProperty("_Color")) m.color = color;
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
+            MaterialCache[key] = m;
             return m;
         }
 

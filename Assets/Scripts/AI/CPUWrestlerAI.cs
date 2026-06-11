@@ -14,7 +14,6 @@ namespace LoCoFight
 
         float _nextDecisionAt;
         float _reversalCooldownUntil;
-        Vector3? _moveTarget;
 
         public void Bind(WrestlerCore core, AIDifficultyData difficulty)
         {
@@ -26,7 +25,6 @@ namespace LoCoFight
         {
             _memory.Clear();
             CurrentState = AIState.IdleThink;
-            _moveTarget = null;
         }
 
         WrestlerCore Opp => _core != null ? _core.Opponent : null;
@@ -128,7 +126,15 @@ namespace LoCoFight
 
         void Decide()
         {
-            _moveTarget = null;
+            // Grapple lock attacker: pick a follow-up. This must be checked
+            // before the canAttack gate — the GrappleLock state profile has
+            // canAttack=false, which previously sent the AI to Recover and let
+            // every lock time out (endless lockup → re-grapple loop).
+            if (_core.Combat.InGrappleLockAsAttacker)
+            {
+                CurrentState = AIState.ChooseGrappleMove;
+                return;
+            }
 
             if (!_core.States.Profile.canAttack)
             {
@@ -140,13 +146,6 @@ namespace LoCoFight
             if (_core.Stats.StaminaPercent < _difficulty.staminaCautionThreshold)
             {
                 CurrentState = AIState.BackOff;
-                return;
-            }
-
-            // Grapple lock attacker: pick a follow-up.
-            if (_core.Combat.InGrappleLockAsAttacker)
-            {
-                CurrentState = AIState.ChooseGrappleMove;
                 return;
             }
 
@@ -241,9 +240,16 @@ namespace LoCoFight
                     break;
 
                 case AIState.ChooseGrappleMove:
-                    bool power = Random.value < _difficulty.grapplePreference && _core.Stats.StaminaPercent > 0.3f;
-                    if (power) _core.Combat.TryPowerGrappleFromLock();
-                    else _core.Combat.TryQuickGrappleFromLock();
+                    if (_core.Combat.InGrappleLockAsAttacker)
+                    {
+                        bool power = Random.value < _difficulty.grapplePreference && _core.Stats.StaminaPercent > 0.3f;
+                        bool executed = power
+                            ? _core.Combat.TryPowerGrappleFromLock() || _core.Combat.TryQuickGrappleFromLock()
+                            : _core.Combat.TryQuickGrappleFromLock() || _core.Combat.TryPowerGrappleFromLock();
+                        // Never leave a lock dangling (e.g. empty moveset):
+                        // release so both wrestlers return to neutral.
+                        if (!executed) _core.Combat.ReleaseGrapple();
+                    }
                     Rethink();
                     break;
 

@@ -249,7 +249,9 @@ namespace LoCoFight
 
             attacker.States.Set(WrestlerState.GrappleLock, 1.8f);
             defender.States.Set(WrestlerState.GrappleLock, 1.8f);
+            // Both wrestlers reach into the collar-and-elbow tie-up.
             attacker.Anim.PlayMove("", "grapple");
+            defender.Anim.PlayMove("", "grapple");
             Debug.Log($"[Grapple] {attacker.DisplayName} locks up with {defender.DisplayName}");
         }
 

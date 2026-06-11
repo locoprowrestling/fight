@@ -28,10 +28,16 @@ namespace LoCoFight
             var go = new GameObject(goName);
             go.transform.position = spawnPos;
 
+            var def = entry != null ? entry.wrestlerDefinition : null;
+            var weight = def != null && def.stats != null ? def.stats.weightClass : WeightClass.Middleweight;
+
+            // The collider tracks the humanoid rig's silhouette: taller and a
+            // touch wider for the heavier classes. Visual limbs never collide;
+            // this capsule is the only physics volume on a wrestler.
             var cc = go.AddComponent<CharacterController>();
-            cc.height = 1.8f;
-            cc.radius = 0.35f;
-            cc.center = new Vector3(0f, 0.9f, 0f);
+            cc.height = WrestlerView.RigHeight * WrestlerView.HeightFor(weight);
+            cc.radius = 0.35f * Mathf.Lerp(1f, WrestlerView.BulkFor(weight), 0.5f);
+            cc.center = new Vector3(0f, cc.height * 0.5f, 0f);
 
             var core = go.AddComponent<WrestlerCore>();
             core.Motor = go.AddComponent<WrestlerMotor>();
@@ -49,9 +55,8 @@ namespace LoCoFight
             core.Entry = entry;
             core.IsPlayer = isPlayer;
 
-            var def = entry != null ? entry.wrestlerDefinition : null;
             Color bodyColor = def != null ? def.placeholderColor : fallbackColor;
-            core.View.BuildPlaceholder(bodyColor);
+            core.View.BuildPlaceholder(bodyColor, weight);
             driver.Bind(core.View);
 
             core.States.Bind(core);

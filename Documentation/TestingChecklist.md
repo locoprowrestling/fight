@@ -9,10 +9,15 @@
 
 ## Movement & camera
 - [ ] WASD moves (camera-relative); Shift runs and drains stamina; the camera keeps both wrestlers framed and zooms with separation.
+- [ ] Left stick movement is camera-relative; the stick dead zone suppresses drift; controller input switches the HUD to controller prompts.
+- [ ] While downed, lateral movement + reversal rolls from the wrestler's current position rather than from world origin.
+- [ ] Pause stops movement/combat input, clears buffered actions, and resumes without firing a stored action.
 
 ## Strikes & grapples
 - [ ] J/K strikes connect at close range, damage the CPU, and update bars; whiffs at distance do nothing.
 - [ ] L at close range enters a grapple lock; L again = quick grapple, K = power grapple; power grapples knock down.
+- [ ] Pressing heavy and grapple together during a lock executes exactly one power grapple and spends stamina once.
+- [ ] When the CPU initiates a lockup, it follows up with a grapple move within ~2 s — the match never falls into an endless lockup → release → lockup loop.
 - [ ] Select Erza vs Johnny Crash: every lift-based power grapple fails with "Too heavy to lift!", stuns Erza, and gives Johnny momentum.
 
 ## Ropes & corners (F1 overlay helps)

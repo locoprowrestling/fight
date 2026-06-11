@@ -1,0 +1,133 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b0904daa61ab44f3806600bb6b88c51, type: 3}
+  m_Name: statutes-in-stone
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.SpecialAbilityData
+  specialId: statutes-in-stone
+  displayName: Statutes in Stone
+  owningRosterId: tas-jt-staten
+  category: 9
+  specialVariant: 
+  description: 
+  requiresFullMomentum: 1
+  momentumCost: 100
+  spendsAllMomentum: 1
+  staminaCost: 26
+  healthThresholdOptional: 0
+  oncePerMatch: 0
+  cooldown: 0
+  requiresOpponentStanding: 0
+  requiresOpponentDowned: 1
+  requiresOpponentStunnedOk: 1
+  requiresOpponentCornered: 0
+  requiresOpponentNearRopes: 0
+  requiresOpponentInRopeStagger: 0
+  requiresOpponentHeadPosition: 1
+  requiresFrontPosition: 0
+  requiresBackOrSidePosition: 0
+  requiresSideBySidePosition: 0
+  requiresGrappleLockOk: 1
+  requiresTargetLiftable: 0
+  requiresTopCornerAnchor: 0
+  requiresMiddleCornerAnchor: 0
+  requiresRopeMiddleAnchor: 0
+  requiresRopeTrapZone: 0
+  requiresRopeReboundLane: 1
+  requiresCornerZone: 0
+  disallowCornerAnchor: 0
+  usesJumpArc: 0
+  usesCrescentArc: 0
+  usesChargeMovement: 0
+  usesRopeRun: 1
+  startsCarryPhase: 0
+  carryDuration: 0
+  carryMoveSpeed: 2
+  spinCount: 0
+  spinDuration: 0
+  canMiss: 1
+  selfDamageOnMiss: 6
+  selfDamageOnWallCollision: 0
+  chargeMaxDuration: 0
+  chargeMaxDistance: 0
+  damageShort: 0
+  damageMedium: 0
+  damage: 24
+  staminaDamage: 0
+  initialDamage: 4
+  damagePerSecond: 0
+  opponentStaminaDrainPerSecond: 0
+  selfStaminaDrainPerSecond: 0
+  submissionPressurePerSecond: 0
+  submissionPressureBonus: 0
+  causesDownedState: 1
+  downedDuration: 3
+  stunDuration: 0
+  canPinAfter: 1
+  pinWindow: 2.5
+  autoPinOnHit: 1
+  autoPinDelay: 0.25
+  startsSubmissionOnSuccess: 0
+  canSubmitOnlyIfNoRopeBreaks: 0
+  forceReleaseAtFiveIfRopeBreaksEnabled: 0
+  startsRefereeFiveCount: 0
+  startsRopeTrapState: 0
+  appliesKickoutPenaltyOnImmediatePin: 1
+  kickoutPenaltyValue: 0.12
+  debuffId: 
+  debuffDuration: 0
+  buffId: 
+  buffDuration: 0
+  canBeReversedAtStart: 1
+  canBeEscapedDuringLift: 1
+  noNormalReversalAfterFullLock: 1
+  benefitsFromRecentReversal: 0
+  benefitsFromRecentDodge: 0
+  counterWindow: 0
+  counterWhiffRecovery: 0.65
+  landingTolerance: 1.1
+  validLandingLaneWidth: 1.3
+  requiredLaunchAnchorType: 0
+  aerialSetupDuration: 0.75
+  airborneDuration: 0.7
+  ropeSpringSetupDuration: 0
+  climbDuration: 0
+  missRecoveryDuration: 1.35
+  usesRefereeDistraction: 0
+  usesConeHitDetection: 0
+  coneRange: 1.35
+  coneAngle: 55
+  caughtPenaltyMomentumLoss: 50
+  refDistractionSetup: 0.6
+  hiddenObjectSetup: 0.45
+  cloudActiveDuration: 0.5
+  canEscapeMajorMoves: 0
+  canEscapeNormallyUnescapableMoves: 0
+  escapableMoveTags: 
+  dodgeResistantTags: 
+  repositionOnSuccess: 1
+  repositionDistance: 1.25
+  invulnerabilityDuration: 0.35
+  hasOncePerMatchEmergencyVersion: 0
+  manualTimingWindow: 0.18
+  emergencyTimingWindow: 0.25
+  failedDodgeStaminaCost: 6
+  sequenceSteps: []
+  comboSteps: []
+  standardMaxHold: 5
+  setupDuration: 0.65
+  lockDuration: 0.35
+  animationStateName: 
+  placeholderPoseName: special
+  moveStartEventName: 
+  hitEventName: 
+  impactVfxEventName: 
+  crowdReactionEventName: 

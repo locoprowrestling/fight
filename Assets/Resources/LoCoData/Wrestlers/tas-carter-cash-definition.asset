@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29ed487f32507448c931d253caa0faa8, type: 3}
+  m_Name: tas-carter-cash-definition
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.WrestlerDefinition
+  wrestlerId: tas-carter-cash
+  displayName: Carter Cash
+  stats: {fileID: 11400000, guid: 98b6264bd68514f0c930372e6606eded, type: 2}
+  moveset: {fileID: 11400000, guid: e59cc4264e2fb4ef4b0a00538f22c916, type: 2}
+  special: {fileID: 11400000, guid: 7d800427459274c7fae3ebdb68fa8386, type: 2}
+  dodgeAbility: {fileID: 0}
+  passiveTraits: []
+  placeholderColor: {r: 0.15, g: 0.7, b: 0.3, a: 1}
+  notes: 

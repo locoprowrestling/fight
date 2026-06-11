@@ -4,16 +4,16 @@ The prototype's visuals are deliberately disposable. Everything below can be rep
 
 ## Wrestler models
 
-Today: `WrestlerView.BuildPlaceholder(color)` constructs a capsule/sphere/cube body at runtime; visual parts carry no colliders (the `CharacterController` on the root handles collision).
+Today: `WrestlerView.BuildPlaceholder(color, weightClass)` constructs an articulated primitive humanoid at runtime: a joint hierarchy (pelvis → spine → neck, shoulders → elbows, hips → knees) of empty pivot transforms with capsule/cube/sphere meshes hanging off them, so the body bends at anatomical joints. Torso/limb widths scale with `WeightClass` (`BulkFor`), overall scale with `HeightFor`, and `WrestlerCore.Create` sizes the `CharacterController` from the same values (`WrestlerView.RigHeight` × height multiplier). Visual parts carry no colliders — the `CharacterController` on the root is the only collision volume.
 
 To integrate a real character:
-1. Author a prefab with the rigged model under a `VisualRoot` child, plus a `WrestlerView` component whose fields (`visualRoot`, `torso`, `head`, arms, legs, `chestMarker`, `torsoRenderer`) point at the matching transforms (or are left null where unused).
+1. Author a prefab with the rigged model under a `VisualRoot` child, plus a `WrestlerView` component whose joint fields (`pelvis`, `spine`, `neck`, `leftShoulder`/`leftElbow`, `rightShoulder`/`rightElbow`, `leftHip`/`leftKnee`, `rightHip`/`rightKnee`, plus `head`, `chestMarker`, `torsoRenderer`) point at the matching bones (or are left null where unused — the driver null-checks every joint).
 2. Assign the prefab to `RosterEntry.placeholderViewPrefab` and, in `WrestlerCore.Create`, instantiate it instead of calling `BuildPlaceholder` (a ~5-line change in one method — gameplay code only ever sees `WrestlerView` and `IAnimationDriver`).
-3. Keep the `CharacterController` dimensions (height 1.8, radius 0.35) or retune `WrestlerMotor` ranges.
+3. Keep the `CharacterController` sizing rule (`RigHeight` × `HeightFor(weight)`, radius ~0.35) or retune `WrestlerMotor`/`WrestlerCombat` ranges.
 
 ## Animations
 
-Today: `PlaceholderAnimationDriver` implements `IAnimationDriver` with procedural tilts/jabs/flashes.
+Today: `PlaceholderAnimationDriver` implements `IAnimationDriver` as a procedural joint animator: each frame it computes a full-body target pose (per-state base pose + walk/run cycle + one-shot punch/kick/grapple-reach overlays) and eases the rig's joint pivots toward it, plus the old torso color flashes.
 
 To integrate real animation:
 1. Write `AnimatorAnimationDriver : MonoBehaviour, IAnimationDriver` that maps each interface call to Animator parameters/states. `MoveData.animationStateName` and `SpecialAbilityData.animationStateName` already carry the target state names; `placeholderPoseName` becomes unused.

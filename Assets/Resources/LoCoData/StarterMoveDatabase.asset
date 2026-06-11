@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5f162e2cdb964c9e9d7903a4730b83d, type: 3}
+  m_Name: StarterMoveDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.MoveDatabase
+  lightStrikes:
+  - {fileID: 11400000, guid: 03f3cba2432ee4b69abb1828a5e7544c, type: 2}
+  - {fileID: 11400000, guid: 4c54f00c50a364f6f9f2cef11a18905b, type: 2}
+  heavyStrikes:
+  - {fileID: 11400000, guid: 7ca4b187de4c0498c929e81594eb5666, type: 2}
+  - {fileID: 11400000, guid: 60daabd6678734def8ac49e13a37715e, type: 2}
+  quickGrapples:
+  - {fileID: 11400000, guid: 18d5722675a49416dacff480db162960, type: 2}
+  - {fileID: 11400000, guid: 852cfb64aac2b4966b5bde14965bb194, type: 2}
+  - {fileID: 11400000, guid: 88e5548ee87534a0b9d268444ee7f1d8, type: 2}
+  - {fileID: 11400000, guid: 2041849cf2dff496fa8e9a919de1637b, type: 2}
+  powerGrapples:
+  - {fileID: 11400000, guid: 8b5dc8b18497b465fb6925595ed531e0, type: 2}
+  - {fileID: 11400000, guid: e59e2103ec2d840378414f412431f6d8, type: 2}
+  - {fileID: 11400000, guid: e415f20eb6a664a47a3836443b017a59, type: 2}
+  - {fileID: 11400000, guid: 09e74053d91ad4642a7d8530159284ab, type: 2}
+  runningAttacks:
+  - {fileID: 11400000, guid: 4a47b96db4aed46a1b8bfd770f53ab61, type: 2}
+  - {fileID: 11400000, guid: a9cd1bfe04dce49b7be172f7a0f10c11, type: 2}
+  groundSubmissions:
+  - {fileID: 11400000, guid: f59337e9d43ec4584990a2327237d92c, type: 2}

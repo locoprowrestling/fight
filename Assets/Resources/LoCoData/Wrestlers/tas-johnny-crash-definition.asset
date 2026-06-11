@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29ed487f32507448c931d253caa0faa8, type: 3}
+  m_Name: tas-johnny-crash-definition
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.WrestlerDefinition
+  wrestlerId: tas-johnny-crash
+  displayName: Johnny Crash
+  stats: {fileID: 11400000, guid: 0cae65ab7bdb542edb44b96f456d04b8, type: 2}
+  moveset: {fileID: 11400000, guid: e59cc4264e2fb4ef4b0a00538f22c916, type: 2}
+  special: {fileID: 11400000, guid: 8c1cea5cdddf945e4be3c919ef97e997, type: 2}
+  dodgeAbility: {fileID: 0}
+  passiveTraits:
+  - {fileID: 11400000, guid: 4b124715172124e42af0a9abd2c08119, type: 2}
+  - {fileID: 11400000, guid: e23e61e6475c14a0890cca7a34b9daad, type: 2}
+  - {fileID: 11400000, guid: 016a505a8a79143d19318459770964b6, type: 2}
+  placeholderColor: {r: 0.3, g: 0.3, b: 0.9, a: 1}
+  notes: 

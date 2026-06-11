@@ -24,6 +24,7 @@ namespace LoCoFight
         public RefereeAttentionState RefereeAttention { get; private set; } = RefereeAttentionState.Normal;
         public WrestlerCore Winner { get; private set; }
         public WinCondition WinningCondition { get; private set; }
+        public bool IsPaused { get; private set; }
 
         public MatchRulesData Rules => matchRules;
         public AIDifficultyData CpuDifficulty => cpuDifficulty;
@@ -33,13 +34,30 @@ namespace LoCoFight
         bool _awaitingHandshakeInput;
         WrestlerCore _handshakeOfferer;
 
-        void Awake() => Instance = this;
+        void Awake()
+        {
+            Instance = this;
+            Time.timeScale = 1f;
+        }
         void OnDestroy() { if (Instance == this) Instance = null; }
 
         public void SetState(MatchState state)
         {
             State = state;
             MatchHUD.TrySetMatchState(state.ToString());
+        }
+
+        public void SetPaused(bool paused)
+        {
+            if (State == MatchState.Finished || State == MatchState.Resetting) paused = false;
+            if (IsPaused == paused)
+            {
+                Time.timeScale = paused ? 0f : 1f;
+                return;
+            }
+            IsPaused = paused;
+            Time.timeScale = paused ? 0f : 1f;
+            MatchHUD.TryShowMessage(paused ? "Paused" : "Resumed", 1f);
         }
 
         public void SetupMatch(ArenaRig arena)
@@ -62,7 +80,7 @@ namespace LoCoFight
             var ai = Cpu.gameObject.AddComponent<CPUWrestlerAI>();
             ai.Bind(Cpu, cpuDifficulty);
 
-            var input = FindObjectOfType<PlayerInputController>();
+            var input = FindAnyObjectByType<PlayerInputController>();
             if (input != null) input.Bind(Player);
 
             if (MatchHUD.Instance != null) MatchHUD.Instance.BindWrestlers(Player, Cpu);
@@ -102,7 +120,7 @@ namespace LoCoFight
             {
                 // Player chooses: T = accept, J = cheap shot, L = refuse, or ignore.
                 _awaitingHandshakeInput = true;
-                MatchHUD.TryShowMessage("T: shake  J: cheap shot  L: refuse", 3f);
+                MatchHUD.TryShowHandshakePrompt(3f);
                 float deadline = Time.time + 3f;
                 _playerHandshakeChoice = null;
                 while (Time.time < deadline && _playerHandshakeChoice == null) yield return null;
@@ -190,12 +208,13 @@ namespace LoCoFight
 
             string method = condition == WinCondition.Pinfall ? "Pinfall" : "Submission";
             string who = winner.IsPlayer ? "Player" : "CPU";
-            MatchHUD.TryShowWinner($"{who} Wins by {method}! ({winner.DisplayName})  —  Press R to Reset");
+            MatchHUD.TryShowWinner($"{who} Wins by {method}! ({winner.DisplayName})  -  Use Reset to Restart");
             Debug.Log($"[Match] {winner.DisplayName} wins by {method}");
         }
 
         public void RequestReset()
         {
+            SetPaused(false);
             SetState(MatchState.Resetting);
             Debug.Log("[Match] Resetting");
             var scene = SceneManager.GetActiveScene();
@@ -228,7 +247,7 @@ namespace LoCoFight
             MatchHUD.TryShowCount("");
 
             SetupMatch(_arena);
-            var cam = FindObjectOfType<TwoTargetMatchCamera>();
+            var cam = FindAnyObjectByType<TwoTargetMatchCamera>();
             if (cam != null) cam.SetTargets(Player.transform, Cpu.transform);
         }
     }

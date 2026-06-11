@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38079a456d7434d11a123a2c9f49222d, type: 3}
+  m_Name: tas-anuka-gutierrez
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.RosterEntry
+  rosterId: tas-anuka-gutierrez
+  displayName: Anuka Gutierrez
+  sourceImageFileName: tas-anuka-gutierrez.png
+  portraitSprite: {fileID: 21300000, guid: cd5943140857d4ff0854006d60c4250b, type: 3}
+  wrestlerDefinition: {fileID: 11400000, guid: e38810f5b674a4153b8fd3ced09330a4, type: 2}
+  placeholderViewPrefab: {fileID: 0}
+  notes: 

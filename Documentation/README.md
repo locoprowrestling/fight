@@ -4,7 +4,7 @@ A playable 3D arcade-sim wrestling prototype built from Unity primitives. One hu
 
 ## Quick start
 
-1. Open this folder (`fightgame/`) as a project in **Unity 2022.3 LTS or newer** (3D template; Built-in render pipeline is assumed, URP also works for the placeholder materials).
+1. Open this folder (`fightgame/`) as a project in **Unity 6 (6000.x)** (3D template; Built-in render pipeline is assumed, URP also works for the placeholder materials).
 2. Wait for the scripts to compile.
 3. Run **Tools > LoCo Fight Game > Setup Everything (Assets + Scene)**.
    - This creates all ScriptableObject data under `Assets/Resources/LoCoData/`, imports the `tas-*` roster portraits into `Assets/Art/RosterPortraits/`, and creates `Assets/Scenes/PrototypeMatch.unity`.
@@ -36,13 +36,30 @@ Default match: **Zeak Gallent (player) vs JT Staten (CPU)**. Press **F2** in Pla
 | Debug roster select | F2 |
 | Pause | Escape |
 
+### Controller
+
+| Action | Default legacy gamepad binding |
+|---|---|
+| Move | Left stick |
+| Run | Left bumper |
+| Light / heavy strike | X / Y |
+| Grapple / dodge | A / B |
+| Reversal | Right bumper |
+| Special | Right stick click |
+| Pin / submission | View / left stick click |
+| Pause / reset after finish | Menu |
+
+Controller bindings use Unity's legacy joystick button numbering and can vary by
+platform or controller driver.
+
 ## Project layout
 
 - `Assets/Scripts/` — gameplay code organized by system (Core, Input, Camera, Arena, Ring, Ropes, Wrestlers, Roster, Combat, Moves, Specials, Traits, AI, Match, Rules, UI, Animation, Utilities, Editor).
 - `Assets/Resources/LoCoData/` — generated ScriptableObject data (moves, specials, traits, stats, roster, rules, AI difficulty). Regenerate any time with the builder menu.
 - `Assets/Art/RosterPortraits/` — imported `tas-*.png` portraits.
-- `Documentation/` — design docs ([DesignDoc.md](DesignDoc.md), [RopeMechanics.md](RopeMechanics.md), [SpecialAbilities.md](SpecialAbilities.md), [Roster.md](Roster.md), [FutureAssetIntegration.md](FutureAssetIntegration.md)).
+- `Documentation/` — design docs ([DesignDoc.md](DesignDoc.md), [RopeMechanics.md](RopeMechanics.md), [SpecialAbilities.md](SpecialAbilities.md), [Roster.md](Roster.md), [FutureAssetIntegration.md](FutureAssetIntegration.md)) and the engineering [KnowledgeBase/](KnowledgeBase/README.md) (best practices, templates, worked examples, and clearly labeled informational research notes).
+- `research/` — background source material used to identify possible best practices. It is not itself an implementation guide, specification, roadmap, or source of truth; accepted findings are promoted into authoritative project docs.
 
 ## What's intentionally ugly
 
-Wrestlers are capsule+cube bodies with a yellow chest marker for facing. Animation is procedural posing (tilts, jabs, color flashes). The architecture isolates all of this behind `WrestlerView` and `IAnimationDriver` so real models and animations can replace it without touching combat, AI, rules, or match logic — see [FutureAssetIntegration.md](FutureAssetIntegration.md).
+Wrestlers are jointed primitive humanoids — pelvis/spine/neck plus shoulders, elbows, hips, and knees as bendable pivots, with a yellow chest marker for facing and torso/limb bulk scaled by weight class. Animation is procedural posing driven through those joints (walk/run cycles, punches and kicks, a collar-and-elbow lockup, downed/stunned/victory poses, color flashes) with no animation clips. The architecture isolates all of this behind `WrestlerView` and `IAnimationDriver` so real models and animations can replace it without touching combat, AI, rules, or match logic — see [FutureAssetIntegration.md](FutureAssetIntegration.md).

@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a452cab74d764c788a102c84af2387e, type: 3}
+  m_Name: heavy-forearm
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.MoveData
+  moveId: heavy-forearm
+  displayName: Heavy Forearm
+  category: 1
+  tags: 01000000
+  startupTime: 0.35
+  activeTime: 0.12
+  recoveryTime: 0.5
+  reversalWindowStart: 0.05
+  reversalWindowEnd: 0.35
+  staminaCost: 10
+  damage: 9
+  staminaDamage: 0
+  momentumGainOnHit: 8
+  momentumGainOnReversal: 6.4
+  stunDuration: 0.55
+  downedDuration: 0
+  causesDownedState: 0
+  canPinAfter: 0
+  canSubmitAfter: 0
+  knockbackDistance: 0.4
+  range: 1.35
+  requiredFacingDot: 0.4
+  snapToGrapplePosition: 0
+  requiresLift: 0
+  minimumLiftClass: 0
+  failIfTargetTooHeavy: 1
+  fallbackMoveIfLiftFails: {fileID: 0}
+  downsBelowHealthPercent: 0
+  submissionPressurePerSecond: 0
+  damagePerSecond: 0
+  requiresOpponentNearRopes: 0
+  requiresOpponentInRopeStagger: 0
+  requiresCornerZone: 0
+  requiresRopeRebound: 0
+  requiresRunning: 0
+  causesRopeStagger: 0
+  canTriggerRopeBreak: 1
+  ignoresRopeBreak: 0
+  moveStartEventName: 
+  hitEventName: 
+  impactVfxEventName: 
+  crowdReactionEventName: 
+  animationStateName: 
+  placeholderPoseName: strike
+  animationSpeed: 1
