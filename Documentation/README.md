@@ -37,7 +37,7 @@ and explains dead presses.
 | Move                                                                                                                                                                                                                   | W / A / S / D                                                             |
 | Run                                                                                                                                                                                                                    | Left Shift                                                                |
 | **Strike** — neutral: light · +held direction: heavy · contextual attack (ground, corner, rope, rebound, running) when one applies; always fires on press                                                              | J                                                                         |
-| **Tie-up / Control** — press: tie-up (release before the lock = quick set, keep held = STRONG set) · in lock: K + direction fires the armed set's move instantly · beside a downed opponent: tap pin / hold submission | K                                                                         |
+| **Grapple / Control** — press with an optional direction: tap for a quick grapple, hold for a power grapple; the same press acquires and resolves the tie-up · beside a downed opponent: tap pin / hold submission | K                                                                         |
 | Directional grapple from lock                                                                                                                                                                                          | hold a movement direction (toward opponent on screen = forward) + press K |
 | Special                                                                                                                                                                                                                | L                                                                         |
 | Dodge / escape / kickout mash                                                                                                                                                                                          | ; (Left Alt also works)                                                   |
@@ -53,19 +53,26 @@ and explains dead presses.
 
 ### Controller
 
+Verified on 8BitDo SN30 Pro (Nintendo/SNES button layout). Button names
+printed on the controller, not Xbox equivalents.
+
 | Action                                               | Default legacy gamepad binding |
 | ---------------------------------------------------- | ------------------------------ |
-| Move                                                 | Left stick                     |
-| Run                                                  | Left bumper                    |
-| Strike (neutral light / +direction heavy)            | X                              |
-| Tie-up / Control (hold through lock-up = strong set) | A                              |
-| Special                                              | Y                              |
-| Dodge                                                | B                              |
-| Reversal                                             | Right bumper                   |
-| Pause / reset after finish                           | Menu                           |
+| Move                                                 | Left stick / D-pad             |
+| Run                                                  | Y                              |
+| Strike (neutral light / +direction heavy)            | B                              |
+| Grapple / Control (tap quick / hold power)           | A                              |
+| Special                                              | X                              |
+| Dodge                                                | keyboard only (;)              |
+| Reversal                                             | keyboard only (Space)          |
+| Full controls panel (hold)                           | L (left bumper)                |
+| Pause / reset after finish                           | keyboard only (Esc / R)        |
 
-Controller bindings use Unity's legacy joystick button numbering and can vary by
-platform or controller driver.
+Controller bindings use Unity's legacy joystick button numbering. The code
+comments use Xbox/PlayStation naming (A/Cross, B/Circle, X/Square, Y/Triangle)
+which does **not** match the printed labels on Nintendo-layout controllers like
+the 8BitDo SN30. Dodge, Reversal, and Pause currently have no gamepad binding
+and require the keyboard fallback.
 
 ## Project layout
 
