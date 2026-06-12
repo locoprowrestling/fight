@@ -14,7 +14,7 @@ namespace LoCoFight
         GameObject _controlsPanel;
         string _lastPrompt = "";
         bool _promptStateValid;
-        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady, _pInRange, _pStrongLock, _pPlayerDowned;
+        bool _pFighting, _pDownedNear, _pReversalOpen, _pSpecialReady, _pInRange, _pPlayerDowned;
         PlayerInputController _playerInput;
         CombatContext _pContext;
         PlayerInputDevice _pDevice;
@@ -201,7 +201,7 @@ namespace LoCoFight
             return device == PlayerInputDevice.Controller
                 ? "MOVE        left stick   (LB: run)\n" +
                   "STRIKE      X    fires on press — neutral: light, +direction: heavy\n" +
-                  "TIE-UP      A    press: lock up — KEEP HELD through the lock-up for the strong set\n" +
+                  "GRAPPLE     A    +direction: tap QUICK / hold POWER\n" +
                   "            in lock: A + direction = grapple move (instant)\n" +
                   "            near a downed opponent: tap = pin, hold = submission\n" +
                   "SPECIAL     Y    needs full momentum\n" +
@@ -210,7 +210,7 @@ namespace LoCoFight
                   "PAUSE       Menu (also resets after a finish)"
                 : "MOVE        W A S D   (Shift: run)\n" +
                   "STRIKE      J    fires on press — neutral: light, +direction: heavy\n" +
-                  "TIE-UP      K    press: lock up — KEEP HELD through the lock-up for the strong set\n" +
+                  "GRAPPLE     K    +direction: tap QUICK / hold POWER\n" +
                   "            in lock: K + direction = grapple move (instant)\n" +
                   "            near a downed opponent: tap = pin, hold = submission\n" +
                   "SPECIAL     L    needs full momentum\n" +
@@ -318,7 +318,8 @@ namespace LoCoFight
 
             // Hold Tab (View on pad) for the full controls panel. Read here
             // directly, same debug-view convention as F1/F3.
-            bool showPanel = Input.GetKey(KeyCode.Tab) || Input.GetKey(KeyCode.JoystickButton6);
+            // JoystickButton6 is L bumper on 8BitDo — reassigned to Dodge, so View is Tab only.
+            bool showPanel = Input.GetKey(KeyCode.Tab);
             if (_controlsPanel != null && _controlsPanel.activeSelf != showPanel)
                 _controlsPanel.SetActive(showPanel);
 
@@ -339,14 +340,12 @@ namespace LoCoFight
                                     (_cpu.Combat.IsReversalWindowOpenFor(_player) ||
                                      (_cpu.Specials != null && _cpu.Specials.ReversalWindowOpen));
                 bool specialReady = fighting && _player.Stats.HasFullMomentum;
-                bool strongLock = fighting && _playerInput != null && _playerInput.PowerLockArmed;
                 bool playerDowned = fighting && _player.States.Current == WrestlerState.Downed;
 
                 bool changed = !_promptStateValid || fighting != _pFighting || context != _pContext ||
                                downedNear != _pDownedNear || reversalOpen != _pReversalOpen ||
                                specialReady != _pSpecialReady || inRange != _pInRange ||
-                               strongLock != _pStrongLock || playerDowned != _pPlayerDowned ||
-                               _inputDevice != _pDevice;
+                               playerDowned != _pPlayerDowned || _inputDevice != _pDevice;
                 if (changed)
                 {
                     _promptStateValid = true;
@@ -356,13 +355,12 @@ namespace LoCoFight
                     _pReversalOpen = reversalOpen;
                     _pSpecialReady = specialReady;
                     _pInRange = inRange;
-                    _pStrongLock = strongLock;
                     _pPlayerDowned = playerDowned;
                     _pDevice = _inputDevice;
 
                     _lastPrompt = fighting
                         ? ControlPromptLogic.StrikePrompt(context, inRange, _inputDevice) + "      " +
-                          ControlPromptLogic.ControlPrompt(context, downedNear, inRange, strongLock, _inputDevice)
+                          ControlPromptLogic.ControlPrompt(context, downedNear, inRange, _inputDevice)
                         : "";
                     _prompts.text = _lastPrompt;
 

@@ -2,25 +2,16 @@ using UnityEngine;
 
 namespace LoCoFight
 {
-    // Controller layout — JoystickButton slots vs physical labels.
+    // Controller layout — verified on 8BitDo SN30 Pro (Nintendo/SNES button layout).
     //
-    // Unity legacy input uses Xbox/PlayStation button slot numbering.
-    // On a Nintendo-layout controller (e.g. 8BitDo SN30) the printed label
-    // at each slot differs from the Xbox label:
-    //
-    //   Slot / Xbox name   Physical label (8BitDo/SNES)   Action
-    //   JoystickButton0    A / Cross  → A (right)          Grapple / Tie-up
-    //   JoystickButton1    B / Circle → L bumper           Dodge  (no face-button binding yet)
-    //   JoystickButton2    X / Square → B (bottom)         Strike
-    //   JoystickButton3    Y / Triangle→ X (top)           Special
-    //   JoystickButton4    LB / L1    → Y (left)           Run
-    //   JoystickButton5    RB / R1    → R bumper           Reversal  (unverified)
-    //   JoystickButton7    Start      → (unmapped)         Pause / Reset — keyboard only
-    //
-    //   Left stick    — Move
-    //   D-pad         — Move (digital fallback)
-    //   L (left bumper, JoystickButton1 on this layout) — mapped to Dodge slot,
-    //     but the controls-panel overlay (Tab) may intercept it depending on driver.
+    //   JoystickButton0  → A (right face, red)    — Grapple / Tie-up
+    //   JoystickButton2  → B (bottom face, yellow) — Strike
+    //   JoystickButton3  → X (top face, blue)      — Special
+    //   JoystickButton4  → Y (left face, green)    — Run
+    //   JoystickButton5  → R bumper                — Reversal
+    //   JoystickButton6  → L bumper                — Dodge
+    //   JoystickButton7  → Start/+                 — Pause / Reset (try JoystickButton9 if 7 silent)
+    //   Left stick / D-pad                         — Move
     //
     // Keyboard fallback:
     //   WASD          — Move
@@ -62,7 +53,7 @@ namespace LoCoFight
             bool stickMash = ReadStickMash(stickMove);
             bool reversal  = Input.GetKeyDown(KeyCode.Space)     || Input.GetKeyDown(KeyCode.JoystickButton5);
             bool dodge     = Input.GetKeyDown(KeyCode.Semicolon) || Input.GetKeyDown(KeyCode.LeftAlt)
-                           || Input.GetKeyDown(KeyCode.JoystickButton1);
+                           || Input.GetKeyDown(KeyCode.JoystickButton6);
 
             return new PlayerInputFrame
             {
@@ -78,8 +69,10 @@ namespace LoCoFight
                 ReversalPressed= reversal,
                 DodgePressed   = dodge,
                 SpecialPressed = Input.GetKeyDown(KeyCode.L)           || Input.GetKeyDown(KeyCode.JoystickButton3),
-                PausePressed   = Input.GetKeyDown(KeyCode.Escape)      || Input.GetKeyDown(KeyCode.JoystickButton7),
-                ResetPressed   = Input.GetKeyDown(KeyCode.R)           || Input.GetKeyDown(KeyCode.JoystickButton7),
+                PausePressed   = Input.GetKeyDown(KeyCode.Escape)      || Input.GetKeyDown(KeyCode.JoystickButton7)
+                              || Input.GetKeyDown(KeyCode.JoystickButton9),
+                ResetPressed   = Input.GetKeyDown(KeyCode.R)           || Input.GetKeyDown(KeyCode.JoystickButton7)
+                              || Input.GetKeyDown(KeyCode.JoystickButton9),
                 DebugPressed   = Input.GetKeyDown(KeyCode.F1),
                 MashPressed    = reversal || dodge || HasKeyboardMovementPress()
                               || HasGamepadFaceButtonDown() || stickMash,

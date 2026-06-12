@@ -37,7 +37,7 @@ and explains dead presses.
 | Move                                                                                                                                                                                                                   | W / A / S / D                                                             |
 | Run                                                                                                                                                                                                                    | Left Shift                                                                |
 | **Strike** — neutral: light · +held direction: heavy · contextual attack (ground, corner, rope, rebound, running) when one applies; always fires on press                                                              | J                                                                         |
-| **Grapple / Control** — press with an optional direction: tap for a quick grapple, hold for a power grapple; the same press acquires and resolves the tie-up · beside a downed opponent: tap pin / hold submission | K                                                                         |
+| **Grapple / Control** — press with an optional direction: tap for a quick grapple, hold for a power grapple; the same press acquires and resolves the tie-up · beside a downed opponent: tap pin / hold submission     | K                                                                         |
 | Directional grapple from lock                                                                                                                                                                                          | hold a movement direction (toward opponent on screen = forward) + press K |
 | Special                                                                                                                                                                                                                | L                                                                         |
 | Dodge / escape / kickout mash                                                                                                                                                                                          | ; (Left Alt also works)                                                   |
@@ -63,16 +63,15 @@ printed on the controller, not Xbox equivalents.
 | Strike (neutral light / +direction heavy)            | B                              |
 | Grapple / Control (tap quick / hold power)           | A                              |
 | Special                                              | X                              |
-| Dodge                                                | keyboard only (;)              |
-| Reversal                                             | keyboard only (Space)          |
-| Full controls panel (hold)                           | L (left bumper)                |
-| Pause / reset after finish                           | keyboard only (Esc / R)        |
+| Dodge / escape / kickout mash                        | L (left bumper)                |
+| Reversal / block                                     | R (right bumper)               |
+| Pause / reset after finish                           | Start (+)                      |
+| Full controls panel (hold)                           | Tab (keyboard only)            |
 
-Controller bindings use Unity's legacy joystick button numbering. The code
-comments use Xbox/PlayStation naming (A/Cross, B/Circle, X/Square, Y/Triangle)
-which does **not** match the printed labels on Nintendo-layout controllers like
-the 8BitDo SN30. Dodge, Reversal, and Pause currently have no gamepad binding
-and require the keyboard fallback.
+Controller bindings verified on 8BitDo SN30 Pro (Nintendo/SNES button layout).
+The code uses Xbox/PlayStation slot numbering internally — the printed labels on
+Nintendo-layout controllers (A=right, B=bottom, X=top, Y=left) differ from Xbox
+(A=bottom, B=right, X=left, Y=top).
 
 ## Project layout
 
