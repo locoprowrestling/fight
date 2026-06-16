@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc605b6d41f4c4935b834dee527a3ce6, type: 3}
+  m_Name: round03-top-rope-powerbomb
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.MoveChoreographyData
+  presentationId: round03-top-rope-powerbomb
+  referenceStatus: 0
+  participantMode: 1
+  startFormation: 8
+  attackerStateKey: round03-top-rope-powerbomb/attacker
+  defenderStateKey: round03-top-rope-powerbomb/defender
+  authoredDuration: 1.4
+  startDistance: 0.85
+  defenderLocalOffset: {x: 0, y: 0, z: 0}
+  defenderYaw: 0
+  defenderExitPose: 1
+  followUp: 1
+  phases:
+  - phase: 0
+    normalizedStart: 0
+    normalizedEnd: 0.25
+    allowsInterruption: 0
+    allowsSpecialEscape: 0
+    presentationMarker: setup
+  - phase: 1
+    normalizedStart: 0.25
+    normalizedEnd: 0.5
+    allowsInterruption: 0
+    allowsSpecialEscape: 0
+    presentationMarker: contact
+  - phase: 2
+    normalizedStart: 0.5
+    normalizedEnd: 0.75
+    allowsInterruption: 0
+    allowsSpecialEscape: 0
+    presentationMarker: lift
+  - phase: 5
+    normalizedStart: 0.75
+    normalizedEnd: 1
+    allowsInterruption: 0
+    allowsSpecialEscape: 0
+    presentationMarker: impact

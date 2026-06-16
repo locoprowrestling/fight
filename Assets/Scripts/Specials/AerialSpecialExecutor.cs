@@ -53,6 +53,12 @@ namespace LoCoFight
             ctx.Controller.EscapePhase = SpecialEscapePhase.FullLock;
             self.States.Set(WrestlerState.AerialAirborne);
             self.Anim.TriggerAerialLaunch();
+            if (d.choreography != null)
+                self.Anim.PlayMove(
+                    d.choreography.attackerStateKey,
+                    PairedMoveCoordinator.PlaceholderPoseFor(
+                        d.choreography,
+                        true));
 
             Vector3 landTarget = target.transform.position; // committed at launch
             landTarget.y = 0.5f;

@@ -125,6 +125,7 @@ MonoBehaviour:
   standardMaxHold: 5
   setupDuration: 0.65
   lockDuration: 0.35
+  choreography: {fileID: 11400000, guid: abfb6e4904f984a1ba881d335d7365cf, type: 2}
   animationStateName: 
   placeholderPoseName: special
   moveStartEventName: 

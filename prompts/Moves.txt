@@ -1,0 +1,95 @@
+Pro‑Wrestling Moves and LLM Description Prompt
+Method and sources
+The user wanted an analysis of a video showing move demonstrations. The video could not be directly streamed through VidIQ, so I used public wrestling manuals and reliable move‑description websites to reconstruct the moveset.
+I reviewed a strategy guide for a classic grappling game and extracted a representative set of moves across categories: front and back grapples, running attacks, turnbuckle and high‑flying moves, submissions and pins. To describe how each move works, I consulted detailed move descriptions from reliable wrestling references. For example:
+DDT – A technique pioneered by Jake “Snake” Roberts. The attacker puts the opponent’s head under their arm in a front facelock and falls backwards, driving the opponent’s head into the mat[1].
+Powerbomb – The attacker places the opponent’s head between their thighs (a standing head‑scissor), lifts them onto their shoulders and then slams them back‑first to the mat[2].
+Powerslam – Any slam in which the attacker falls face‑down on top of the opponent; a front powerslam is common[3].
+Body/Scoop Slam – The attacker reaches between the opponent’s legs with one arm and around their back with the other, lifts them upside down and throws them so they land on their back[4].
+Suplex – A throw in which the attacker arches or twists to slam the opponent back‑first to the mat; without qualifiers it often refers to the vertical suplex[5].
+Chokeslam – The attacker grasps the opponent’s neck, lifts them up and slams them to the mat, causing them to land on their back[6].
+Stunner – A three‑quarter facelock jawbreaker: the attacker reaches behind the opponent’s head, pulls their jaw over their own shoulder and drops to a seated position so the opponent’s jaw is driven into the shoulder[7].
+Neckbreaker and Cutter – Neckbreakers attack the neck either by slamming it against a body part or twisting the opponent to the mat[8]. A cutter is a three‑quarter facelock neckbreaker where the attacker, facing away from the opponent, pulls the opponent’s head over their shoulder and falls backward to slam the opponent face‑first[9].
+Piledriver – Though it looks like the head is driven into the ground, a properly executed piledriver barely lets the opponent’s head touch the mat[10].
+Lariat / Clothesline – When the attacker runs toward the opponent and wraps an arm around their chest or neck, forcing them down. In a clothesline the arm remains straight; a lariat involves a swinging motion and greater stiffness[11].
+Snapmare – The attacker stands back‑to‑back with the opponent, applies a three‑quarter facelock and pulls the opponent forward, flipping them over the attacker’s shoulder so they land on their back[12].
+Russian leg sweep – The attacker stands side‑to‑side with the opponent, hooks the opponent’s head with one hand and reaches for their nearest leg, then falls backwards to pull the opponent to the mat back‑first[13].
+These references give authoritative definitions that can be used to guide the LLM’s descriptions.
+Move analysis and description guidance
+The moves extracted from the guide are grouped by category. For each move, a brief analysis explains its mechanics. When describing moves to a language model, it is important to: (1) identify the starting position of both wrestlers; (2) describe each major action (grappling, lifting, twisting, dropping, striking); (3) note the landing or ending position; (4) specify whether it is a slam, throw, strike, submission, pin or signature move; and (5) mention any notable variations or names. Using consistent terminology (“attacker” vs “defender”) helps the model produce clear descriptions.
+Front grapples (weak and strong)
+
+Rear grapples and reversals
+
+Standing strikes, running moves and counters
+
+Running grapples and Irish whip moves
+
+Turnbuckle and aerial moves
+
+Submission holds and ground attacks
+
+High‑impact finishers and signature moves
+
+Comprehensive prompt for generating move descriptions
+Below is a ready‑to‑use prompt that you can feed into a language model to generate detailed descriptions for each move. The prompt instructs the model to use consistent terminology and to follow the structure developed above.
+You are a wrestling move analyst. For each move listed below, output a concise description suitable for an encyclopedia of wrestling techniques. Follow these rules:
+Use the terms attacker and defender instead of specific character names.
+Identify the starting position: whether both wrestlers are standing, one is on the ground, or one is on the turnbuckle.
+Describe the hold, grip or set‑up used (e.g., front facelock, rear waistlock, head‑scissor).
+Explain the major motion in sequential order: lifting, twisting, running, jumping, spinning, falling, striking. Mention directional cues (front, back, vertical, overhead) where useful.
+State where and how the defender lands (back‑first, face‑first, neck, shoulder, knee, etc.).
+Categorize the move (slam/throw, strike, submission, pin or finisher) and mention any well‑known variations.
+Use clear, vivid verbs (hooks, wrenches, arches, launches, drives) and avoid ambiguous pronouns.
+Avoid commentary about effectiveness or drama; focus on mechanics.
+Moves to describe:
+Headlock and Punch
+Snapmare
+Eye Rake
+Scoop Slam (Body slam)
+Arm Wrench with Elbow Smash
+Shoulder Breaker
+Neckbreaker / Swinging Neckbreaker
+Vertical Suplex / Belly‑to‑Belly Suplex
+DDT
+Brainbuster / Fisherman Driver
+Side Slam (e.g., Rock Bottom style)
+Back Drop (Back Suplex)
+Shin Breaker
+Surfboard Stretch
+Atomic Drop
+Bulldog / Jumping Bulldog
+German Suplex / Tiger Suplex Pin
+Pumphandle Drop / Slam
+Elbow Strike / European Uppercut / Forearm Smash
+Front Kick / Knee Lift / High Knee
+Clothesline / Lariat
+Shoulder Block / Tackle
+Back Elbow Smash / Spinning Back Elbow
+Jumping Clothesline / Diving Clothesline
+People’s Elbow / Running Elbow Drop
+Low Blow
+Tilt‑a‑Whirl Slam / Driver
+Powerslam (Irish Whip)
+Samoan Drop / Fallaway Slam
+Spinebuster
+Superplex
+Super Back Drop
+Knee Drop / Double Axe Handle
+Tree of Woe Attack
+Sleeper Hold
+Armbar / Reverse Armbar
+Single‑leg Crab / Figure‑Four Leglock
+Surfboard Cradle / Mahistrol Cradle / Small Package
+Cutter (Diamond Cutter / RKO)
+Piledriver / Tombstone
+Chokeslam
+Powerbomb / Sit‑out Powerbomb
+Stunner
+Output format: For each move, start a new paragraph with the move name in bold, followed by a colon and your description following the rules above.
+Use the analysis and the cited definitions above to ensure accurate and vivid descriptions. This prompt will help a language model generate consistent, mechanical explanations for a wide range of wrestling moves.
+
+[1] [2] [3] [4] [5] [6] [7] [8] [9] [10] [12] [13] [14] [15] [16] [17] Professional wrestling throws - Wikipedia
+https://en.wikipedia.org/wiki/Professional_wrestling_throws
+[11] [18] Professional wrestling strikes - Wikipedia
+https://en.wikipedia.org/wiki/Professional_wrestling_strikes

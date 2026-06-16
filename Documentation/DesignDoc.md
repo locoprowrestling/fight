@@ -116,16 +116,17 @@ Every contextual request goes through `ContextualMoveValidator` before any
 stamina is spent and returns a structured result (validity, rejection reason,
 debug message), recorded in a `CombatContextSnapshot` shown in the F1 overlay.
 
-**Controls** follow the AKI grammar — one press = one move, direction is the
-only modifier; nothing in the offense waits for a button release. Strike (J/X)
-fires on press: neutral = light, held direction = heavy, contextual families by
-precedence. Tie-up/Control (K/A) locks up on press; the initiating press picks
-the set — released before the wrestlers lock = quick, still held as the lock
-forms (~0.28 s sample) = STRONG/power — and inside the lock, K + held direction
-fires the armed set's move instantly. The lock lasts 2.5 s so the attacker never
-races a clock. Beside a downed opponent K keeps tap = pin / hold = submission
-(`PressTracker`, `PlayerInputLogic.HoldThreshold` 0.18 s — the only remaining
-tap/hold). Special (L/Y), Dodge (;/B), Reversal (Space/RB). A ~0.35 s input
+**Controls** keep standing strikes immediate while grapples use one persistent
+weak/strong intent. Strike (J/X) fires on press: neutral = light, held direction
+= heavy, contextual families by precedence. Grapple/Control (K/A) captures the
+optional direction and starts the tie-up; releasing that same press performs a
+quick grapple, while crossing `PlayerInputLogic.HoldThreshold` (0.18 s)
+performs a power grapple. The intent survives buffered acquisition and retains
+its direction even if the stick/key returns to neutral on release. Entering a
+grapple lock clears residual locomotion so directional approaches cannot slide
+the attacker out of the paired move. One physical press produces at most one
+move. Beside a downed opponent K uses the same timing for pin versus submission.
+Special (L/Y), Dodge (;/B), Reversal (Space/RB). A ~0.35 s input
 buffer carries presses across recovery frames, and the HUD names the armed lock
 strength, confirms each started move, and explains rejected presses
 (`MatchHUD.TryShowActionFeedback`, `ControlPromptLogic.RejectionText`). All

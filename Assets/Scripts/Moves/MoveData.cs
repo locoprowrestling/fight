@@ -95,6 +95,7 @@ namespace LoCoFight
         public string crowdReactionEventName;
 
         [Header("Animation")]
+        public MoveChoreographyData choreography;
         public string animationStateName;
         public string placeholderPoseName = "strike";
         public float animationSpeed = 1f;

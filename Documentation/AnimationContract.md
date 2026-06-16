@@ -63,3 +63,22 @@ produce actionable editor validation instead of silently changing gameplay.
 The files under `examplecode/` are informational references only. They are not
 production source, do not compile with the game, and must not become a second
 gameplay authority.
+
+## Round 3 Choreography
+
+`MoveChoreographyData` adds presentation metadata for paired specials and
+finishers:
+
+- participant mode and start formation;
+- attacker and defender semantic state keys;
+- normalized setup/contact/lift/carry/rotation/impact/hold phases;
+- defender presentation exit pose and optional pin/submission follow-up;
+- reference status for moves that still require direct visual confirmation.
+
+`PairedMoveCoordinator` may align gameplay roots once at the validated start of
+a move and start both presentation roles. It does not apply damage, spend
+resources, choose outcomes, or advance gameplay phases. The procedural
+animation driver maps choreography to paired lift, impact, and hold poses; a
+future Animator driver resolves the same keys to humanoid clips.
+
+Wave 1 animation briefs live in `Documentation/AnimationBriefs/Round03/`.

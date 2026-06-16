@@ -11,30 +11,18 @@ namespace LoCoFight
         readonly InputBuffer _buffer = new InputBuffer();
         readonly LegacyPlayerInputSource _input = new LegacyPlayerInputSource();
         readonly PressTracker _controlTracker = new PressTracker();
-
-        // Tie-up strength, resolved once per lock from the initiating press.
-        bool _powerLock;
-        bool _lockStrengthResolved;
-        float _lockInitiatedAt;
-        const float LockStrengthHoldTime = 0.28f;
+        readonly GrappleInputIntent _grappleIntent = new GrappleInputIntent();
+        float _grappleIntentExpiresAt;
 
         public const float DownedControlRange = 1.4f; // matches TryPin/TrySubmission reach
 
-        /// True when the current lock is armed with the power (strong) set.
-        public bool PowerLockArmed =>
-            _lockStrengthResolved && _powerLock && _core != null &&
-            _core.Combat.InGrappleLockAsAttacker;
-
         public string DebugControlPhase =>
-            _controlTracker.IsDown
+            _grappleIntent.Active
+                ? $"grapple {_grappleIntent.Direction} pending={_grappleIntent.PendingAction}"
+                : _controlTracker.IsDown
                 ? $"down {_controlTracker.HeldDuration:0.00}s committed={_controlTracker.Committed}"
                 : "up";
 
-        void ResolveLockStrength(bool power)
-        {
-            _powerLock = power;
-            _lockStrengthResolved = true;
-        }
         Camera _camera;
         PlayerInputDevice _lastDevice = PlayerInputDevice.Keyboard;
 
@@ -148,6 +136,13 @@ namespace LoCoFight
 
         void HandleMovement(PlayerInputFrame frame)
         {
+            if (ShouldReserveMovementForGrapple(frame))
+            {
+                _core.Motor.SetMoveInput(Vector3.zero, false);
+                _core.Motor.FaceOpponent();
+                return;
+            }
+
             Vector3 input = new Vector3(frame.Move.x, 0f, frame.Move.y);
 
             // Camera-relative movement.
@@ -179,6 +174,17 @@ namespace LoCoFight
             }
         }
 
+        bool ShouldReserveMovementForGrapple(PlayerInputFrame frame)
+        {
+            if (_core.Combat.InGrappleLockAsAttacker) return false;
+            bool downedNear = _core.Opponent != null &&
+                              _core.Opponent.States.IsDowned &&
+                              _core.DistanceToOpponent() <= DownedControlRange;
+            bool inAcquisitionRange = _core.DistanceToOpponent() <= WrestlerCombat.GrappleRange;
+            return !downedNear && inAcquisitionRange &&
+                   (frame.ControlPressed || _grappleIntent.Active);
+        }
+
         void HandleCombat(PlayerInputFrame frame)
         {
             bool inLock = _core.Combat.InGrappleLockAsAttacker;
@@ -205,30 +211,40 @@ namespace LoCoFight
                                        : _core.Combat.TryLightStrike()));
             }
 
-            // Grapple button. Tie-up starts on press; the press that started
-            // it decides the strength: released before the wrestlers lock =
-            // QUICK set, still held as the lock forms = STRONG (power) set.
-            // Inside the lock, K + held direction fires the armed set's move
-            // instantly on press — no second timing decision.
             if (inLock)
             {
-                if (!_lockStrengthResolved)
+                MoveDirection direction = ResolveGrappleDirection(frame);
+                if (!_grappleIntent.Active && frame.ControlPressed)
                 {
-                    if (!frame.ControlHeld)
-                        ResolveLockStrength(power: false);
-                    else if (Time.time - _lockInitiatedAt >= LockStrengthHoldTime)
-                        ResolveLockStrength(power: true);
+                    _grappleIntent.Begin(
+                        direction,
+                        frame.ControlHeld,
+                        Time.deltaTime,
+                        PlayerInputLogic.HoldThreshold);
                 }
-                if (frame.ControlPressed)
+                else
                 {
-                    if (!_lockStrengthResolved) ResolveLockStrength(power: false);
-                    MoveDirection direction = ResolveGrappleDirection(frame);
-                    if (_powerLock) _core.Combat.TryPowerGrappleFromLock(direction);
-                    else _core.Combat.TryQuickGrappleFromLock(direction);
+                    _grappleIntent.Advance(
+                        direction,
+                        frame.ControlHeld,
+                        frame.ControlReleased,
+                        Time.deltaTime,
+                        PlayerInputLogic.HoldThreshold);
+                }
+
+                MoveDirection intentDirection = _grappleIntent.Direction;
+                GrapplePressAction grappleAction = _grappleIntent.ConsumeAction();
+                if (grappleAction != GrapplePressAction.None)
+                {
+                    if (grappleAction == GrapplePressAction.Power)
+                        _core.Combat.TryPowerGrappleFromLock(intentDirection);
+                    else
+                        _core.Combat.TryQuickGrappleFromLock(intentDirection);
                 }
             }
             else if (downedNear)
             {
+                _grappleIntent.Cancel();
                 // Pin/submission keep tap/hold: deliberate, low-frequency
                 // actions where a beat of deliberation reads correctly.
                 PressKind controlKind = _controlTracker.Update(
@@ -239,15 +255,39 @@ namespace LoCoFight
                 else if (controlKind == PressKind.HoldCommitted)
                     _core.Combat.TrySubmission();
             }
-            else if (frame.ControlPressed)
+            else
             {
-                _controlTracker.Reset(); // consumed on press
-                _lockStrengthResolved = false;
-                _powerLock = false;
-                _lockInitiatedAt = Time.time;
-                _buffer.Buffer(PlayerAction.Grapple,
-                    () => _core.Combat.TryCornerGrapple() ||
-                          _core.Combat.TryGrappleAttempt());
+                MoveDirection direction = ResolveGrappleDirection(frame);
+                if (frame.ControlPressed)
+                {
+                    _controlTracker.Reset();
+                    _grappleIntent.Begin(
+                        direction,
+                        frame.ControlHeld,
+                        Time.deltaTime,
+                        PlayerInputLogic.HoldThreshold);
+                    _grappleIntentExpiresAt =
+                        Time.time + InputBuffer.DefaultWindow + PlayerInputLogic.HoldThreshold;
+                    _buffer.Buffer(PlayerAction.Grapple,
+                        () => _core.Combat.TryCornerGrapple() ||
+                              _core.Combat.TryGrappleAttempt());
+
+                    if (_core.Combat.Role == GrappleRole.Defender ||
+                        (!_core.Combat.InGrappleLockAsAttacker &&
+                         !_core.States.Profile.canGrapple))
+                        _grappleIntent.Cancel();
+                }
+                else if (_grappleIntent.Active)
+                {
+                    _grappleIntent.Advance(
+                        direction,
+                        frame.ControlHeld,
+                        frame.ControlReleased,
+                        Time.deltaTime,
+                        PlayerInputLogic.HoldThreshold);
+                    if (Time.time > _grappleIntentExpiresAt)
+                        _grappleIntent.Cancel();
+                }
             }
 
             if (frame.ReversalPressed)
@@ -278,8 +318,7 @@ namespace LoCoFight
         {
             _buffer.Clear();
             _controlTracker.Reset();
-            _lockStrengthResolved = false;
-            _powerLock = false;
+            _grappleIntent.Cancel();
             if (_core != null) _core.Motor.SetMoveInput(Vector3.zero, false);
             if (_core != null && SubmissionSystem.Instance != null)
                 SubmissionSystem.Instance.ClearDefenderCrawlIntent(_core);

@@ -70,6 +70,7 @@ MonoBehaviour:
   hitEventName: 
   impactVfxEventName: 
   crowdReactionEventName: 
+  choreography: {fileID: 0}
   animationStateName: 
   placeholderPoseName: chop
   animationSpeed: 1

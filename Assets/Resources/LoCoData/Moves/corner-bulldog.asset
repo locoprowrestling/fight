@@ -70,6 +70,7 @@ MonoBehaviour:
   hitEventName: 
   impactVfxEventName: 
   crowdReactionEventName: 
+  choreography: {fileID: 11400000, guid: bf432876547ef4d0eaf78e9b3f4421d9, type: 2}
   animationStateName: 
   placeholderPoseName: corner
   animationSpeed: 1

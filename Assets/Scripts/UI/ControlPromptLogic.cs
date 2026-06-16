@@ -8,7 +8,7 @@ namespace LoCoFight
     {
         /// Advisory "close enough" distance for prompts. Family ranges vary
         /// 1.25–1.35 in move data; validation remains the authority.
-        public const float PromptRange = 1.6f;
+        public const float PromptRange = WrestlerCombat.GrappleRange;
 
         const string MoveCloser = " — move closer";
 
@@ -40,16 +40,13 @@ namespace LoCoFight
             CombatContext context,
             bool opponentDownedInRange,
             bool inRange,
-            bool strongLock,
             PlayerInputDevice device)
         {
             string label;
             bool rangeMatters = true;
             if (context == CombatContext.GrappleLock)
             {
-                label = strongLock
-                    ? "+direction: POWER Grapple"
-                    : "+direction: Quick Grapple";
+                label = "+direction: tap Quick / hold POWER";
                 rangeMatters = false;
             }
             else if (context == CombatContext.GroundUpper || context == CombatContext.GroundLower ||
@@ -64,7 +61,7 @@ namespace LoCoFight
             }
             else
             {
-                label = "Tie-up (keep held: STRONG)";
+                label = "Grapple (tap Quick / hold POWER)";
                 rangeMatters = false;
             }
             string suffix = rangeMatters && !inRange ? MoveCloser : "";

@@ -53,4 +53,73 @@ namespace LoCoFight
             _heldDuration = 0f;
         }
     }
+
+    /// Carries one physical grapple press from tie-up acquisition through the
+    /// lock. Timing may resolve before the lock forms, so the action remains
+    /// pending until the combat controller consumes it.
+    public class GrappleInputIntent
+    {
+        readonly PressTracker _press = new PressTracker();
+
+        public bool Active { get; private set; }
+        public MoveDirection Direction { get; private set; }
+        public GrapplePressAction PendingAction { get; private set; }
+
+        public void Begin(
+            MoveDirection direction,
+            bool held,
+            float deltaTime,
+            float holdThreshold)
+        {
+            Cancel();
+            Active = true;
+            Direction = direction;
+            Resolve(_press.Update(
+                pressed: true,
+                held: held,
+                released: false,
+                deltaTime,
+                holdThreshold));
+        }
+
+        public void Advance(
+            MoveDirection direction,
+            bool held,
+            bool released,
+            float deltaTime,
+            float holdThreshold)
+        {
+            if (!Active) return;
+            if (PendingAction == GrapplePressAction.None &&
+                direction != MoveDirection.Neutral)
+                Direction = direction;
+            Resolve(_press.Update(
+                pressed: false,
+                held: held,
+                released: released,
+                deltaTime,
+                holdThreshold));
+        }
+
+        public GrapplePressAction ConsumeAction()
+        {
+            GrapplePressAction action = PendingAction;
+            if (action != GrapplePressAction.None) Cancel();
+            return action;
+        }
+
+        public void Cancel()
+        {
+            _press.Reset();
+            Active = false;
+            Direction = MoveDirection.Neutral;
+            PendingAction = GrapplePressAction.None;
+        }
+
+        void Resolve(PressKind pressKind)
+        {
+            if (PendingAction != GrapplePressAction.None) return;
+            PendingAction = PlayerInputLogic.ResolveGrapplePress(pressKind);
+        }
+    }
 }

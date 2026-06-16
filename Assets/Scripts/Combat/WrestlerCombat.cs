@@ -11,7 +11,7 @@ namespace LoCoFight
     {
         // Ranges scale with the 1.25x wrestler bodies (capsules now meet at
         // ~0.88 apart; pre-scale margins made grapples nearly untouchable).
-        public const float GrappleRange = 1.55f;
+        public const float GrappleRange = 1.8f;
         public const float StrikeRange = 1.65f;
         public const float GrappleTieWindow = 0.2f;
 
@@ -21,6 +21,7 @@ namespace LoCoFight
         public MoveData CurrentMove { get; private set; }
         public float MoveElapsed { get; private set; }
         public string LastMoveName { get; private set; } = "-";
+        public string LastPairedPresentationId { get; private set; } = "-";
         public GrappleRole Role { get; private set; } = GrappleRole.None;
         public float GrappleLockStartTime { get; private set; }
         public float LastGrappleAttemptTime { get; private set; } = -99f;
@@ -125,7 +126,15 @@ namespace LoCoFight
 
             _core.States.Set(WrestlerState.StrikeActive, move.activeTime + 0.1f);
             bool hit = CheckHit(move);
-            if (hit) ApplyHit(move);
+            if (hit)
+            {
+                PairedMoveCoordinator.BeginPresentation(
+                    _core,
+                    Opp,
+                    move.choreography,
+                    move.animationSpeed);
+                ApplyHit(move);
+            }
             else Debug.Log($"[Move] {move.displayName} missed");
 
             yield return Phase(move.activeTime);
@@ -760,7 +769,19 @@ namespace LoCoFight
 
             _core.States.Set(WrestlerState.GrappleMoveStartup, total + 0.5f);
             defender.States.Set(WrestlerState.Stunned, total + 0.2f);
-            _core.Anim.PlayMove(move.animationStateName, move.placeholderPoseName, move.animationSpeed);
+            bool paired = PairedMoveCoordinator.BeginPresentation(
+                _core,
+                defender,
+                move.choreography,
+                move.animationSpeed);
+            LastPairedPresentationId = paired && move.choreography != null
+                ? move.choreography.presentationId
+                : "-";
+            if (!paired)
+                _core.Anim.PlayMove(
+                    move.animationStateName,
+                    move.placeholderPoseName,
+                    move.animationSpeed);
             Debug.Log($"[Move] {_core.DisplayName} starts {move.displayName}");
 
             yield return Phase(startup);
@@ -970,6 +991,11 @@ namespace LoCoFight
             if (!HitboxProbe.InRange(transform, Opp.transform, 1.4f)) return false;
             if (!_core.States.Profile.canAttack) return false;
             if (!_core.Stats.SpendStamina(move.staminaCost)) return false;
+            PairedMoveCoordinator.BeginPresentation(
+                _core,
+                Opp,
+                move.choreography,
+                move.animationSpeed);
             return SubmissionSystem.Instance != null && SubmissionSystem.Instance.TryStart(
                 _core, Opp, move.submissionPressurePerSecond, move.damagePerSecond, move.displayName);
         }

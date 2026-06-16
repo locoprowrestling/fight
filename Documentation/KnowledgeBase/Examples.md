@@ -160,6 +160,71 @@ Weight class scales mesh x/z per part (`BulkFor`) and the root _uniformly_
 (`HeightFor`). A non-uniform root scale shears rotated child joints — if a bent
 elbow ever looks smeared, look for a non-uniform scale upstream.
 
+## Worked example: adapting Round 1 animation references
+
+_2026-06-11 —
+[runtime facade](../../examplecode/round%2001/WrestlerAnimationController.cs),
+[controller builder](../../examplecode/round%2001/WrestlerAnimatorBuilder.cs),
+and
+[clip manifest](../../examplecode/round%2001/WrestlerAnimationManifest.md)_
+
+The sample is a planning/reference pack, not drop-in game code. Its useful
+parts and required adaptations are:
+
+| Source pattern | Decision for this repo | Reason |
+| --- | --- | --- |
+| One component owns all `Animator.Set*` calls | **Keep** inside `AnimatorAnimationDriver : IAnimationDriver` | Preserves the existing presentation boundary and makes parameter changes local. |
+| `Animator.StringToHash` for stable parameters | **Keep**, plus startup/editor validation | Efficient and typo-resistant after the names have been validated. |
+| An editor script creates parameters, states, and transitions | **Adapt** to `Assets/Scripts/Editor/`, the LoCo menu, and a generated-only output path | Reproducible setup is useful; overwriting an artist-edited controller is not. |
+| A clip manifest records state name, asset name, loop, motion, duration, and intent | **Keep**, expanded with attacker/defender roles, sync markers, result states, and source/license | Turns animation sourcing into a reviewable asset contract. |
+| The animation component owns momentum, reversal success, submissions, pins, and match results | **Reject** | Existing gameplay systems already own those decisions. |
+| Animation Events activate hitboxes, submission ticks, move completion, or referee counts | **Reject** for gameplay; **keep** for audio/VFX/camera cues | `MoveData` and combat coroutines own authoritative timing. |
+| Root motion drives locomotion, grapples, rebounds, and finishers | **Reject by default** | `WrestlerMotor`, combat snapping, and special executors own gameplay-root movement. |
+| One clip/state represents a grapple move | **Expand to a synchronized pair** | Both wrestlers need compatible tracks, anchors, markers, interruption, and result poses. |
+| A flat state hard-coded for every moveset slot | **Use only as an early scaffold** | Production states may be generated from semantic move ids, but the gameplay moveset must not be encoded as fixed Animator slot choices. |
+
+Example adaptation for a powerbomb:
+
+1. `MoveData` remains authoritative for startup, impact, recovery, damage,
+   stamina, downed result, and interruption.
+2. The animation manifest defines `powerbomb_attacker` and
+   `powerbomb_defender`, a shared duration, front-grapple anchors, and
+   presentation markers such as `impact`.
+3. Combat snaps both gameplay roots into a valid pair before playback, then
+   calls each wrestler's `IAnimationDriver`.
+4. The driver plays or crossfades both clips at a speed that fits
+   `MoveData.TotalDuration`; it does not wait for clip completion.
+5. The combat coroutine applies the hit on its active phase. An `impact`
+   animation event may add sound, VFX, or camera punch, but cannot apply the
+   hit again.
+
+## Worked example: adapting Round 2 move overrides
+
+_2026-06-11 —
+[move metadata](../../examplecode/round%2002/WrestlerMove.cs),
+[per-wrestler moveset](../../examplecode/round%2002/WrestlerMoveSet.cs),
+[slot controller builder](../../examplecode/round%2002/WrestlerAnimatorBuilder.cs),
+and [move library](../../examplecode/round%2002/WrestlerMoveLibrary.md)_
+
+Round 2 solves a real content problem: multiple wrestlers can share one
+Animator graph while replacing move clips per character. The implementation
+shape needs adaptation:
+
+| Round 2 pattern | Decision for this repo | Adaptation |
+| --- | --- | --- |
+| `AnimatorOverrideController` per wrestler | **Keep** | Create and apply it once when binding a real wrestler visual. |
+| Placeholder clips as override keys | **Keep** | Generate stable semantic keys from `moveId + participant role`, not directional slot numbers. |
+| `WrestlerMoveSet` owns 20 gameplay slots | **Reject** | `MoveDatabase` and `DirectionalMoveSet` already own legal move selection. |
+| `WrestlerMove` duplicates duration, momentum, knockdown, and orientation | **Reject** | Keep those fields in `MoveData`; animation profiles contain clips and presentation metadata only. |
+| `LastExecutedMove` lets gameplay read animation metadata | **Reject** | Gameplay already knows the current `MoveData`; presentation must remain downstream. |
+| Camera shake event from animation completion | **Adapt** | Route presentation-only markers to `FeelSystem`; impact tier still comes from resolved combat. |
+| Detailed body-mechanics catalogue | **Keep** | Convert each useful entry into an animation brief keyed to the existing move id and paired roles. |
+
+For the current `body-slam` vertical slice, the stable bindings should be
+`body-slam/attacker` and `body-slam/defender`. Every wrestler may point those
+keys at different clips, while both bindings still use the same
+`MoveData.TotalDuration`, impact phase, downed result, and lift validation.
+
 ## Offline compile check
 
 No CLI build exists, and Unity batch mode is unsafe while the editor is open.

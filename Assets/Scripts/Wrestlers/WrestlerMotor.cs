@@ -97,6 +97,7 @@ namespace LoCoFight
             // so starts, stops, and turns read as footwork rather than glide.
             float rate = motion.sqrMagnitude >= _smoothedMotion.sqrMagnitude ? Acceleration : Deceleration;
             _smoothedMotion = Vector3.MoveTowards(_smoothedMotion, motion, rate * Time.deltaTime);
+            _smoothedMotion = ResolveStateMotion(_smoothedMotion, profile.canMove);
 
             float runSpeedRef = _core.Stats.Data != null ? _core.Stats.Data.runSpeed : 5.5f;
             CurrentSpeedNormalized = _smoothedMotion.magnitude / Mathf.Max(0.1f, runSpeedRef);
@@ -106,6 +107,9 @@ namespace LoCoFight
 
             ApplyGravityAndMove(_smoothedMotion);
         }
+
+        public static Vector3 ResolveStateMotion(Vector3 smoothedMotion, bool canMove) =>
+            canMove ? smoothedMotion : Vector3.zero;
 
         void ApplyGravityAndMove(Vector3 horizontal)
         {

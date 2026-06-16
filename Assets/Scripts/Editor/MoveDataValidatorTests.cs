@@ -211,5 +211,89 @@ namespace LoCoFight.EditorTests
 
             Assert.That(MoveDataValidator.ValidateWarnings(move, null), Is.Empty);
         }
+
+        [Test]
+        public void Validate_LiftChoreographyRequiresLiftValidation()
+        {
+            var move = WellFormedMove("lift-choreography");
+            move.choreography = Choreography(
+                DefenderExitPose.FaceUp,
+                AnimationFollowUp.None,
+                AnimationPhase.Lift,
+                AnimationPhase.Impact);
+
+            var messages = MoveDataValidator.Validate(move, null);
+
+            Assert.That(messages, Has.Some.Contains("lift choreography"));
+        }
+
+        [Test]
+        public void Validate_PinChoreographyRequiresFaceUpExit()
+        {
+            var move = WellFormedMove("pin-choreography");
+            move.canPinAfter = true;
+            move.choreography = Choreography(
+                DefenderExitPose.FaceDown,
+                AnimationFollowUp.PinWindow,
+                AnimationPhase.Setup,
+                AnimationPhase.Impact);
+
+            var messages = MoveDataValidator.Validate(move, null);
+
+            Assert.That(messages, Has.Some.Contains("pin follow-up"));
+        }
+
+        [Test]
+        public void Validate_DowningMoveRejectsStandingExit()
+        {
+            var move = WellFormedMove("standing-exit");
+            move.causesDownedState = true;
+            move.choreography = Choreography(
+                DefenderExitPose.Standing,
+                AnimationFollowUp.None,
+                AnimationPhase.Setup,
+                AnimationPhase.Impact);
+
+            var messages = MoveDataValidator.Validate(move, null);
+
+            Assert.That(messages, Has.Some.Contains("downing move"));
+        }
+
+        static MoveData WellFormedMove(string id)
+        {
+            var move = ScriptableObject.CreateInstance<MoveData>();
+            move.moveId = id;
+            move.startupTime = 0.2f;
+            move.activeTime = 0.1f;
+            move.recoveryTime = 0.3f;
+            move.reversalWindowStart = 0.05f;
+            move.reversalWindowEnd = 0.2f;
+            return move;
+        }
+
+        static MoveChoreographyData Choreography(
+            DefenderExitPose exit,
+            AnimationFollowUp followUp,
+            params AnimationPhase[] phases)
+        {
+            var data = ScriptableObject.CreateInstance<MoveChoreographyData>();
+            data.presentationId = "test-choreography";
+            data.participantMode = AnimationParticipantMode.Paired;
+            data.attackerStateKey = "test/attacker";
+            data.defenderStateKey = "test/defender";
+            data.defenderExitPose = exit;
+            data.followUp = followUp;
+            float step = 1f / phases.Length;
+            for (int i = 0; i < phases.Length; i++)
+            {
+                data.phases.Add(new AnimationPhaseDefinition
+                {
+                    phase = phases[i],
+                    normalizedStart = i * step,
+                    normalizedEnd = (i + 1) * step
+                });
+            }
+            return data;
+        }
     }
 }

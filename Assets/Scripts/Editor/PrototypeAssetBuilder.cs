@@ -30,15 +30,26 @@ namespace LoCoFight.EditorTools
                 foreach (string warning in MoveDataValidator.ValidateWarnings(move, set.moveDatabase))
                     Debug.LogWarning($"[MoveData] {warning}");
             }
+            foreach (MoveChoreographyData choreography in set.choreographies)
+            {
+                foreach (string error in MoveChoreographyValidator.Validate(choreography))
+                {
+                    Debug.LogError($"[Choreography] {error}");
+                    return;
+                }
+            }
 
             EnsureFolder(Root);
             EnsureFolder($"{Root}/Moves");
+            EnsureFolder($"{Root}/Choreography");
             EnsureFolder($"{Root}/Specials");
             EnsureFolder($"{Root}/Traits");
             EnsureFolder($"{Root}/Stats");
             EnsureFolder($"{Root}/Wrestlers");
             EnsureFolder($"{Root}/Roster");
 
+            foreach (var c in set.choreographies)
+                Save(c, $"{Root}/Choreography/{c.name}.asset");
             foreach (var m in set.moves) Save(m, $"{Root}/Moves/{m.name}.asset");
             Save(set.moveDatabase, $"{Root}/StarterMoveDatabase.asset");
             foreach (var s in set.specials) Save(s, $"{Root}/Specials/{s.name}.asset");

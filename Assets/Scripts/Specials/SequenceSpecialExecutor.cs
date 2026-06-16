@@ -122,6 +122,10 @@ namespace LoCoFight
             self.transform.position = target.transform.position +
                 MathUtil.FlatDirection(target.transform.position, self.transform.position) * 0.9f;
             self.Motor.FaceOpponent();
+            PairedMoveCoordinator.BeginPresentation(
+                self,
+                target,
+                d.choreography);
 
             for (int i = 0; i < d.comboSteps.Count; i++)
             {
@@ -137,7 +141,10 @@ namespace LoCoFight
                 ctx.Controller.ReversalWindowOpen = false;
                 target.Stats.ApplyDamage(step.Damage, self);
                 target.Stats.DrainStamina(step.StaminaDamage);
-                self.Anim.PlayMove("", step.PoseName);
+                self.Anim.PlayMove(step.AttackerStateKey, step.PoseName);
+                target.Anim.PlayMove(
+                    step.DefenderStateKey,
+                    "paired-impact-defender");
                 Debug.Log($"[Special] 6-7 Moves of Doom step {i + 1}: {step.StepName}");
 
                 if (step.CausesDowned)

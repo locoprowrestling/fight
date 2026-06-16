@@ -45,6 +45,16 @@ namespace LoCoFight.EditorTests
             Assert.That(result, Is.False);
         }
 
+        [TestCase(PressKind.None, "None")]
+        [TestCase(PressKind.Tap, "Quick")]
+        [TestCase(PressKind.HoldCommitted, "Power")]
+        public void ResolveGrapplePress_MapsTapAndHoldToDifferentMoveFamilies(
+            PressKind pressKind,
+            string expected)
+        {
+            Assert.That(Invoke("ResolveGrapplePress", pressKind).ToString(), Is.EqualTo(expected));
+        }
+
         static string ResolveDirection(Vector2 move, Vector3 camForward, Vector3 attackerForward)
         {
             Vector3 camRight = Vector3.Cross(Vector3.up, camForward);

@@ -58,9 +58,9 @@
       buffer) instead of vanishing; Cornered (~2 s) and RopeStaggered (~1.8 s)
       windows are long enough to read the prompt and act.
 - [ ] K ties up on press, including OUT OF A RUN (lunging tie-up); a failed attempt always says why ("Too far away", "Can't grab them right now", "Out-wrestled in the tie-up!"). K at close range ties up on press. Release K before the wrestlers lock =
-      QUICK set; keep K held through the lock-up = STRONG set (the lock prompt
-      names the armed set). In the lock, pressing K (+ held direction) fires the
-      armed set's move instantly; power grapples knock down.
+      grapple. One K press carries through the tie-up: release before the
+      threshold for the QUICK set or keep holding for the POWER set; power
+      grapples knock down.
 - [ ] In a lock, holding a movement direction changes the selected grapple (F1
       shows dir/family/fallback): quick set — neutral Knee Lift, forward
       Snapmare, backward Headlock Takedown, lateral Snap Arm Drag; STRONG set —
@@ -70,7 +70,9 @@
 - [ ] A direction with no assigned move falls back to neutral (F1
       fallback=True); lift failures and lock timeouts behave exactly as before;
       the CPU also uses directional grapples.
-- [ ] A single K press in a lock fires exactly one follow-up from the armed set
+- [ ] A short K press from standing acquires the tie-up and fires exactly one quick grapple
+- [ ] A held K press from standing acquires the tie-up and fires exactly one power grapple
+- [ ] Holding a direction with K selects the authored bucket without moving the attacker out of the lock
       and spends stamina once; the initiating press never double-fires a lock
       move; the lock lasts ~2.5 s, never racing you.
 - [ ] When the CPU initiates a lockup, it follows up with a grapple move within
@@ -182,6 +184,15 @@
 - [ ] A slammed wrestler bounces off the mat once and settles (gameplay position
       unchanged); F1 shows the last impact (tier/downs) and the feel-system
       toggle state.
+- [ ] Body Slam, Vertical Drop, Backbreaker, Side Headlock Takedown, Shoulder
+      Throw, and Corner Bulldog align both wrestlers and play distinct attacker
+      and defender procedural poses without changing damage timing.
+- [ ] Paired lift moves visibly raise and drop the defender; paired impact moves
+      sell the fall; submissions enter complementary apply/defender poses.
+- [ ] Interrupting or reversing a paired move leaves both wrestlers in valid
+      gameplay states with no stuck grapple role or scripted control.
+- [ ] The twelve Round 3 choreography assets validate, and the animation briefs
+      match their start formation, phase order, and exit pose.
 
 ## Pacing (move tiers)
 

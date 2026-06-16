@@ -43,7 +43,9 @@ namespace LoCoFight
         {
             None, Punch, Kick, GrappleReach, SpecialFlourish, HitRecoil,
             GroundSlam, CornerAssault,
-            OverheadSlam, SnapThrow, Chop, Lariat, Stomp, MatBounce
+            OverheadSlam, SnapThrow, Chop, Lariat, Stomp, MatBounce,
+            PairedLiftDefender, PairedImpactDefender,
+            PairedHoldAttacker, PairedHoldDefender
         }
         ActionKind _action = ActionKind.None;
         float _actionStart;
@@ -102,6 +104,24 @@ namespace LoCoFight
                 case "special":
                     Flash(new Color(1f, 0.6f, 0f));
                     StartAction(ActionKind.SpecialFlourish, 0.9f);
+                    break;
+                case "paired-lift-attacker":
+                    StartAction(ActionKind.OverheadSlam, 1.1f / Mathf.Max(0.5f, speed));
+                    break;
+                case "paired-lift-defender":
+                    StartAction(ActionKind.PairedLiftDefender, 1.1f / Mathf.Max(0.5f, speed));
+                    break;
+                case "paired-impact-attacker":
+                    StartAction(ActionKind.SnapThrow, 0.85f / Mathf.Max(0.5f, speed));
+                    break;
+                case "paired-impact-defender":
+                    StartAction(ActionKind.PairedImpactDefender, 0.85f / Mathf.Max(0.5f, speed));
+                    break;
+                case "paired-hold-attacker":
+                    StartAction(ActionKind.PairedHoldAttacker, 0.8f / Mathf.Max(0.5f, speed));
+                    break;
+                case "paired-hold-defender":
+                    StartAction(ActionKind.PairedHoldDefender, 0.8f / Mathf.Max(0.5f, speed));
                     break;
             }
         }
@@ -761,6 +781,62 @@ namespace LoCoFight
                     p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-20f, 0f, 0f), w);
                     p.spine.x += 30f * w * drive;
                     p.pelvis.x += 10f * w * drive;
+                    break;
+                }
+
+                case ActionKind.PairedLiftDefender:
+                {
+                    float lift = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / 0.35f));
+                    float drop = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 0.62f) / 0.22f));
+                    p.root = Vector3.Lerp(p.root, new Vector3(-82f, 0f, 0f), w * lift);
+                    p.lift += (1.15f * lift - 1.05f * drop) * w;
+                    p.shift += 0.25f * lift * w;
+                    p.lShoulder = Vector3.Lerp(p.lShoulder, new Vector3(-28f, 0f, -18f), w);
+                    p.rShoulder = Vector3.Lerp(p.rShoulder, new Vector3(-28f, 0f, 18f), w);
+                    p.lHip = Vector3.Lerp(p.lHip, new Vector3(-18f, 0f, 0f), w);
+                    p.rHip = Vector3.Lerp(p.rHip, new Vector3(-18f, 0f, 0f), w);
+                    p.lKnee = Vector3.Lerp(p.lKnee, new Vector3(28f, 0f, 0f), w);
+                    p.rKnee = Vector3.Lerp(p.rKnee, new Vector3(28f, 0f, 0f), w);
+                    break;
+                }
+
+                case ActionKind.PairedImpactDefender:
+                {
+                    float fall = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((t - 0.2f) / 0.48f));
+                    p.root = Vector3.Lerp(p.root, new Vector3(-88f, 0f, 0f), w * fall);
+                    p.lift += 0.14f * fall * w;
+                    p.shift += 0.82f * fall * w;
+                    p.spine.x += 22f * (1f - fall) * w;
+                    p.neck.x -= 18f * w;
+                    break;
+                }
+
+                case ActionKind.PairedHoldAttacker:
+                {
+                    p.spine = Vector3.Lerp(p.spine, new Vector3(32f, 0f, 0f), w);
+                    p.lShoulder = Vector3.Lerp(p.lShoulder, new Vector3(-60f, 0f, -10f), w);
+                    p.rShoulder = Vector3.Lerp(p.rShoulder, new Vector3(-60f, 0f, 10f), w);
+                    p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-88f, 0f, 0f), w);
+                    p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-88f, 0f, 0f), w);
+                    p.lHip = Vector3.Lerp(p.lHip, new Vector3(-82f, 0f, 0f), w);
+                    p.rHip = Vector3.Lerp(p.rHip, new Vector3(-82f, 0f, 0f), w);
+                    p.lKnee = Vector3.Lerp(p.lKnee, new Vector3(96f, 0f, 0f), w);
+                    p.rKnee = Vector3.Lerp(p.rKnee, new Vector3(96f, 0f, 0f), w);
+                    p.lift -= 0.36f * w;
+                    break;
+                }
+
+                case ActionKind.PairedHoldDefender:
+                {
+                    BodyPose hold = LyingPose(faceDown: false);
+                    p.root = Vector3.Lerp(p.root, hold.root, w);
+                    p.lift = Mathf.Lerp(p.lift, hold.lift, w);
+                    p.shift = Mathf.Lerp(p.shift, hold.shift, w);
+                    p.lShoulder = Vector3.Lerp(p.lShoulder, new Vector3(-55f, 0f, -20f), w);
+                    p.rShoulder = Vector3.Lerp(p.rShoulder, new Vector3(-55f, 0f, 20f), w);
+                    p.lElbow = Vector3.Lerp(p.lElbow, new Vector3(-42f, 0f, 0f), w);
+                    p.rElbow = Vector3.Lerp(p.rElbow, new Vector3(-42f, 0f, 0f), w);
+                    p.lKnee = Vector3.Lerp(p.lKnee, new Vector3(45f, 0f, 0f), w);
                     break;
                 }
             }

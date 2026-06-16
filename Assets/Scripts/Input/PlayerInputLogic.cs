@@ -2,6 +2,8 @@ using UnityEngine;
 
 namespace LoCoFight
 {
+    public enum GrapplePressAction { None, Quick, Power }
+
     public static class PlayerInputLogic
     {
         /// Single tunable feel constant: presses shorter than this are taps,
@@ -30,6 +32,16 @@ namespace LoCoFight
         public static bool CanProcessGameplay(bool paused, MatchState state)
         {
             return !paused && state == MatchState.Active;
+        }
+
+        public static GrapplePressAction ResolveGrapplePress(PressKind pressKind)
+        {
+            switch (pressKind)
+            {
+                case PressKind.Tap: return GrapplePressAction.Quick;
+                case PressKind.HoldCommitted: return GrapplePressAction.Power;
+                default: return GrapplePressAction.None;
+            }
         }
 
         /// One direction frame: held movement is mapped through the camera

@@ -2,16 +2,21 @@ using UnityEngine;
 
 namespace LoCoFight
 {
-    // Controller layout — verified on 8BitDo SN30 Pro (Nintendo/SNES button layout).
+    // Controller layout — 8BitDo SN30 Pro in DInput mode on macOS.
+    // Shoulder/system buttons follow the SDL gamecontrollerdb mapping for this
+    // pad: L=6, R=7, ZL=8, ZR=9, Select=10, Start=11.
     //
     //   JoystickButton0  → A (right face, red)    — Grapple / Tie-up
     //   JoystickButton2  → B (bottom face, yellow) — Strike
     //   JoystickButton3  → X (top face, blue)      — Special
     //   JoystickButton4  → Y (left face, green)    — Run
-    //   JoystickButton5  → R bumper                — Reversal
+    //   JoystickButton7  → R bumper                — Reversal
     //   JoystickButton6  → L bumper                — Dodge
-    //   JoystickButton7  → Start/+                 — Pause / Reset (try JoystickButton9 if 7 silent)
+    //   JoystickButton11 → Start/+                 — Pause / Reset
     //   Left stick / D-pad                         — Move
+    //
+    // In the editor / dev builds, every joystick button press is logged with
+    // its KeyCode so mappings can be verified against real hardware.
     //
     // Keyboard fallback:
     //   WASD          — Move
@@ -32,6 +37,9 @@ namespace LoCoFight
 
         public PlayerInputFrame ReadFrame()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            LogJoystickButtonPresses();
+#endif
             Vector2 keyboardMove = ReadKeyboardMove();
             Vector2 stickMove    = ReadStickMove();
             Vector2 dpadMove     = ReadDPadMove();
@@ -51,7 +59,8 @@ namespace LoCoFight
             else if (keyboardActivity) _lastDevice = PlayerInputDevice.Keyboard;
 
             bool stickMash = ReadStickMash(stickMove);
-            bool reversal  = Input.GetKeyDown(KeyCode.Space)     || Input.GetKeyDown(KeyCode.JoystickButton5);
+            bool reversal  = Input.GetKeyDown(KeyCode.Space)     || Input.GetKeyDown(KeyCode.JoystickButton7)
+                           || Input.GetKeyDown(KeyCode.JoystickButton5);
             bool dodge     = Input.GetKeyDown(KeyCode.Semicolon) || Input.GetKeyDown(KeyCode.LeftAlt)
                            || Input.GetKeyDown(KeyCode.JoystickButton6);
 
@@ -69,10 +78,8 @@ namespace LoCoFight
                 ReversalPressed= reversal,
                 DodgePressed   = dodge,
                 SpecialPressed = Input.GetKeyDown(KeyCode.L)           || Input.GetKeyDown(KeyCode.JoystickButton3),
-                PausePressed   = Input.GetKeyDown(KeyCode.Escape)      || Input.GetKeyDown(KeyCode.JoystickButton7)
-                              || Input.GetKeyDown(KeyCode.JoystickButton9),
-                ResetPressed   = Input.GetKeyDown(KeyCode.R)           || Input.GetKeyDown(KeyCode.JoystickButton7)
-                              || Input.GetKeyDown(KeyCode.JoystickButton9),
+                PausePressed   = Input.GetKeyDown(KeyCode.Escape)      || Input.GetKeyDown(KeyCode.JoystickButton11),
+                ResetPressed   = Input.GetKeyDown(KeyCode.R)           || Input.GetKeyDown(KeyCode.JoystickButton11),
                 DebugPressed   = Input.GetKeyDown(KeyCode.F1),
                 MashPressed    = reversal || dodge || HasKeyboardMovementPress()
                               || HasGamepadFaceButtonDown() || stickMash,
@@ -168,10 +175,20 @@ namespace LoCoFight
                 || Input.GetKeyDown(KeyCode.JoystickButton7)
                 || Input.GetKeyDown(KeyCode.JoystickButton8)
                 || Input.GetKeyDown(KeyCode.JoystickButton9)
+                || Input.GetKeyDown(KeyCode.JoystickButton10)
+                || Input.GetKeyDown(KeyCode.JoystickButton11)
                 || Input.GetKeyDown(KeyCode.JoystickButton14)
                 || Input.GetKeyDown(KeyCode.JoystickButton15)
                 || Input.GetKeyDown(KeyCode.JoystickButton16)
                 || Input.GetKeyDown(KeyCode.JoystickButton17);
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        static void LogJoystickButtonPresses()
+        {
+            for (var code = KeyCode.JoystickButton0; code <= KeyCode.JoystickButton19; code++)
+                if (Input.GetKeyDown(code)) Debug.Log($"[Input] {code} pressed");
+        }
+#endif
     }
 }

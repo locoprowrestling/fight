@@ -127,6 +127,9 @@ MonoBehaviour:
     Damage: 4
     StaminaDamage: 3
     PoseName: strike
+    AttackerStateKey: 6-7-moves-of-doom/step-1/attacker
+    DefenderStateKey: 6-7-moves-of-doom/step-1/defender
+    PresentationMarker: contact
     ReversalWindow: 1
     CausesDowned: 0
   - StepName: Unforgiving chop
@@ -134,6 +137,9 @@ MonoBehaviour:
     Damage: 4
     StaminaDamage: 2
     PoseName: strike
+    AttackerStateKey: 6-7-moves-of-doom/step-2/attacker
+    DefenderStateKey: 6-7-moves-of-doom/step-2/defender
+    PresentationMarker: contact
     ReversalWindow: 0
     CausesDowned: 0
   - StepName: Back elbow
@@ -141,6 +147,9 @@ MonoBehaviour:
     Damage: 4
     StaminaDamage: 2
     PoseName: strike
+    AttackerStateKey: 6-7-moves-of-doom/step-3/attacker
+    DefenderStateKey: 6-7-moves-of-doom/step-3/defender
+    PresentationMarker: contact
     ReversalWindow: 0
     CausesDowned: 0
   - StepName: Double knee strike
@@ -148,6 +157,9 @@ MonoBehaviour:
     Damage: 5
     StaminaDamage: 3
     PoseName: strike
+    AttackerStateKey: 6-7-moves-of-doom/step-4/attacker
+    DefenderStateKey: 6-7-moves-of-doom/step-4/defender
+    PresentationMarker: contact
     ReversalWindow: 0
     CausesDowned: 0
   - StepName: Leg sweep
@@ -155,6 +167,9 @@ MonoBehaviour:
     Damage: 3
     StaminaDamage: 2
     PoseName: strike
+    AttackerStateKey: 6-7-moves-of-doom/step-5/attacker
+    DefenderStateKey: 6-7-moves-of-doom/step-5/defender
+    PresentationMarker: contact
     ReversalWindow: 0
     CausesDowned: 0
   - StepName: Second double knee
@@ -162,6 +177,9 @@ MonoBehaviour:
     Damage: 5
     StaminaDamage: 3
     PoseName: strike
+    AttackerStateKey: 6-7-moves-of-doom/step-6/attacker
+    DefenderStateKey: 6-7-moves-of-doom/step-6/defender
+    PresentationMarker: contact
     ReversalWindow: 1
     CausesDowned: 0
   - StepName: Head-first mat drive
@@ -169,11 +187,15 @@ MonoBehaviour:
     Damage: 6
     StaminaDamage: 3
     PoseName: strike
+    AttackerStateKey: 6-7-moves-of-doom/step-7/attacker
+    DefenderStateKey: 6-7-moves-of-doom/step-7/defender
+    PresentationMarker: impact
     ReversalWindow: 0
     CausesDowned: 1
   standardMaxHold: 5
   setupDuration: 0.55
   lockDuration: 0.35
+  choreography: {fileID: 11400000, guid: b7c34bf0f74bf471e8f8f56793636804, type: 2}
   animationStateName: 
   placeholderPoseName: special
   moveStartEventName: 

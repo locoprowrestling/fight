@@ -34,7 +34,7 @@ namespace LoCoFight
 
             var pic = mm.Player.GetComponent<PlayerInputController>();
             if (pic != null)
-                GUILayout.Label($"Press: control {pic.DebugControlPhase} | powerLock={pic.PowerLockArmed}");
+                GUILayout.Label($"Press: control {pic.DebugControlPhase}");
             GUILayout.Label($"Prompts: {MatchHUD.CurrentPromptText}");
             GUILayout.Label($"Feel: enabled={FeelSystem.Enabled} last impact: {FeelSystem.LastImpactDebug}");
 

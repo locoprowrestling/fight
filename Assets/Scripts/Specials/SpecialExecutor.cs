@@ -106,6 +106,10 @@ namespace LoCoFight
             self.States.Set(WrestlerState.SpecialStartup);
             self.Motor.SetScriptedControl(true);
             target.Motor.SetScriptedControl(true);
+            PairedMoveCoordinator.BeginPresentation(
+                self,
+                target,
+                d.choreography);
 
             // Grab + snap.
             Vector3 dir = MathUtil.FlatDirection(self.transform.position, target.transform.position);
@@ -221,6 +225,10 @@ namespace LoCoFight
 
             self.States.Set(WrestlerState.SpecialStartup);
             self.Motor.FaceOpponent();
+            PairedMoveCoordinator.BeginPresentation(
+                self,
+                target,
+                d.choreography);
             yield return Wait(ctx, d.setupDuration); // theatrical setup, interruptible
             if (ctx.Aborted) yield break;
             if (!target.States.IsDowned && d.requiresOpponentDowned) yield break;

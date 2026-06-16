@@ -144,6 +144,7 @@ namespace LoCoFight
         public float lockDuration = 0.35f;
 
         [Header("Animation / audio / VFX")]
+        public MoveChoreographyData choreography;
         public string animationStateName;
         public string placeholderPoseName = "special";
         public string moveStartEventName;

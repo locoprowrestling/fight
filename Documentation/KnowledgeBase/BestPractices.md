@@ -63,15 +63,15 @@ API. Never implement an action inside the input controller or the AI directly.
 _Why:_ otherwise one side can do things the other can't, and balance/QA
 assumptions break.
 
-**Input grammar: one press = one move; direction is the only modifier.** The
-AKI lesson (see `research/aki_wrestling_games_development_modding_research_ingestion_pack.md`):
-build depth through state-rich contextual resolution, never through input
-complexity. No tap-vs-hold timing tests on hot-path actions; binary choices
-resolve at *initiation* (hold K through the lock-up = strong tie-up), not as a
-second decision under a timer. Tap/hold is acceptable only for deliberate,
-low-frequency actions (pin vs submission).
-_Why:_ every timing test on a frequent action adds latency, a failure mode,
-and a thing to teach; context already knows which move the player means.
+**Input grammar: one physical press produces at most one move.** Direction is
+the spatial modifier. A standing grapple press must persist through acquisition:
+capture its direction, resolve tap or hold once, and keep the result pending
+until the lock consumes it. Reserve movement input while a target is in grapple
+range, and clear smoothed locomotion whenever the state profile disables
+movement.
+_Why:_ resetting the press at acquisition makes quick/power require an
+undocumented second input; letting approach velocity survive `GrappleLock`
+slides directional attempts out of the paired animation.
 
 **Make sure every action is reachable from the states players actually occupy.**
 The chase is where grapples happen, and `Running` had `grapple: false` — a
@@ -236,6 +236,90 @@ reaches into body parts. _Why:_ real art replaces the placeholder rig without
 touching combat/AI/rules
 ([FutureAssetIntegration.md](../FutureAssetIntegration.md)).
 
+**An Animator driver is the single writer for Animator parameters, not a second
+gameplay controller.** Adapt the facade pattern from
+[WrestlerAnimationController.cs](../../examplecode/round%2001/WrestlerAnimationController.cs)
+inside the future `AnimatorAnimationDriver : IAnimationDriver`: cache parameter
+hashes and keep all `Animator.Set*`/`CrossFade` calls there. Do not copy its
+momentum, reversal, submission, pin, or match-outcome decisions. Those already
+belong to stats, combat, state, and match systems. _Why:_ "single source of
+truth for animation state" is useful only within presentation; applying it to
+gameplay creates two authorities that can disagree.
+
+**The gameplay clock owns animation timing.** Author or speed-scale clips to
+`MoveData.startupTime`, `activeTime`, and `recoveryTime`; never wait on
+`AnimatorStateInfo.length`, normalized time, or a clip-complete callback before
+applying damage or leaving a gameplay state. Animation Events may request
+presentation effects (sound, VFX, camera punch), but may not activate hit
+logic, tick submission pressure, award momentum, or decide a referee count.
+_Why:_ clips must remain replaceable without changing balance, and interrupted
+animations must not leave a gameplay coroutine waiting forever.
+
+**Keep gameplay-root motion off by default.** `WrestlerMotor`,
+`WrestlerCombat`, and special executors own the root transform,
+`CharacterController`, snapping, knockback, rope movement, and scripted
+positioning. Import locomotion and combat clips in-place unless a future
+root-motion bridge explicitly consumes and validates Animator delta movement
+through that authority. Root motion on a visual child may be used only when it
+is reset/recentered and cannot alter gameplay distance. _Why:_ the sample
+[clip manifest](../../examplecode/round%2001/WrestlerAnimationManifest.md) marks many
+traveling clips as root-motion clips, but applying those recommendations
+directly would bypass collision, ring bounds, and combat positioning.
+
+**A wrestling move is an attacker/defender synchronization contract.** Plan
+paired clips with role, facing, start anchors, contact/impact/release markers,
+result pose, interruption behavior, and a shared authored duration. Snap or
+script the gameplay roots before playback; do not rely on two unrelated clips
+to find each other. _Why:_ the sample manifest is a useful clip inventory but
+mostly lists one state per move, which is insufficient for a stable two-person
+grapple.
+
+**Treat Animator names as a validated data contract.** Keep state and parameter
+names centralized, hash parameters once, and validate every non-empty
+`MoveData.animationStateName`/special state against the assigned controller
+before entering Play mode or building. _Why:_ stringly typed missing states
+otherwise degrade into silent fallback animation while gameplay continues.
+
+**Generated Animator Controllers are reproducible scaffolds, not hand-authored
+assets.** Editor builders belong under `Assets/Scripts/Editor/`, use the
+project's **Tools > LoCo Fight Game/** menu, write to an explicitly generated
+path, and must be safe to run repeatedly without silently destroying manual
+clip assignments or transitions. Keep the clip manifest beside the controller
+contract and update both in one change. _Why:_ the example builder is valuable
+for repeatable parameters/states, but its current create-at-path workflow is
+not a safe regeneration pipeline for a controller that artists also edit.
+
+**Override stable presentation slots, not gameplay input slots.** Round 2's
+[slot override pattern](../../examplecode/round%2002/WrestlerMoveSet.cs) is
+useful because one base controller can support wrestler-specific clips, but
+`QuickFront[0]` is not a durable animation identity in this project. Bind clips
+to semantic keys derived from the authoritative move or event plus role, such
+as `body-slam/attacker`, `body-slam/defender`, or `reversal-strong/receiver`.
+_Why:_ directional buckets and movesets can be retuned without invalidating
+presentation assets.
+
+**Per-wrestler animation variation belongs to roster presentation data.** A
+future `WrestlerAnimationProfile` should be referenced by `RosterEntry`, beside
+the view prefab and portrait, while `WrestlerDefinition` and `MoveData` remain
+the shared gameplay configuration. _Why:_ changing Cody's body-slam clip must
+not fork the body-slam's damage, timing, legality, or AI behavior.
+
+**Build and apply clip overrides once per spawned visual.** Create one
+`AnimatorOverrideController` while binding the wrestler prefab, validate every
+replacement against the base controller, retain that controller for the
+wrestler's lifetime, and never rebuild the override map per move or per frame.
+_Why:_ per-action override mutation adds allocations and makes concurrent
+attacker/defender playback difficult to reason about.
+
+**Motion-library descriptions are animation briefs, not move data.** Round 2's
+[move library](../../examplecode/round%2002/WrestlerMoveLibrary.md) usefully
+records grips, weight shifts, body mechanics, landing orientation, and search
+terms. Preserve those details in an animation brief keyed to the existing
+`MoveData.moveId`; do not create a second `WrestlerMove` gameplay asset or copy
+suggested duration, momentum, knockdown, and root-motion values over the
+authoritative data. _Why:_ reference observations help source and review clips,
+but duplicating mechanics guarantees drift.
+
 **Visual parts carry no colliders.** The `CharacterController` on the wrestler
 root is the only physics volume, sized from `WrestlerView.RigHeight` ×
 `HeightFor(weight)` with radius scaled by `BulkFor(weight)` in
@@ -248,7 +332,7 @@ distance checks are flat transform-to-transform (`HitboxProbe`).
 on a parent shears rotated child joints — bent elbows/knees visibly distort.
 
 **Feel effects extend, defer, and switch off.** `FeelSystem` (hit-stop, camera
-punch) is presentation-only and self-bootstrapping: hit-stop *extends* the
+punch) is presentation-only and self-bootstrapping: hit-stop _extends_ the
 current freeze rather than stacking (rapid lights never become slow motion),
 always yields to the pause system's ownership of `Time.timeScale`, and the
 whole system is toggleable with zero gameplay diff. Defender reactions (mat
@@ -284,6 +368,57 @@ fights pause or accumulates becomes a gameplay bug wearing a polish costume.
   subsystems at runtime via `Bind()` with non-serialized (often interface)
   references; a mid-play domain reload nulls all of it and every hot `Update`
   throws. With an agent committing code during playtests this fires constantly.
+
+- The `SceneOrientationGizmo.SetupCamera` `NullReferenceException` that floods
+  the console on open scenes is a Unity 6 editor bug in Unity's own DLL (the
+  stack trace shows `/Users/bokken/…` — Unity's build-server path, not yours).
+  It does not affect Play mode or builds; ignore it.
+
+## Legacy Input Manager — controller support
+
+**Give joystick axes their own names; never share with keyboard axes.** The
+named axes `Joy_Horizontal` and `Joy_Vertical` (type 2, joystick axis 0/1,
+Y-inverted, `joyNum: 0`) exist for exactly this. Do not add a joystick type-2
+entry under the same `Horizontal`/`Vertical` names as keyboard — `GetAxisRaw`
+with duplicate names returns the maximum absolute value across all entries, which
+is correct but opaque and breaks any future per-device feature. _Why:_ device
+isolation is needed for rebinding, per-player split, and reliable device
+detection.
+
+**D-pad support requires two tiers.** D-pad appears as analog HAT axes 5/6
+(Xbox/Mac HID) on some platform/driver combinations, and as
+`JoystickButton14–17` (XInput digital D-pad) on others. Read the axis pair
+first (`Mathf.Abs > 0.5f`); fall back to the button set. `DPad_Horizontal`
+(axis 5) and `DPad_Vertical` (axis 6) are already configured in
+`InputManager.asset`. _Why:_ no single representation covers every platform; the
+two-tier read is the only portable approach without leaving the legacy Input
+Manager.
+
+**Controller device detection must cover analog-stick activity, not only button
+presses.** A player navigating with the stick alone (no button press) should
+flip the HUD to controller prompts. Check stick magnitude against the dead-zone
+threshold (`stickMove.sqrMagnitude > StickDeadZone * StickDeadZone`) in addition
+to `HasGamepadButtonDown()`. _Why:_ prompts that lag one button press behind the
+active device are visibly wrong every session.
+
+**Movement priority: left stick > D-pad > keyboard.** This is the convention
+established in `LegacyPlayerInputSource` — merge at the call-site and feed one
+`Vector2 move` into the rest of the frame. Never blend two sources; pick the
+dominant one by non-zero magnitude. _Why:_ blending produces unexpected diagonal
+drift when multiple devices are partially active.
+
+**Current controller layout (Xbox / PS):**
+
+| Button              | Xbox    | PlayStation | Action           |
+| ------------------- | ------- | ----------- | ---------------- |
+| JoystickButton0     | A       | Cross       | Grapple / Tie-up |
+| JoystickButton1     | B       | Circle      | Dodge            |
+| JoystickButton2     | X       | Square      | Strike           |
+| JoystickButton3     | Y       | Triangle    | Special          |
+| JoystickButton4     | LB      | L1          | Run              |
+| JoystickButton5     | RB      | R1          | Reversal         |
+| JoystickButton7     | Start   | Options     | Pause / Reset    |
+| Left stick / D-pad  | —       | —           | Move             |
 
 ## Logging
 

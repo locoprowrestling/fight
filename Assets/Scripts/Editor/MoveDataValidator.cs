@@ -49,7 +49,40 @@ namespace LoCoFight
                 errors.Add($"{id}: reversal stagger cannot be negative.");
             if (move.basicReversalSeparation < 0f || move.strongReversalSeparation < 0f)
                 errors.Add($"{id}: reversal separation cannot be negative.");
+            if (move.choreography != null)
+            {
+                bool liftChoreography = HasChoreographyPhase(
+                    move.choreography,
+                    AnimationPhase.Lift,
+                    AnimationPhase.Carry,
+                    AnimationPhase.Rotation);
+                if (liftChoreography && !move.requiresLift)
+                    errors.Add($"{id}: lift choreography requires lift validation.");
+                if ((move.canPinAfter ||
+                     move.choreography.followUp == AnimationFollowUp.PinWindow ||
+                     move.choreography.followUp == AnimationFollowUp.IntegratedPin) &&
+                    move.choreography.defenderExitPose != DefenderExitPose.FaceUp)
+                    errors.Add($"{id}: pin follow-up requires a face-up choreography exit.");
+                if (move.causesDownedState &&
+                    move.choreography.defenderExitPose == DefenderExitPose.Standing)
+                    errors.Add($"{id}: downing move cannot use a standing choreography exit.");
+            }
             return errors;
+        }
+
+        static bool HasChoreographyPhase(
+            MoveChoreographyData choreography,
+            params AnimationPhase[] wanted)
+        {
+            if (choreography == null || choreography.phases == null)
+                return false;
+            foreach (AnimationPhaseDefinition phase in choreography.phases)
+            {
+                if (phase == null) continue;
+                for (int i = 0; i < wanted.Length; i++)
+                    if (phase.phase == wanted[i]) return true;
+            }
+            return false;
         }
 
         public static List<string> ValidateDirectionalSet(

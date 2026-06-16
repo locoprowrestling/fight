@@ -9,6 +9,9 @@ namespace LoCoFight
         public float Damage = 0f;
         public float StaminaDamage = 0f;
         public string PoseName = "";
+        public string AttackerStateKey = "";
+        public string DefenderStateKey = "";
+        public string PresentationMarker = "";
         public bool AllowsOpponentEscape = false;
     }
 }

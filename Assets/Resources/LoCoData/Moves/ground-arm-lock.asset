@@ -70,6 +70,7 @@ MonoBehaviour:
   hitEventName: 
   impactVfxEventName: 
   crowdReactionEventName: 
+  choreography: {fileID: 11400000, guid: 73a1239de5bcb45ccbe850b5a6c1cd1a, type: 2}
   animationStateName: 
   placeholderPoseName: strike
   animationSpeed: 1

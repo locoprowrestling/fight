@@ -71,6 +71,13 @@ parameter-facade and builder patterns may inform the future driver, but its
 gameplay decisions, animation-event timing, and root-motion assumptions must
 not be copied into `Assets/`.
 
+Round 3 paired-move data is now implemented independently of real clips.
+`MoveChoreographyData` assets under `Resources/LoCoData/Choreography` drive the
+primitive paired poses today and provide semantic attacker/defender keys for
+future humanoid clip bindings. Import clip pairs against the corresponding
+brief under `Documentation/AnimationBriefs/Round03/`; never bind only one role
+of a paired movement.
+
 ## Arena
 
 Today: `ArenaRig.BuildPrimitiveArena()` builds primitives and registers every

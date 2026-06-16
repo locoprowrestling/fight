@@ -35,6 +35,10 @@ namespace LoCoFight
             if (HitboxProbe.ConeCheck(self.transform, target.transform, d.coneRange, d.coneAngle) &&
                 target.States.Profile.canBeStruck && !target.States.IsDowned)
             {
+                PairedMoveCoordinator.BeginPresentation(
+                    self,
+                    target,
+                    d.choreography);
                 target.Stats.ApplyDamage(d.damage, self);
                 target.States.Set(WrestlerState.Stunned, d.stunDuration);
                 self.Combat.EnterDowned(target, d.downedDuration);

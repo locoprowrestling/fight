@@ -39,6 +39,10 @@ namespace LoCoFight
                     target.Combat.InterruptMove();
                     target.Stats.ApplyDamage(d.initialDamage, self);
                     self.Combat.EnterDowned(target, 2.5f);
+                    PairedMoveCoordinator.BeginPresentation(
+                        self,
+                        target,
+                        d.choreography);
                     self.Anim.TriggerReversal(
                         strong: false, ReversalSystem.DefaultBasicPresentationId);
                     MatchHUD.TryShowMessage("Trapped! Armbar locked!");

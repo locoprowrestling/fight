@@ -491,9 +491,9 @@ movement. Authoritative root motion is deferred.
   compatibility, reversal metadata, AI profiles, and system modularity.
 - `research/pro_wrestling_battle_system_monolithic_research.md`: modular
   reversal, momentum, stamina, submission, and AI guidance.
-- `examplecode/WrestlerAnimationController.cs`,
-  `examplecode/WrestlerAnimatorBuilder.cs`, and
-  `examplecode/WrestlerAnimationManifest.md`: conceptual animation and
+- `examplecode/round 01/WrestlerAnimationController.cs`,
+  `examplecode/round 01/WrestlerAnimatorBuilder.cs`, and
+  `examplecode/round 01/WrestlerAnimationManifest.md`: conceptual animation and
   presentation contracts only.
 - `Documentation/KnowledgeBase/BestPractices.md`: authoritative repository
   ownership and control-symmetry rules.

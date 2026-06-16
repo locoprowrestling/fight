@@ -10,6 +10,8 @@ namespace LoCoFight
     {
         public MoveDatabase moveDatabase;
         public List<MoveData> moves = new List<MoveData>();
+        public List<MoveChoreographyData> choreographies =
+            new List<MoveChoreographyData>();
         public List<WrestlerStatsData> stats = new List<WrestlerStatsData>();
         public List<SpecialAbilityData> specials = new List<SpecialAbilityData>();
         public List<PassiveTraitData> traits = new List<PassiveTraitData>();
@@ -31,7 +33,192 @@ namespace LoCoFight
             CreateRules(set);
             CreateDifficulties(set);
             CreateRoster(set);
+            CreateRoundThreeChoreography(set);
             return set;
+        }
+
+        static void CreateRoundThreeChoreography(DefaultGameDataSet set)
+        {
+            var kneeLift = Choreography(
+                set, "quick-knee-lift", AnimationParticipantMode.Paired,
+                AnimationStartFormation.FrontStanding,
+                DefenderExitPose.Standing, AnimationFollowUp.None,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Recovery);
+            var snapmare = Choreography(
+                set, "quick-snapmare", AnimationParticipantMode.Paired,
+                AnimationStartFormation.FrontStanding,
+                DefenderExitPose.Seated, AnimationFollowUp.None,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Impact);
+            var snapArmDrag = Choreography(
+                set, "quick-snap-arm-drag", AnimationParticipantMode.Paired,
+                AnimationStartFormation.SideBySide,
+                DefenderExitPose.Standing, AnimationFollowUp.None,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Recovery);
+            var ddt = Choreography(
+                set, "round03-ddt", AnimationParticipantMode.Paired,
+                AnimationStartFormation.FrontStanding,
+                DefenderExitPose.FaceDown, AnimationFollowUp.None,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Impact);
+            var rearSuplex = Choreography(
+                set, "round03-rear-suplex", AnimationParticipantMode.Paired,
+                AnimationStartFormation.RearStanding,
+                DefenderExitPose.FaceUp, AnimationFollowUp.PinWindow,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Impact);
+            var powerbomb = Choreography(
+                set, "round03-powerbomb", AnimationParticipantMode.Paired,
+                AnimationStartFormation.FrontStanding,
+                DefenderExitPose.FaceUp, AnimationFollowUp.PinWindow,
+                AnimationPhase.Setup, AnimationPhase.Lift, AnimationPhase.Impact);
+            var piledriver = Choreography(
+                set, "round03-piledriver", AnimationParticipantMode.Paired,
+                AnimationStartFormation.FrontStanding,
+                DefenderExitPose.FaceDown, AnimationFollowUp.None,
+                AnimationPhase.Setup, AnimationPhase.Lift, AnimationPhase.Impact);
+            var spinningPowerbomb = Choreography(
+                set, "round03-spinning-powerbomb", AnimationParticipantMode.Paired,
+                AnimationStartFormation.FrontStanding,
+                DefenderExitPose.FaceUp, AnimationFollowUp.PinWindow,
+                AnimationPhase.Setup, AnimationPhase.Lift,
+                AnimationPhase.Rotation, AnimationPhase.Impact);
+            var armbar = Choreography(
+                set, "round03-armbar", AnimationParticipantMode.SubmissionPair,
+                AnimationStartFormation.GroundHeadFaceUp,
+                DefenderExitPose.SubmissionHold, AnimationFollowUp.Submission,
+                AnimationPhase.HoldApply, AnimationPhase.HoldLoop);
+            var legLock = Choreography(
+                set, "round03-leg-lock", AnimationParticipantMode.SubmissionPair,
+                AnimationStartFormation.GroundLegs,
+                DefenderExitPose.SubmissionHold, AnimationFollowUp.Submission,
+                AnimationPhase.HoldApply, AnimationPhase.HoldLoop);
+            var cornerHeadScissors = Choreography(
+                set, "round03-corner-head-scissors", AnimationParticipantMode.Paired,
+                AnimationStartFormation.CornerFront,
+                DefenderExitPose.FaceUp, AnimationFollowUp.None,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Impact);
+            var topRopePowerbomb = Choreography(
+                set, "round03-top-rope-powerbomb", AnimationParticipantMode.Paired,
+                AnimationStartFormation.TopCornerPair,
+                DefenderExitPose.FaceUp, AnimationFollowUp.PinWindow,
+                AnimationPhase.Setup, AnimationPhase.Contact,
+                AnimationPhase.Lift, AnimationPhase.Impact);
+            var runningSpineBuster = Choreography(
+                set, "round03-running-spine-buster", AnimationParticipantMode.Paired,
+                AnimationStartFormation.RunningCatch,
+                DefenderExitPose.FaceUp, AnimationFollowUp.PinWindow,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Impact);
+            var strikeCombination = Choreography(
+                set, "round03-strike-combination", AnimationParticipantMode.Paired,
+                AnimationStartFormation.CornerFront,
+                DefenderExitPose.FaceDown, AnimationFollowUp.PinWindow,
+                AnimationPhase.Setup, AnimationPhase.Contact,
+                AnimationPhase.Contact, AnimationPhase.Impact);
+            var mist = Choreography(
+                set, "round03-mist", AnimationParticipantMode.Paired,
+                AnimationStartFormation.FrontStanding,
+                DefenderExitPose.Standing, AnimationFollowUp.None,
+                AnimationPhase.Setup, AnimationPhase.Contact, AnimationPhase.Recovery);
+
+            BindMove(set, "knee-lift", kneeLift);
+            BindMove(set, "snapmare", snapmare);
+            BindMove(set, "snap-arm-drag", snapArmDrag);
+            BindMove(set, "headlock-takedown", ddt);
+            BindMove(set, "shoulder-throw", rearSuplex);
+            BindMove(set, "body-slam", powerbomb);
+            BindMove(set, "backbreaker", piledriver);
+            BindMove(set, "ground-arm-lock", armbar);
+            BindMove(set, "corner-bulldog", cornerHeadScissors);
+            BindMove(set, "running-tackle", runningSpineBuster);
+            BindMove(set, "heavy-forearm", mist);
+
+            BindSpecial(set, "trap-and-snap-armbar", armbar);
+            BindSpecial(set, "spotlight-crab", legLock);
+            BindSpecial(set, "cash-out-splash", topRopePowerbomb);
+            BindSpecial(set, "final-notice", powerbomb);
+            BindSpecial(set, "6-7-moves-of-doom", strikeCombination);
+            BindSpecial(set, "steele-backbreaker", spinningPowerbomb);
+            BindSpecial(set, "human-wrecking-ball", runningSpineBuster);
+            BindSpecial(set, "cloud-cover", mist);
+
+            foreach (SpecialAbilityData special in set.specials)
+            {
+                for (int i = 0; i < special.comboSteps.Count; i++)
+                {
+                    ComboStep step = special.comboSteps[i];
+                    string stepId = special.specialId + "/step-" + (i + 1);
+                    step.AttackerStateKey = stepId + "/attacker";
+                    step.DefenderStateKey = stepId + "/defender";
+                    step.PresentationMarker = step.CausesDowned
+                        ? "impact"
+                        : "contact";
+                }
+                for (int i = 0; i < special.sequenceSteps.Count; i++)
+                {
+                    SequenceStep step = special.sequenceSteps[i];
+                    string stepId = special.specialId + "/step-" + (i + 1);
+                    step.AttackerStateKey = stepId + "/attacker";
+                    step.DefenderStateKey = stepId + "/defender";
+                    step.PresentationMarker = step.Damage > 0f
+                        ? "impact"
+                        : "pose-sync";
+                }
+            }
+        }
+
+        static MoveChoreographyData Choreography(
+            DefaultGameDataSet set,
+            string id,
+            AnimationParticipantMode participantMode,
+            AnimationStartFormation formation,
+            DefenderExitPose exitPose,
+            AnimationFollowUp followUp,
+            params AnimationPhase[] phases)
+        {
+            var data = ScriptableObject.CreateInstance<MoveChoreographyData>();
+            data.name = id;
+            data.presentationId = id;
+            data.participantMode = participantMode;
+            data.startFormation = formation;
+            data.attackerStateKey = id + "/attacker";
+            data.defenderStateKey = id + "/defender";
+            data.defenderExitPose = exitPose;
+            data.followUp = followUp;
+            data.authoredDuration = Mathf.Max(0.8f, phases.Length * 0.35f);
+            data.startDistance = formation == AnimationStartFormation.SideBySide
+                ? 0.7f
+                : 0.85f;
+            float phaseDuration = 1f / phases.Length;
+            for (int i = 0; i < phases.Length; i++)
+            {
+                data.phases.Add(new AnimationPhaseDefinition
+                {
+                    phase = phases[i],
+                    normalizedStart = i * phaseDuration,
+                    normalizedEnd = (i + 1) * phaseDuration,
+                    presentationMarker = phases[i].ToString().ToLowerInvariant()
+                });
+            }
+            set.choreographies.Add(data);
+            return data;
+        }
+
+        static void BindMove(
+            DefaultGameDataSet set,
+            string moveId,
+            MoveChoreographyData choreography)
+        {
+            foreach (MoveData move in set.moves)
+                if (move.moveId == moveId)
+                    move.choreography = choreography;
+        }
+
+        static void BindSpecial(
+            DefaultGameDataSet set,
+            string specialId,
+            MoveChoreographyData choreography)
+        {
+            foreach (SpecialAbilityData special in set.specials)
+                if (special.specialId == specialId)
+                    special.choreography = choreography;
         }
 
         // ------------------------------------------------------------------

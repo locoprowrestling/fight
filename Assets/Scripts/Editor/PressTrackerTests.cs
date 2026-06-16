@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using UnityEngine;
 
 namespace LoCoFight.EditorTests
 {
@@ -69,6 +70,69 @@ namespace LoCoFight.EditorTests
             var tracker = new PressTracker();
             Assert.That(tracker.Update(false, false, true, 0.016f, Threshold),
                 Is.EqualTo(PressKind.None));
+        }
+
+        [Test]
+        public void GrappleIntent_TapRetainsDirectionFromPressThroughRelease()
+        {
+            var intent = new GrappleInputIntent();
+
+            intent.Begin(MoveDirection.Forward, held: true, 0.016f, Threshold);
+            intent.Advance(MoveDirection.Neutral, held: false, released: true, 0.016f, Threshold);
+
+            Assert.That(intent.PendingAction, Is.EqualTo(GrapplePressAction.Quick));
+            Assert.That(intent.Direction, Is.EqualTo(MoveDirection.Forward));
+        }
+
+        [Test]
+        public void GrappleIntent_HoldCommitsPowerExactlyOnce()
+        {
+            var intent = new GrappleInputIntent();
+
+            intent.Begin(MoveDirection.Left, held: true, 0.016f, Threshold);
+            intent.Advance(MoveDirection.Left, held: true, released: false, 0.25f, Threshold);
+
+            Assert.That(intent.ConsumeAction(), Is.EqualTo(GrapplePressAction.Power));
+            Assert.That(intent.ConsumeAction(), Is.EqualTo(GrapplePressAction.None));
+        }
+
+        [Test]
+        public void GrappleIntent_ResolvedActionWaitsForLockConsumption()
+        {
+            var intent = new GrappleInputIntent();
+
+            intent.Begin(MoveDirection.Backward, held: true, 0.016f, Threshold);
+            intent.Advance(MoveDirection.Backward, held: false, released: true, 0.016f, Threshold);
+
+            Assert.That(intent.Active, Is.True);
+            Assert.That(intent.PendingAction, Is.EqualTo(GrapplePressAction.Quick));
+            Assert.That(intent.ConsumeAction(), Is.EqualTo(GrapplePressAction.Quick));
+            Assert.That(intent.Active, Is.False);
+        }
+
+        [Test]
+        public void GrappleIntent_ResolvedActionKeepsItsChosenDirection()
+        {
+            var intent = new GrappleInputIntent();
+
+            intent.Begin(MoveDirection.Left, held: true, 0.016f, Threshold);
+            intent.Advance(MoveDirection.Left, held: false, released: true, 0.016f, Threshold);
+            intent.Advance(MoveDirection.Right, held: false, released: false, 0.016f, Threshold);
+
+            Assert.That(intent.Direction, Is.EqualTo(MoveDirection.Left));
+        }
+    }
+
+    public class WrestlerMotorInputTests
+    {
+        [Test]
+        public void ResolveStateMotion_ClearsApproachVelocityWhenMovementIsDisabled()
+        {
+            Vector3 approachVelocity = new Vector3(0f, 0f, 3f);
+
+            Assert.That(
+                WrestlerMotor.ResolveStateMotion(approachVelocity, canMove: false),
+                Is.EqualTo(Vector3.zero));
         }
     }
 }

@@ -56,6 +56,10 @@ namespace LoCoFight
 
             if (hit)
             {
+                PairedMoveCoordinator.BeginPresentation(
+                    self,
+                    target,
+                    d.choreography);
                 // Damage tiers by distance traveled.
                 float damage = traveled < 1.8f ? d.damageShort : traveled < 3.6f ? d.damageMedium : d.damage;
                 bool fullImpact = traveled >= 3.6f;
