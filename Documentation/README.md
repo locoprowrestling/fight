@@ -4,7 +4,7 @@ A playable 3D arcade-sim wrestling prototype built from Unity primitives. One hu
 
 ## Quick start
 
-1. Open this folder (`fightgame/`) as a project in **Unity 2022.3 LTS or newer** (3D template; Built-in render pipeline is assumed, URP also works for the placeholder materials).
+1. Open this folder (`fightgame/`) as a project in **Unity 6 LTS (6000.x)** (3D template; Built-in render pipeline is assumed, URP also works for the placeholder materials).
 2. Wait for the scripts to compile.
 3. Run **Tools > LoCo Fight Game > Setup Everything (Assets + Scene)**.
    - This creates all ScriptableObject data under `Assets/Resources/LoCoData/`, imports the `tas-*` roster portraits into `Assets/Art/RosterPortraits/`, and creates `Assets/Scenes/PrototypeMatch.unity`.
