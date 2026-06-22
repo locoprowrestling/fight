@@ -21,8 +21,11 @@ and the part-sprite plus skeletal-rig pipeline end to end.
 
 ## 2. Current state (context)
 
-`fightgame/` is a Unity 2022.3 LTS prototype written in C#. Key facts that shape
-this design:
+`fightgame/` is a Unity prototype written in C# with no pinned project version
+(there is no committed `ProjectSettings/`; the README's "2022.3 LTS+" is prose
+only, confirmed against the up-to-date remote). It currently uses the built-in
+render pipeline (materials fall back to `Standard`/`Diffuse`). Key facts that
+shape this design:
 
 - Gameplay is cleanly separated from presentation. `IAnimationDriver` is the
   only animation seam combat/state/AI code calls, and `WrestlerView` is a fully
@@ -54,6 +57,30 @@ this design:
 | Art handoff | I author the per-part prompts and manifest; the user generates the part art; I then wire the rig against the real sprites. |
 | Scope | Vertical slice first: Zeak vs JT, full match loop in 2D. Rest of roster and all special/trait visuals are follow-on specs. |
 | Architecture | Approach A, "view-flattening": keep gameplay in 3D world space, change only presentation. |
+| Unity version | Unity 6 LTS (6000.x). Pin `ProjectVersion.txt` (the prototype currently pins nothing). |
+| Render pipeline | Built-in render pipeline with unlit `SpriteRenderer`s. No URP. |
+
+### 3.1 Engine target
+
+- Unity version: Unity 6 LTS (6000.x line). Because the project pins no version,
+  this work adds `ProjectSettings/ProjectVersion.txt` set to the installed 6000.x
+  LTS patch (the user confirms the exact build), plus the minimum
+  `ProjectSettings/` files needed to open the project cleanly.
+- Render pipeline: built-in. Sprites render through unlit `SpriteRenderer`s and
+  the `DepthProjector` handles sorting manually, so existing arena/HUD materials
+  and the build stay simple. URP with the 2D Renderer remains a possible later
+  upgrade if special-move lighting or shader effects are wanted.
+- Package additions to `Packages/manifest.json`:
+  - `com.unity.2d.sprite` (Sprite Editor: pivots and slicing for generated
+    parts).
+  - `com.unity.test-framework` (headless EditMode tests).
+  - `com.unity.2d.animation` is intentionally NOT added: the paper-doll rig uses
+    plain `SpriteRenderer` transforms, not mesh skinning, so the skinning package
+    is unnecessary.
+  - No URP packages.
+- The runtime `SpriteRenderer` and `Sprite` types are part of core Unity, so
+  sprites render at runtime without extra packages; the added packages are
+  editor tooling and tests.
 
 ## 4. Architecture: view-flattening (Approach A)
 
@@ -236,8 +263,11 @@ New:
 - `prompts/parts/zeak-gallent/*.md`, `prompts/parts/jt-staten/*.md`
 - EditMode test assembly: `Assets/Tests/EditMode/*` (lane snapping, depth
   projection, facing flip, lane-alignment gate) plus an asmdef
+- `ProjectSettings/ProjectVersion.txt` and the minimum `ProjectSettings/` files
+  needed to open in Unity 6 LTS
 
 Modified:
+- `Packages/manifest.json` (add `com.unity.2d.sprite`, `com.unity.test-framework`)
 - `Assets/Scripts/Wrestlers/WrestlerView.cs` (Build2DRig)
 - `Assets/Scripts/Camera/TwoTargetMatchCamera.cs` (orthographic framing)
 - `Assets/Scripts/Input/PlayerInputController.cs` (lane-snapped depth input)
