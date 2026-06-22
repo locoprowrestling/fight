@@ -55,8 +55,8 @@ namespace LoCoFight
             rig.ringBoundary.matTopY = MatTopY;
 
             var ringRoot = Child(root.transform, "RingRoot");
-            BuildSurfaces(rig, ringRoot);
-            BuildRopesAndPosts(rig, ringRoot);
+            // 2D mode: the visible mat/ropes/posts come from Arena2DBackdrop.
+            // Keep only the invisible gameplay zones and anchors here.
             BuildZonesAndAnchors(rig, ringRoot);
 
             var anchors = Child(root.transform, "Anchors");
