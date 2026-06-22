@@ -16,6 +16,16 @@ namespace LoCoFight
         public Transform rightLeg;
         public Transform chestMarker;
         public Renderer torsoRenderer;
+        public WrestlerRig rig;
+
+        /// Builds the 2D paper-doll rig and exposes the visual root for the DepthProjector.
+        public WrestlerRig Build2DRig(string characterId, Color color)
+        {
+            if (visualRoot != null) Destroy(visualRoot.gameObject);
+            rig = WrestlerRig.Build(transform, characterId, color);
+            visualRoot = rig.Root;
+            return rig;
+        }
 
         public void BuildPlaceholder(Color color)
         {

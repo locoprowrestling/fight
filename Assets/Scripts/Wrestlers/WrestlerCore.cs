@@ -43,16 +43,24 @@ namespace LoCoFight
             core.Traits = go.AddComponent<PassiveTraitController>();
             core.Specials = go.AddComponent<SpecialController>();
             core.Dodge = go.AddComponent<DodgeSystem>();
-            var driver = go.AddComponent<PlaceholderAnimationDriver>();
-            core.Anim = driver;
 
             core.Entry = entry;
             core.IsPlayer = isPlayer;
 
             var def = entry != null ? entry.wrestlerDefinition : null;
             Color bodyColor = def != null ? def.placeholderColor : fallbackColor;
-            core.View.BuildPlaceholder(bodyColor);
-            driver.Bind(core.View);
+
+            // 2D presentation: build the paper-doll rig, attach the procedural
+            // animation driver and the depth projector. Gameplay never touches these.
+            string characterId = entry != null ? entry.rosterId : goName;
+            var rig = core.View.Build2DRig(characterId, bodyColor);
+
+            var driver = go.AddComponent<Sprite2DAnimationDriver>();
+            driver.Bind(rig);
+            core.Anim = driver;
+
+            var projector = go.AddComponent<DepthProjector>();
+            projector.Bind(go.transform, rig.Root);
 
             core.States.Bind(core);
             core.Motor.Bind(core);
