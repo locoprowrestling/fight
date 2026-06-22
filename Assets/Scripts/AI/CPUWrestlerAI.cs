@@ -290,6 +290,17 @@ namespace LoCoFight
         {
             Vector3 dir = MathUtil.FlatDirection(transform.position, target);
             if (MathUtil.FlatDistance(transform.position, target) < 0.15f) dir = Vector3.zero;
+
+            // 2D lane bias: if off the opponent's lane, prioritize closing depth so
+            // strikes can land in the side-on view.
+            float zSelf = transform.position.z;
+            float zOpp = _core.Opponent != null ? _core.Opponent.transform.position.z : zSelf;
+            if (!LaneSystem.LanesAligned(zSelf, zOpp, LaneSystem.StrikeAlignmentTolerance))
+            {
+                dir.z = Mathf.Sign(zOpp - zSelf);
+                dir.x *= 0.4f; // ease off horizontal until aligned
+            }
+
             _core.Motor.SetMoveInput(dir, run);
         }
 
