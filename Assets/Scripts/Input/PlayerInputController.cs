@@ -67,20 +67,31 @@ namespace LoCoFight
 
         void HandleMovement()
         {
-            Vector3 input = Vector3.zero;
-            if (Input.GetKey(KeyCode.W)) input += Vector3.forward;
-            if (Input.GetKey(KeyCode.S)) input += Vector3.back;
-            if (Input.GetKey(KeyCode.A)) input += Vector3.left;
-            if (Input.GetKey(KeyCode.D)) input += Vector3.right;
+            float x = 0f;
+            float depth = 0f;
+            if (Input.GetKey(KeyCode.A)) x -= 1f;
+            if (Input.GetKey(KeyCode.D)) x += 1f;
+            if (Input.GetKey(KeyCode.W)) depth += 1f; // toward back lane (+Z)
+            if (Input.GetKey(KeyCode.S)) depth -= 1f; // toward front lane (-Z)
 
-            // Camera-relative movement.
-            var cam = UnityEngine.Camera.main;
-            if (cam != null && input.sqrMagnitude > 0.01f)
+            // Horizontal is free. Depth is lane-biased: when the player is not
+            // pressing W/S, pull gently toward the nearest lane center so the
+            // wrestler settles onto a lane. World Z stays continuous.
+            float zNow = _core.transform.position.z;
+            float zMove;
+            if (Mathf.Abs(depth) > 0.01f)
             {
-                Vector3 fwd = MathUtil.Flat(cam.transform.forward).normalized;
-                Vector3 right = MathUtil.Flat(cam.transform.right).normalized;
-                input = fwd * input.z + right * input.x;
+                zMove = depth;
             }
+            else
+            {
+                float snapTarget = LaneSystem.SnapZ(zNow);
+                zMove = Mathf.Clamp(snapTarget - zNow, -1f, 1f);
+                if (Mathf.Abs(zMove) < 0.02f) zMove = 0f;
+            }
+
+            Vector3 input = new Vector3(x, 0f, zMove);
+            if (input.sqrMagnitude > 1f) input.Normalize();
 
             _core.Motor.SetMoveInput(input, Input.GetKey(KeyCode.LeftShift));
 
