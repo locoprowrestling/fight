@@ -70,7 +70,7 @@ namespace LoCoFight
                 go.transform.localPosition = d.local;
 
                 var sr = go.AddComponent<SpriteRenderer>();
-                sr.sprite = LoadPart(characterId, d.slot) ?? PlaceholderSprites.Box(TintFor(d.slot, primary), d.w, d.h, d.pivot);
+                sr.sprite = LoadPart(characterId, d.slot, d.pivot) ?? PlaceholderSprites.Box(TintFor(d.slot, primary), d.w, d.h, d.pivot);
                 sr.sortingOrder = d.sort;
                 rig._joints[d.slot] = go.transform;
             }
@@ -78,10 +78,18 @@ namespace LoCoFight
             return rig;
         }
 
-        static Sprite LoadPart(string characterId, RigSlot slot)
+        const float PixelsPerUnit = 100f;
+
+        static Sprite LoadPart(string characterId, RigSlot slot, Vector2 pivot)
         {
             string slugId = characterId.StartsWith("tas-") ? characterId.Substring(4) : characterId;
-            return Resources.Load<Sprite>($"Parts/{slugId}/{SlotFile(slot)}");
+            // Load the part texture and build the sprite with the rig's joint pivot
+            // (the manifest contract). This assembles correctly regardless of the
+            // PNG's importer pivot, so the real art works on a fresh clone without
+            // committing per-asset .meta files (this repo does not track them).
+            var tex = Resources.Load<Texture2D>($"Parts/{slugId}/{SlotFile(slot)}");
+            if (tex == null) return null;
+            return Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), pivot, PixelsPerUnit);
         }
 
         static string SlotFile(RigSlot slot)
