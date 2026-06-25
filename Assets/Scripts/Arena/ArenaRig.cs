@@ -55,8 +55,9 @@ namespace LoCoFight
             rig.ringBoundary.matTopY = MatTopY;
 
             var ringRoot = Child(root.transform, "RingRoot");
-            BuildSurfaces(rig, ringRoot);
-            BuildRopesAndPosts(rig, ringRoot);
+            // 2D mode: the visible mat/ropes/posts come from Arena2DBackdrop.
+            // Keep invisible physics surfaces plus gameplay zones and anchors here.
+            BuildPhysicsSurfaces(ringRoot);
             BuildZonesAndAnchors(rig, ringRoot);
 
             var anchors = Child(root.transform, "Anchors");
@@ -91,14 +92,20 @@ namespace LoCoFight
             return go;
         }
 
-        static void BuildSurfaces(ArenaRig rig, Transform ringRoot)
+        static void BuildPhysicsSurfaces(Transform ringRoot)
         {
-            Primitive(PrimitiveType.Cube, ringRoot, "FloorArea",
-                new Vector3(0f, -0.05f, 0f), new Vector3(16f, 0.1f, 16f), new Color(0.25f, 0.25f, 0.28f));
-            Primitive(PrimitiveType.Cube, ringRoot, "RingApron",
-                new Vector3(0f, 0.225f, 0f), new Vector3(9f, 0.45f, 9f), new Color(0.15f, 0.15f, 0.4f));
-            Primitive(PrimitiveType.Cube, ringRoot, "RingMat",
-                new Vector3(0f, 0.25f, 0f), new Vector3(8f, 0.5f, 8f), new Color(0.75f, 0.72f, 0.65f));
+            InvisibleCollider(Primitive(PrimitiveType.Cube, ringRoot, "FloorArea",
+                new Vector3(0f, -0.05f, 0f), new Vector3(16f, 0.1f, 16f), Color.clear));
+            InvisibleCollider(Primitive(PrimitiveType.Cube, ringRoot, "RingApron",
+                new Vector3(0f, 0.225f, 0f), new Vector3(9f, 0.45f, 9f), Color.clear));
+            InvisibleCollider(Primitive(PrimitiveType.Cube, ringRoot, "RingMat",
+                new Vector3(0f, 0.25f, 0f), new Vector3(8f, 0.5f, 8f), Color.clear));
+        }
+
+        static void InvisibleCollider(GameObject go)
+        {
+            var renderer = go.GetComponent<Renderer>();
+            if (renderer != null) renderer.enabled = false;
         }
 
         static void BuildRopesAndPosts(ArenaRig rig, Transform ringRoot)

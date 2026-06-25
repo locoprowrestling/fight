@@ -128,6 +128,7 @@ namespace LoCoFight
             if (Opp == null) return false;
             if (!Opp.States.Profile.canBeStruck) return false;
             if (!HitboxProbe.InRange(transform, Opp.transform, move.range)) return false;
+            if (!LaneSystem.LanesAligned(transform, Opp.transform, LaneSystem.StrikeAlignmentTolerance)) return false;
             if (HitboxProbe.FacingDot(transform, Opp.transform) < move.requiredFacingDot) return false;
             if (Opp.States.Current == WrestlerState.Dodging) return false;
             // Standing strikes whiff on downed targets (ground submissions handle grounded offense).
@@ -216,6 +217,7 @@ namespace LoCoFight
             if (Role != GrappleRole.None) return false;
             if (!_core.States.Profile.canGrapple) return false;
             if (!HitboxProbe.InRange(transform, Opp.transform, GrappleRange)) return false;
+            if (!LaneSystem.LanesAligned(transform, Opp.transform, LaneSystem.StrikeAlignmentTolerance)) return false;
 
             // Recorded before the grabbable check so counter stances (Anuka) can
             // read whiffed grapple attempts against them.

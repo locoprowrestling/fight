@@ -23,6 +23,9 @@ namespace LoCoFight
             var ringGo = new GameObject("RingInteractionSystem");
             ringGo.AddComponent<RingInteractionSystem>().Init(arena);
 
+            // Visible 2D ring (gameplay zones come from ArenaRig).
+            Arena2DBackdrop.Build(4f);
+
             // 2. Data: prefer assigned/saved assets, fall back to code defaults.
             DefaultGameDataSet fallback = null;
             var database = rosterDatabase != null ? rosterDatabase : RosterLoader.LoadDatabase(out fallback);
@@ -66,14 +69,10 @@ namespace LoCoFight
             var rig = cam.GetComponent<TwoTargetMatchCamera>();
             if (rig == null) rig = cam.gameObject.AddComponent<TwoTargetMatchCamera>();
 
-            if (FindObjectOfType<Light>() == null)
-            {
-                var lightGo = new GameObject("Directional Light");
-                var light = lightGo.AddComponent<Light>();
-                light.type = LightType.Directional;
-                light.intensity = 1.1f;
-                lightGo.transform.rotation = Quaternion.Euler(55f, -30f, 0f);
-            }
+            cam.orthographic = true;
+            cam.backgroundColor = new Color(0.08f, 0.09f, 0.13f);
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            // Unlit sprites need no scene light in 2D.
 
             // 6. HUD.
             MatchHUD.CreateHud();

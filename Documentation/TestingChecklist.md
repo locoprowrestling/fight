@@ -45,3 +45,22 @@
 
 ## Reset
 - [ ] After the winner banner, R restarts cleanly (works in saved scenes and untitled scenes).
+
+## 2D redesign (vertical slice)
+
+Run the default match (Zeak vs JT) by pressing Play.
+
+- [ ] Camera renders side-on and orthographic; both wrestlers stay framed.
+- [ ] Camera zooms out as they separate, in as they close.
+- [ ] A/D move horizontally; W/S step between the three depth lanes.
+- [ ] When not pressing W/S, the wrestler settles onto a lane.
+- [ ] A wrestler in the back lane draws higher and smaller; front lane lower and larger.
+- [ ] The front wrestler overlaps the back wrestler correctly.
+- [ ] Each wrestler casts a ground shadow.
+- [ ] Strikes and grapples only connect when both are on the same lane.
+- [ ] The CPU steps onto the player's lane before attacking.
+- [ ] Rig limbs swing while walking and on strikes/grapples; facing flips with direction.
+- [ ] State poses read: stunned, rope stagger, cornered, downed, pin, submission, victory, defeat.
+- [ ] Front and back ropes frame the wrestlers (back behind, front in front).
+- [ ] A full match completes: strike, grapple, reversal, rope interaction, pin or submission, win.
+- [ ] If real parts exist under Assets/Resources/Parts/<id>/, they appear in place of placeholders.
