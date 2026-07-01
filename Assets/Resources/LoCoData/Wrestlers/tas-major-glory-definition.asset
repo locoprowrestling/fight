@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29ed487f32507448c931d253caa0faa8, type: 3}
+  m_Name: tas-major-glory-definition
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.WrestlerDefinition
+  wrestlerId: tas-major-glory
+  displayName: Major Glory
+  stats: {fileID: 11400000, guid: 7992abc3437014fed98053a5c231f090, type: 2}
+  moveset: {fileID: 11400000, guid: e59cc4264e2fb4ef4b0a00538f22c916, type: 2}
+  special: {fileID: 11400000, guid: a73deb0175a894398aa3be6f98dd0ada, type: 2}
+  dodgeAbility: {fileID: 0}
+  passiveTraits:
+  - {fileID: 11400000, guid: 13e897ed7a35e40e490ad8024accf476, type: 2}
+  - {fileID: 11400000, guid: a97ed5af92a7542269293d2eded5c153, type: 2}
+  - {fileID: 11400000, guid: d4794fd04fec44f709d19fc1f3356c80, type: 2}
+  placeholderColor: {r: 0.85, g: 0.1, b: 0.1, a: 1}
+  notes: 

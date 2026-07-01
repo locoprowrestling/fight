@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29ed487f32507448c931d253caa0faa8, type: 3}
+  m_Name: tas-zeak-gallent-definition
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.WrestlerDefinition
+  wrestlerId: tas-zeak-gallent
+  displayName: Zeak Gallent
+  stats: {fileID: 11400000, guid: bfcff536494e74f7ea6e542d3e7b07f8, type: 2}
+  moveset: {fileID: 11400000, guid: e59cc4264e2fb4ef4b0a00538f22c916, type: 2}
+  special: {fileID: 11400000, guid: b1dcedb0e5fcd46feb736faa7c80288a, type: 2}
+  dodgeAbility: {fileID: 0}
+  passiveTraits:
+  - {fileID: 11400000, guid: b3d370a02b09046d98750023aca5d98c, type: 2}
+  - {fileID: 11400000, guid: ff7f0955020d844d7b7f436f912cd946, type: 2}
+  placeholderColor: {r: 0.95, g: 0.85, b: 0.3, a: 1}
+  notes: 

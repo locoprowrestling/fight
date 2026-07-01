@@ -235,72 +235,72 @@ namespace LoCoFight
 
             Add(set, "tas-anuka-gutierrez", "Anuka Gutierrez", new Color(0.55f, 0.3f, 0.15f),
                 Stats(set, "Anuka", WeightClass.Middleweight, LiftStrengthClass.Average, AIPersonality.Technician, reversal: 0.75f, subResist: 0.7f),
-                AnukaSpecial(set), null);
+                AnukaSpecial(set), null, null, "none");
 
             Add(set, "tas-avalon", "Michael Avalon", new Color(0.9f, 0.75f, 0.2f),
                 Stats(set, "Avalon", WeightClass.Middleweight, LiftStrengthClass.Average, AIPersonality.Showman),
-                AvalonSpecial(set), null);
+                AvalonSpecial(set), null, "The Gift of Greatness", "before");
 
             Add(set, "tas-carter-cash", "Carter Cash", new Color(0.15f, 0.7f, 0.3f),
                 Stats(set, "Carter", WeightClass.Lightweight, LiftStrengthClass.Low, AIPersonality.HighFlyer, dodge: 0.65f),
-                CarterSpecial(set), null);
+                CarterSpecial(set), null, "The Future", "before");
 
             Add(set, "tas-codah", "Codah Alexander", new Color(0.6f, 0.2f, 0.8f),
                 Stats(set, "Codah", WeightClass.Lightweight, LiftStrengthClass.Average, AIPersonality.HighFlyer, reversal: 0.6f, dodge: 0.6f),
-                CodahSpecial(set), null);
+                CodahSpecial(set), null, "The Skywalker", "before");
 
             Add(set, "tas-cody-devine", "Cody Devine", new Color(0.4f, 0.85f, 0.85f),
                 Stats(set, "Cody", WeightClass.Middleweight, LiftStrengthClass.Average, AIPersonality.Trickster),
-                CodySpecial(set), null);
+                CodySpecial(set), null, "The Cloud King", "before");
 
             Add(set, "tas-dean-mercer", "Dean Mercer", new Color(0.25f, 0.25f, 0.3f),
                 Stats(set, "Dean", WeightClass.Heavyweight, LiftStrengthClass.Heavyweight, AIPersonality.Powerhouse, kickout: 0.6f),
-                DeanSpecial(set), null);
+                DeanSpecial(set), null, "All Business", "before");
 
             Add(set, "tas-erza", "Erza Menagerie Tinker", new Color(0.9f, 0.4f, 0.7f),
                 Stats(set, "Erza", WeightClass.Lightweight, LiftStrengthClass.Low, AIPersonality.HighFlyer, dodge: 0.75f),
-                ErzaSpecial(set), null);
+                ErzaSpecial(set), null, "EMT", "instead");
 
             Add(set, "tas-franky-gonzales", "Franky Gonzales", new Color(0.95f, 0.55f, 0.1f),
                 Stats(set, "Franky", WeightClass.Middleweight, LiftStrengthClass.Average, AIPersonality.Brawler),
-                FrankySpecial(set), null);
+                FrankySpecial(set), null, "The Pretty Boy", "before");
 
             Add(set, "tas-hussy", "Hussy Steele", new Color(0.7f, 0.1f, 0.4f),
                 Stats(set, "Hussy", WeightClass.Heavyweight, LiftStrengthClass.Strong, AIPersonality.Powerhouse, kickout: 0.6f),
-                HussySpecial(set), null);
+                HussySpecial(set), null, "The Enforcer", "before");
 
             Add(set, "tas-johnny-crash", "Johnny Crash", new Color(0.3f, 0.3f, 0.9f),
                 Stats(set, "Johnny", WeightClass.SuperHeavyweight, LiftStrengthClass.Heavyweight, AIPersonality.Brawler, kickout: 0.7f),
-                JohnnySpecial(set), JohnnyTraits(set));
+                JohnnySpecial(set), JohnnyTraits(set), "Big Daddy Crash", "instead");
 
             Add(set, "tas-jt-staten", "JT Staten", new Color(0.75f, 0.75f, 0.75f),
                 Stats(set, "JT", WeightClass.Middleweight, LiftStrengthClass.Average, AIPersonality.Technician, reversal: 0.6f),
-                JtSpecial(set), null);
+                JtSpecial(set), null, null, "none");
 
             Add(set, "tas-major-glory", "Major Glory", new Color(0.85f, 0.1f, 0.1f),
                 Stats(set, "Glory", WeightClass.Middleweight, LiftStrengthClass.Average, AIPersonality.Balanced, kickout: 0.65f),
-                GlorySpecial(set), GloryTraits(set));
+                GlorySpecial(set), GloryTraits(set), null, "none");
 
             Add(set, "tas-morgana-lavey", "Morgana Lavey", new Color(0.35f, 0.1f, 0.45f),
                 Stats(set, "Morgana", WeightClass.Lightweight, LiftStrengthClass.Low, AIPersonality.Trickster, reversal: 0.6f),
-                MorganaSpecial(set), MorganaTraits(set));
+                MorganaSpecial(set), MorganaTraits(set), "The Tarantula Queen", "before");
 
             Add(set, "tas-nicky-hyde", "Nicky Hyde", new Color(0.1f, 0.55f, 0.5f),
                 Stats(set, "Nicky", WeightClass.Middleweight, LiftStrengthClass.Strong, AIPersonality.Technician, reversal: 0.8f),
-                NickySpecial(set), NickyTraits(set));
+                NickySpecial(set), NickyTraits(set), "The Stupendous One", "before");
 
             var vigilante = Add(set, "tas-vigilante-oai", "The Vigilante", new Color(0.15f, 0.15f, 0.15f),
                 Stats(set, "Vigilante", WeightClass.Middleweight, LiftStrengthClass.Average, AIPersonality.Evasive, dodge: 0.85f),
-                VigilanteSpecial(set), null);
+                VigilanteSpecial(set), null, null, "none");
             vigilante.wrestlerDefinition.dodgeAbility = VanishingDodge(set);
 
             Add(set, "tas-zeak-gallent", "Zeak Gallent", new Color(0.95f, 0.85f, 0.3f),
                 Stats(set, "Zeak", WeightClass.Middleweight, LiftStrengthClass.Strong, AIPersonality.Balanced, reversal: 0.6f, dodge: 0.6f, kickout: 0.6f),
-                ZeakSpecial(set), ZeakTraits(set));
+                ZeakSpecial(set), ZeakTraits(set), "The Picture of Talent", "before");
         }
 
         static RosterEntry Add(DefaultGameDataSet set, string rosterId, string displayName, Color color,
-            WrestlerStatsData stats, SpecialAbilityData special, List<PassiveTraitData> traits)
+            WrestlerStatsData stats, SpecialAbilityData special, List<PassiveTraitData> traits, string nick = null, string nickMode = null)
         {
             stats.displayName = displayName;
 
@@ -319,6 +319,8 @@ namespace LoCoFight
             entry.name = rosterId;
             entry.rosterId = rosterId;
             entry.displayName = displayName;
+            entry.nick = nick;
+            entry.nickMode = nickMode;
             entry.sourceImageFileName = rosterId + ".png";
             entry.wrestlerDefinition = def;
             set.entries.Add(entry);

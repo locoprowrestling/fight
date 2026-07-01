@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b9fb64d1a71349a5a750135169408de, type: 3}
+  m_Name: HardDifficulty
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.AIDifficultyData
+  displayName: Hard
+  aggression: 0.75
+  grapplePreference: 0.5
+  strikePreference: 0.5
+  ropeStrategyPreference: 0.35
+  cornerStrategyPreference: 0.3
+  specialSetupPreference: 0.8
+  reversalAccuracy: 0.6
+  dodgeAccuracy: 0.45
+  reactionDelayMin: 0.15
+  reactionDelayMax: 0.35
+  pinAttemptThreshold: 0.6
+  submissionAttemptThreshold: 0.45
+  staminaCautionThreshold: 0.25
+  randomness: 0.15
+  kickoutBonus: 0.15
+  submissionEscapeBonus: 0.15
+  reversalCooldown: 0.5

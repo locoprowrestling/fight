@@ -7,6 +7,8 @@ namespace LoCoFight
     {
         public string rosterId;
         public string displayName;
+        public string nick;
+        public string nickMode;
         public string sourceImageFileName;
         public Sprite portraitSprite;
         public WrestlerDefinition wrestlerDefinition;

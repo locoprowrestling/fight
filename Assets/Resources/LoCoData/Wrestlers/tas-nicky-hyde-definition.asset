@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29ed487f32507448c931d253caa0faa8, type: 3}
+  m_Name: tas-nicky-hyde-definition
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.WrestlerDefinition
+  wrestlerId: tas-nicky-hyde
+  displayName: Nicky Hyde
+  stats: {fileID: 11400000, guid: a4d7ad087fb17418b9f78eb896fbd450, type: 2}
+  moveset: {fileID: 11400000, guid: e59cc4264e2fb4ef4b0a00538f22c916, type: 2}
+  special: {fileID: 11400000, guid: a7327a6a7a89a43b0b3b71f9f89e524a, type: 2}
+  dodgeAbility: {fileID: 0}
+  passiveTraits:
+  - {fileID: 11400000, guid: 33743ff09b9ea4f05a29ecefb6114b7f, type: 2}
+  - {fileID: 11400000, guid: a159eb201fba840a98af4b23d5ddf461, type: 2}
+  placeholderColor: {r: 0.1, g: 0.55, b: 0.5, a: 1}
+  notes: 

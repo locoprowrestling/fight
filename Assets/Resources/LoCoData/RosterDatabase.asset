@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c229e88d9fbcf4ba9ac54f1e400b6fc6, type: 3}
+  m_Name: RosterDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.RosterDatabase
+  entries:
+  - {fileID: 11400000, guid: 25736e602da6f4b43924261979b342fb, type: 2}
+  - {fileID: 11400000, guid: 15a3d2827be124d33b34c3fcd66c1894, type: 2}
+  - {fileID: 11400000, guid: 348efd71f44cf4ea9b21ffa620f8ce62, type: 2}
+  - {fileID: 11400000, guid: 6dcd7da9114b84d71b5e01b6a4de7a1f, type: 2}
+  - {fileID: 11400000, guid: 8a8e9bde725074de696550174f1b94be, type: 2}
+  - {fileID: 11400000, guid: 69d340e1687bf4714956208e6d0316f3, type: 2}
+  - {fileID: 11400000, guid: df9bb9043f9bc4972a6b5e0c0eefbcf5, type: 2}
+  - {fileID: 11400000, guid: 79dad1e010c2a4f958c40a1c4772b8d6, type: 2}
+  - {fileID: 11400000, guid: c88e7a425845c40ba9cca2d6e851acb1, type: 2}
+  - {fileID: 11400000, guid: 17e47660f68414fcfae67b3cb58d57da, type: 2}
+  - {fileID: 11400000, guid: bb9cb9b3142e248f4b16996fb0453aa8, type: 2}
+  - {fileID: 11400000, guid: ca8b8183092564a96a562c61c2372d85, type: 2}
+  - {fileID: 11400000, guid: e3f701d3c7cfe4bdfa0acdfcbb6f402f, type: 2}
+  - {fileID: 11400000, guid: 90a5314699cff4a77974ff7323204998, type: 2}
+  - {fileID: 11400000, guid: 220b484291ed44a62a82482ef93cc97f, type: 2}
+  - {fileID: 11400000, guid: ebedd4a388ca94700a75e2c706cf98c8, type: 2}

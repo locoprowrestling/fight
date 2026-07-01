@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b597232616e104725a93eda98e67a977, type: 3}
+  m_Name: HussyStats
+  m_EditorClassIdentifier: Assembly-CSharp::LoCoFight.WrestlerStatsData
+  displayName: Hussy Steele
+  maxHealth: 100
+  maxStamina: 100
+  maxMomentum: 100
+  staminaRecoveryPerSecond: 12
+  momentumDecayPerSecond: 0
+  walkSpeed: 3
+  runSpeed: 5.5
+  baseStrikeDamageModifier: 1
+  baseGrappleDamageModifier: 1
+  baseAerialDamageModifier: 1
+  baseSubmissionModifier: 1
+  reversalSkill: 0.5
+  dodgeSkill: 0.5
+  kickoutSkill: 0.6
+  submissionResistance: 0.5
+  getUpSpeed: 1
+  weightClass: 2
+  liftStrengthClass: 2
+  aiPersonality: 3
